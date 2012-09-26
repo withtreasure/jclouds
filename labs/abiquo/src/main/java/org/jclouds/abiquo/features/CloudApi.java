@@ -39,6 +39,7 @@ import com.abiquo.server.core.cloud.VirtualAppliancesDto;
 import com.abiquo.server.core.cloud.VirtualDatacenterDto;
 import com.abiquo.server.core.cloud.VirtualDatacentersDto;
 import com.abiquo.server.core.cloud.VirtualMachineDto;
+import com.abiquo.server.core.cloud.VirtualMachineInstanceDto;
 import com.abiquo.server.core.cloud.VirtualMachineStateDto;
 import com.abiquo.server.core.cloud.VirtualMachineTaskDto;
 import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
@@ -561,6 +562,21 @@ public interface CloudApi {
     * @return Response message to the reset request.
     */
    AcceptedRequestDto<String> rebootVirtualMachine(VirtualMachineDto virtualMachine);
+
+   /**
+    * Take a snapshot of the given virtual machine.
+    * <p>
+    * This will create a new virtual machine template in the appliance library
+    * based on the given virtual machine.
+    * 
+    * @param virtualMachine
+    *           The virtual machine to snapshot.
+    * @param snapshotConfig
+    *           The configuration of the snapshot.
+    * @return The task reference to the snapshot process.
+    */
+   AcceptedRequestDto<String> snapshotVirtualMachine(VirtualMachineDto virtualMachine,
+         VirtualMachineInstanceDto snapshotConfig);
 
    /******************* Virtual Machine Template ***********************/
 
