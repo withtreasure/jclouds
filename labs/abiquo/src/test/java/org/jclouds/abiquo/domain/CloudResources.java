@@ -29,6 +29,7 @@ import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
 import com.abiquo.server.core.cloud.VirtualApplianceDto;
 import com.abiquo.server.core.cloud.VirtualDatacenterDto;
 import com.abiquo.server.core.cloud.VirtualMachineDto;
+import com.abiquo.server.core.cloud.VirtualMachineInstanceDto;
 import com.abiquo.server.core.cloud.VirtualMachineState;
 import com.abiquo.server.core.cloud.VirtualMachineStateDto;
 import com.abiquo.server.core.cloud.VirtualMachineTaskDto;
@@ -139,6 +140,8 @@ public class CloudResources {
       virtualMachine
             .addLink(new RESTLink("configurations",
                   "http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/network/configurations"));
+      virtualMachine.addLink(new RESTLink("instance",
+            "http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/action/instance"));
       return virtualMachine;
    }
 
@@ -153,6 +156,20 @@ public class CloudResources {
       buffer.append("<virtualmachinestate>");
       buffer.append("<state>ON</state>");
       buffer.append("</virtualmachinestate>");
+      return buffer.toString();
+   }
+
+   public static VirtualMachineInstanceDto snapshot() {
+      VirtualMachineInstanceDto snapshot = new VirtualMachineInstanceDto();
+      snapshot.setInstanceName("VM-SNAPSHOT");
+      return snapshot;
+   }
+
+   public static String snapshotPayload() {
+      StringBuffer buffer = new StringBuffer();
+      buffer.append("<virtualmachineinstance>");
+      buffer.append("<instanceName>VM-SNAPSHOT</instanceName>");
+      buffer.append("</virtualmachineinstance>");
       return buffer.toString();
    }
 
@@ -353,6 +370,8 @@ public class CloudResources {
       buffer.append(link("/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/storage/volumes", "volumes"));
       buffer.append(link("/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/network/configurations",
             "configurations"));
+      buffer.append(link("/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/action/instance",
+            "instance"));
 
       buffer.append("<cpu>0</cpu>");
       buffer.append("<hdInBytes>0</hdInBytes>");

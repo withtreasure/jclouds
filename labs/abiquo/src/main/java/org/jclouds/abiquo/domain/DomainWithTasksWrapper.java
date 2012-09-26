@@ -21,6 +21,7 @@ package org.jclouds.abiquo.domain;
 
 import static com.google.common.collect.Iterables.filter;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,6 +31,7 @@ import org.jclouds.abiquo.domain.task.AsyncTask;
 import org.jclouds.rest.RestContext;
 
 import com.abiquo.model.transport.SingleResourceTransportDto;
+import com.abiquo.server.core.task.TaskDto;
 import com.abiquo.server.core.task.TasksDto;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -49,14 +51,17 @@ public abstract class DomainWithTasksWrapper<T extends SingleResourceTransportDt
       super(context, target);
    }
 
-   public List<AsyncTask> listTasks() {
+   public List<AsyncTask<?, ?>> listTasks() {
       TasksDto result = context.getApi().getTaskApi().listTasks(target);
-      List<AsyncTask> tasks = wrap(context, AsyncTask.class, result.getCollection());
+      List<AsyncTask<?, ?>> tasks = new ArrayList<AsyncTask<?, ?>>();
+      for (TaskDto dto : result.getCollection()) {
+         tasks.add(newTask(context, dto));
+      }
 
       // Return the most recent task first
-      Collections.sort(tasks, new Ordering<AsyncTask>() {
+      Collections.sort(tasks, new Ordering<AsyncTask<?, ?>>() {
          @Override
-         public int compare(final AsyncTask left, final AsyncTask right) {
+         public int compare(final AsyncTask<?, ?> left, final AsyncTask<?, ?> right) {
             return Longs.compare(left.getTimestamp(), right.getTimestamp());
          }
       }.reverse());
@@ -64,11 +69,11 @@ public abstract class DomainWithTasksWrapper<T extends SingleResourceTransportDt
       return tasks;
    }
 
-   public List<AsyncTask> listTasks(final Predicate<AsyncTask> filter) {
+   public List<AsyncTask<?, ?>> listTasks(final Predicate<AsyncTask<?, ?>> filter) {
       return Lists.newLinkedList(filter(listTasks(), filter));
    }
 
-   public AsyncTask findTask(final Predicate<AsyncTask> filter) {
+   public AsyncTask<?, ?> findTask(final Predicate<AsyncTask<?, ?>> filter) {
       return Iterables.getFirst(filter(listTasks(), filter), null);
    }
 }
