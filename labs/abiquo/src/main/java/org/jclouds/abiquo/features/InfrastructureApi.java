@@ -687,7 +687,8 @@ public interface InfrastructureApi {
     * 
     * @param machine
     *           The machine to check
-    * @param sync boolean that indicates a database synchronization
+    * @param sync
+    *           boolean that indicates a database synchronization
     * @return A machineStateDto with a machine state value from enum
     *         MachineState
     */
