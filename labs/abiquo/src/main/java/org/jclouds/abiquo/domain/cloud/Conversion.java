@@ -23,10 +23,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Date;
 
-import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.AbiquoApi;
+import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.domain.DomainWithTasksWrapper;
-import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.ConversionTask;
 import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.abiquo.rest.internal.ExtendedUtils;
@@ -110,7 +110,7 @@ public class Conversion extends DomainWithTasksWrapper<ConversionDto>
      *      UpdateConversion</a>
      * @return The task reference to track its progress
      */
-    public AsyncTask restartFailedConversion()
+    public ConversionTask restartFailedConversion()
     {
         return getVirtualMachineTemplate().requestConversion(getTargetFormat());
     }

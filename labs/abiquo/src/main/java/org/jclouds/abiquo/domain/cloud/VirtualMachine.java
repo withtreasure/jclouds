@@ -33,7 +33,8 @@ import org.jclouds.abiquo.domain.enterprise.Enterprise;
 import org.jclouds.abiquo.domain.network.Ip;
 import org.jclouds.abiquo.domain.network.Network;
 import org.jclouds.abiquo.domain.network.UnmanagedNetwork;
-import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.VirtualMachineTask;
+import org.jclouds.abiquo.domain.task.VirtualMachineTemplateTask;
 import org.jclouds.abiquo.domain.util.LinkUtils;
 import org.jclouds.abiquo.features.services.MonitoringService;
 import org.jclouds.abiquo.monitor.VirtualMachineMonitor;
@@ -51,6 +52,7 @@ import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
 import com.abiquo.server.core.cloud.VirtualApplianceDto;
 import com.abiquo.server.core.cloud.VirtualDatacenterDto;
+import com.abiquo.server.core.cloud.VirtualMachineInstanceDto;
 import com.abiquo.server.core.cloud.VirtualMachineState;
 import com.abiquo.server.core.cloud.VirtualMachineStateDto;
 import com.abiquo.server.core.cloud.VirtualMachineTaskDto;
@@ -148,11 +150,11 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
      *      https://github.com/abiquo/jclouds-abiquo/wiki/Asynchronous-monitor-example</a>
      * @return The task reference or <code>null</code> if the operation completed synchronously.
      */
-    public AsyncTask update()
+    public VirtualMachineTask update()
     {
         AcceptedRequestDto<String> taskRef =
             context.getApi().getCloudApi().updateVirtualMachine(target);
-        return taskRef == null ? null : getTask(taskRef);
+        return taskRef == null ? null : getTask(taskRef).asVirtualMachineTask();
     }
 
     /**
@@ -171,12 +173,12 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
      *      https://github.com/abiquo/jclouds-abiquo/wiki/Asynchronous-monitor-example</a>
      * @return The task reference or <code>null</code> if the operation completed synchronously.
      */
-    public AsyncTask update(final boolean force)
+    public VirtualMachineTask update(final boolean force)
     {
         AcceptedRequestDto<String> taskRef =
             context.getApi().getCloudApi()
                 .updateVirtualMachine(target, VirtualMachineOptions.builder().force(force).build());
-        return taskRef == null ? null : getTask(taskRef);
+        return taskRef == null ? null : getTask(taskRef).asVirtualMachineTask();
     }
 
     /**
@@ -194,7 +196,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
      *      https://github.com/abiquo/jclouds-abiquo/wiki/Asynchronous-monitor-example</a>
      * @return The task reference or <code>null</code> if the operation completed synchronously.
      */
-    public AsyncTask changeState(final VirtualMachineState state)
+    public VirtualMachineTask changeState(final VirtualMachineState state)
     {
         VirtualMachineStateDto dto = new VirtualMachineStateDto();
         dto.setState(state);
@@ -202,7 +204,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
         AcceptedRequestDto<String> taskRef =
             context.getApi().getCloudApi().changeVirtualMachineState(target, dto);
 
-        return getTask(taskRef);
+        return getTask(taskRef).asVirtualMachineTask();
     }
 
     /**
@@ -237,6 +239,26 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
                 TypeLiteral.get(VirtualMachineWithNodeExtendedDto.class));
 
         target = parser.apply(response);
+    }
+
+    /**
+     * Take a snapshot of the given virtual machine.
+     * <p>
+     * This will create a new {@link VirtualMachineTemplate} in the appliance library based on the
+     * given virtual machine.
+     * 
+     * @param snapshotName The name of the snapshot.
+     * @return The task reference to the snapshot process.
+     */
+    public VirtualMachineTemplateTask snapshot(final String snapshotName)
+    {
+        VirtualMachineInstanceDto snapshotConfig = new VirtualMachineInstanceDto();
+        snapshotConfig.setInstanceName(snapshotName);
+
+        AcceptedRequestDto<String> response =
+            context.getApi().getCloudApi().snapshotVirtualMachine(target, snapshotConfig);
+
+        return getTask(response).asVirtualMachineTemplateTask();
     }
 
     // Parent access
@@ -367,12 +389,12 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
 
     // Actions
 
-    public AsyncTask deploy()
+    public VirtualMachineTask deploy()
     {
         return deploy(false);
     }
 
-    public AsyncTask deploy(final boolean forceEnterpriseSoftLimits)
+    public VirtualMachineTask deploy(final boolean forceEnterpriseSoftLimits)
     {
         VirtualMachineTaskDto force = new VirtualMachineTaskDto();
         force.setForceEnterpriseSoftLimits(forceEnterpriseSoftLimits);
@@ -380,15 +402,15 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
         AcceptedRequestDto<String> response =
             context.getApi().getCloudApi().deployVirtualMachine(unwrap(), force);
 
-        return getTask(response);
+        return getTask(response).asVirtualMachineTask();
     }
 
-    public AsyncTask undeploy()
+    public VirtualMachineTask undeploy()
     {
         return undeploy(false);
     }
 
-    public AsyncTask undeploy(final boolean forceUndeploy)
+    public VirtualMachineTask undeploy(final boolean forceUndeploy)
     {
         VirtualMachineTaskDto force = new VirtualMachineTaskDto();
         force.setForceUndeploy(forceUndeploy);
@@ -396,7 +418,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
         AcceptedRequestDto<String> response =
             context.getApi().getCloudApi().undeployVirtualMachine(unwrap(), force);
 
-        return getTask(response);
+        return getTask(response).asVirtualMachineTask();
     }
 
     /**
@@ -413,15 +435,15 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
      *      https://github.com/abiquo/jclouds-abiquo/wiki/Asynchronous-monitor-example</a>
      * @return The task reference or <code>null</code> if the operation completed synchronously.
      */
-    public AsyncTask reboot()
+    public VirtualMachineTask reboot()
     {
         AcceptedRequestDto<String> response =
             context.getApi().getCloudApi().rebootVirtualMachine(unwrap());
 
-        return getTask(response);
+        return getTask(response).asVirtualMachineTask();
     }
 
-    public AsyncTask attachHardDisks(final HardDisk... hardDisks)
+    public VirtualMachineTask attachHardDisks(final HardDisk... hardDisks)
     {
         List<HardDisk> expected = listAttachedHardDisks();
         expected.addAll(Arrays.asList(hardDisks));
@@ -430,14 +452,14 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
         return setHardDisks(expected.toArray(disks));
     }
 
-    public AsyncTask detachAllHardDisks()
+    public VirtualMachineTask detachAllHardDisks()
     {
         AcceptedRequestDto<String> taskRef =
             context.getApi().getCloudApi().detachAllHardDisks(target);
-        return taskRef == null ? null : getTask(taskRef);
+        return taskRef == null ? null : getTask(taskRef).asVirtualMachineTask();
     }
 
-    public AsyncTask detachHardDisks(final HardDisk... hardDisks)
+    public VirtualMachineTask detachHardDisks(final HardDisk... hardDisks)
     {
         List<HardDisk> expected = listAttachedHardDisks();
         Iterables.removeIf(expected, hardDiskIdIn(hardDisks));
@@ -446,14 +468,14 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
         return setHardDisks(expected.toArray(disks));
     }
 
-    public AsyncTask setHardDisks(final HardDisk... hardDisks)
+    public VirtualMachineTask setHardDisks(final HardDisk... hardDisks)
     {
         AcceptedRequestDto<String> taskRef =
             context.getApi().getCloudApi().replaceHardDisks(target, toHardDiskDto(hardDisks));
-        return taskRef == null ? null : getTask(taskRef);
+        return taskRef == null ? null : getTask(taskRef).asVirtualMachineTask();
     }
 
-    public AsyncTask attachVolumes(final Volume... volumes)
+    public VirtualMachineTask attachVolumes(final Volume... volumes)
     {
         List<Volume> expected = listAttachedVolumes();
         expected.addAll(Arrays.asList(volumes));
@@ -462,14 +484,14 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
         return setVolumes(true, expected.toArray(vols));
     }
 
-    public AsyncTask detachAllVolumes()
+    public VirtualMachineTask detachAllVolumes()
     {
         AcceptedRequestDto<String> taskRef =
             context.getApi().getCloudApi().detachAllVolumes(target);
-        return taskRef == null ? null : getTask(taskRef);
+        return taskRef == null ? null : getTask(taskRef).asVirtualMachineTask();
     }
 
-    public AsyncTask detachVolumes(final Volume... volumes)
+    public VirtualMachineTask detachVolumes(final Volume... volumes)
     {
         List<Volume> expected = listAttachedVolumes();
         Iterables.removeIf(expected, volumeIdIn(volumes));
@@ -478,7 +500,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
         return setVolumes(true, expected.toArray(vols));
     }
 
-    public AsyncTask setVolumes(final Boolean forceSoftLimits, final Volume... volumes)
+    public VirtualMachineTask setVolumes(final Boolean forceSoftLimits, final Volume... volumes)
     {
         AcceptedRequestDto<String> taskRef =
             context
@@ -488,21 +510,21 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
                     VirtualMachineOptions.builder().force(forceSoftLimits).build(),
                     toVolumeDto(volumes));
 
-        return taskRef == null ? null : getTask(taskRef);
+        return taskRef == null ? null : getTask(taskRef).asVirtualMachineTask();
     }
 
-    public AsyncTask setVolumes(final Volume... volumes)
+    public VirtualMachineTask setVolumes(final Volume... volumes)
     {
         return setVolumes(true, volumes);
     }
 
-    public AsyncTask setNics(final List< ? extends Ip< ? , ? >> ips)
+    public VirtualMachineTask setNics(final List<Ip< ? , ? >> ips)
     {
         // By default the network of the first ip will be used as a gateway
         return setNics(ips != null && !ips.isEmpty() ? ips.get(0).getNetwork() : null, ips, null);
     }
 
-    public AsyncTask setNics(final List< ? extends Ip< ? , ? >> ips,
+    public VirtualMachineTask setNics(final List<Ip< ? , ? >> ips,
         final List<UnmanagedNetwork> unmanagetNetworks)
     {
         // By default the network of the first ip will be used as a gateway
@@ -519,14 +541,13 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
         return setNics(gateway, ips, unmanagetNetworks);
     }
 
-    public AsyncTask setNics(final Network< ? > gatewayNetwork,
-        final List< ? extends Ip< ? , ? >> ips)
+    public VirtualMachineTask setNics(final Network< ? > gatewayNetwork, final List<Ip< ? , ? >> ips)
     {
         return setNics(gatewayNetwork, ips, null);
     }
 
-    public AsyncTask setNics(final Network< ? > gatewayNetwork,
-        final List< ? extends Ip< ? , ? >> ips, final List<UnmanagedNetwork> unmanagetNetworks)
+    public VirtualMachineTask setNics(final Network< ? > gatewayNetwork,
+        final List<Ip< ? , ? >> ips, final List<UnmanagedNetwork> unmanagetNetworks)
     {
         // Remove the gateway configuration and the current nics
         Iterables.removeIf(

@@ -17,52 +17,34 @@
  * under the License.
  */
 
-package org.jclouds.abiquo.domain.config;
+package org.jclouds.abiquo.domain.task;
 
-import java.math.BigDecimal;
+import org.jclouds.abiquo.AbiquoApi;
+import org.jclouds.abiquo.AbiquoAsyncApi;
+import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
+import org.jclouds.rest.RestContext;
+
+import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
+import com.abiquo.server.core.task.TaskDto;
 
 /**
- * Gives a price to a {@link CostCode}.
+ * Task that produces a {@link VirtualMachineTemplate}.
  * 
- * @author Susana Acedo
+ * @author Ignasi Barrera
  */
-public class CostCodePrice
+public class VirtualMachineTemplateTask extends
+    AsyncTask<VirtualMachineTemplate, VirtualMachineTemplateDto>
 {
-    private Currency currency;
-
-    private BigDecimal price;
-
-    public CostCodePrice(final Currency currency, final BigDecimal price)
+    protected VirtualMachineTemplateTask(final RestContext<AbiquoApi, AbiquoAsyncApi> context,
+        final TaskDto target)
     {
-        super();
-        this.currency = currency;
-        this.price = price;
-    }
-
-    public Currency getCurrency()
-    {
-        return currency;
-    }
-
-    public void setCurrency(final Currency currency)
-    {
-        this.currency = currency;
-    }
-
-    public BigDecimal getPrice()
-    {
-        return price;
-    }
-
-    public void setPrice(final BigDecimal price)
-    {
-        this.price = price;
+        super(context, target, VirtualMachineTemplate.class, VirtualMachineTemplateDto.class);
     }
 
     @Override
     public String toString()
     {
-        return "CostCodePrice [currency=" + currency + ", price=" + price + "]";
+        return "VirtualMachineTemplate" + super.toString();
     }
 
 }

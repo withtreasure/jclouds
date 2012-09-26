@@ -21,11 +21,11 @@ package org.jclouds.abiquo.domain.cloud;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.AbiquoApi;
+import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
 import org.jclouds.abiquo.domain.infrastructure.Tier;
-import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.VirtualMachineTask;
 import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.abiquo.reference.annotations.EnterpriseEdition;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
@@ -60,7 +60,8 @@ public class Volume extends DomainWrapper<VolumeManagementDto>
     /**
      * Constructor to be used only by the builder.
      */
-    protected Volume(final RestContext<AbiquoApi, AbiquoAsyncApi> context, final VolumeManagementDto target)
+    protected Volume(final RestContext<AbiquoApi, AbiquoAsyncApi> context,
+        final VolumeManagementDto target)
     {
         super(context, target);
     }
@@ -78,10 +79,10 @@ public class Volume extends DomainWrapper<VolumeManagementDto>
         target = context.getApi().getCloudApi().createVolume(virtualDatacenter.unwrap(), target);
     }
 
-    public AsyncTask update()
+    public VirtualMachineTask update()
     {
         AcceptedRequestDto<String> taskRef = context.getApi().getCloudApi().updateVolume(target);
-        return taskRef == null ? null : getTask(taskRef);
+        return taskRef == null ? null : getTask(taskRef).asVirtualMachineTask();
     }
 
     // Parent access
@@ -101,9 +102,6 @@ public class Volume extends DomainWrapper<VolumeManagementDto>
         return virtualDatacenter;
     }
 
-    /**
-     * TODO javadoc link
-     */
     public Tier getTier()
     {
         Integer tierId = target.getIdFromLink(ParentLinkName.TIER);
@@ -122,8 +120,7 @@ public class Volume extends DomainWrapper<VolumeManagementDto>
      */
     public void moveTo(final VirtualDatacenter newVirtualDatacenter)
     {
-        target =
-            context.getApi().getCloudApi().moveVolume(unwrap(), newVirtualDatacenter.unwrap());
+        target = context.getApi().getCloudApi().moveVolume(unwrap(), newVirtualDatacenter.unwrap());
     }
 
     // Builder
@@ -148,8 +145,8 @@ public class Volume extends DomainWrapper<VolumeManagementDto>
 
         private Tier tier;
 
-        public Builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context, final VirtualDatacenter virtualDatacenter,
-            final Tier tier)
+        public Builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context,
+            final VirtualDatacenter virtualDatacenter, final Tier tier)
         {
             super();
             checkNotNull(virtualDatacenter, ValidationErrors.NULL_RESOURCE

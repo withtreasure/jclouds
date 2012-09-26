@@ -24,13 +24,15 @@ import static com.google.common.collect.Iterables.transform;
 
 import java.lang.reflect.Constructor;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.domain.exception.WrapperException;
 import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.ConversionTask;
+import org.jclouds.abiquo.domain.task.VirtualMachineTask;
+import org.jclouds.abiquo.domain.task.VirtualMachineTemplateTask;
 import org.jclouds.abiquo.domain.util.LinkUtils;
 import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.rest.RestContext;
@@ -40,6 +42,7 @@ import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.model.transport.SingleResourceTransportDto;
 import com.abiquo.model.transport.WrapperDto;
 import com.abiquo.server.core.task.TaskDto;
+import com.abiquo.server.core.task.enums.TaskType;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
@@ -57,8 +60,7 @@ public abstract class DomainWrapper<T extends SingleResourceTransportDto>
     /** The wrapped object. */
     protected T target;
 
-    protected DomainWrapper(final RestContext<AbiquoApi, AbiquoAsyncApi> context,
-        final T target)
+    protected DomainWrapper(final RestContext<AbiquoApi, AbiquoAsyncApi> context, final T target)
     {
         super();
         this.context = checkNotNull(context, "context");
@@ -204,14 +206,14 @@ public abstract class DomainWrapper<T extends SingleResourceTransportDto>
      * @param acceptedRequest The accepted request dto.
      * @return The async task.
      */
-    protected AsyncTask getTask(final AcceptedRequestDto<String> acceptedRequest)
+    protected AsyncTask< ? , ? > getTask(final AcceptedRequestDto<String> acceptedRequest)
     {
         RESTLink taskLink = acceptedRequest.getStatusLink();
         checkNotNull(taskLink, ValidationErrors.MISSING_REQUIRED_LINK + AsyncTask.class);
 
         // This will return null on untrackable tasks
-        TaskDto task = context.getApi().getTaskApi().getTask(taskLink);
-        return wrap(context, AsyncTask.class, task);
+        TaskDto dto = context.getApi().getTaskApi().getTask(taskLink);
+        return newTask(context, dto);
     }
 
     /**
@@ -220,22 +222,73 @@ public abstract class DomainWrapper<T extends SingleResourceTransportDto>
      * @param acceptedRequest The accepted request dto.
      * @return The async task array.
      */
-    protected AsyncTask[] getTasks(final AcceptedRequestDto<String> acceptedRequest)
+    protected AsyncTask< ? , ? >[] getTasks(final AcceptedRequestDto<String> acceptedRequest)
     {
-        List<AsyncTask> tasks = new ArrayList<AsyncTask>();
+        List<AsyncTask< ? , ? >> tasks = Lists.newArrayList();
 
         for (RESTLink link : acceptedRequest.getLinks())
         {
             // This will return null on untrackable tasks
-            TaskDto task = context.getApi().getTaskApi().getTask(link);
-            if (task != null)
+            TaskDto dto = context.getApi().getTaskApi().getTask(link);
+            if (dto != null)
             {
-                tasks.add(wrap(context, AsyncTask.class, task));
+                tasks.add(newTask(context, dto));
             }
         }
 
-        AsyncTask[] taskArr = new AsyncTask[tasks.size()];
+        AsyncTask< ? , ? >[] taskArr = new AsyncTask< ? , ? >[tasks.size()];
         return tasks.toArray(taskArr);
+    }
+
+    /**
+     * Creates a new {@link AsyncTask} for the given {@link TaskDto} and the given result class.
+     * 
+     * @param context The API context.
+     * @param dto The dto used to generate the domain object.
+     * @return The task domain object.
+     */
+    protected static AsyncTask< ? , ? > newTask(
+        final RestContext<AbiquoApi, AbiquoAsyncApi> context, final TaskDto dto)
+    {
+        // Can be null in untrackable tasks
+        if (dto == null)
+        {
+            return null;
+        }
+
+        Class< ? extends AsyncTask< ? , ? >> taskClass = null;
+
+        switch (dto.getType().getOwnerType())
+        {
+            case CONVERSION:
+                taskClass = ConversionTask.class;
+                break;
+            case VIRTUAL_MACHINE_TEMPLATE:
+                taskClass = VirtualMachineTemplateTask.class;
+                break;
+            case VIRTUAL_MACHINE:
+                // A VirtualMachine task can generate a template (if task is an instance)
+                taskClass =
+                    dto.getType() == TaskType.SNAPSHOT
+                        || dto.getType() == TaskType.INSTANCE_PERSISTENT
+                        ? VirtualMachineTemplateTask.class : VirtualMachineTask.class;
+                break;
+        }
+
+        try
+        {
+            Constructor< ? extends AsyncTask< ? , ? >> cons =
+                taskClass.getDeclaredConstructor(RestContext.class, dto.getClass());
+            if (!cons.isAccessible())
+            {
+                cons.setAccessible(true);
+            }
+            return cons.newInstance(context, dto);
+        }
+        catch (Exception ex)
+        {
+            throw new WrapperException(taskClass, dto, ex);
+        }
     }
 
 }
