@@ -614,6 +614,20 @@ public interface CloudAsyncApi {
          @EndpointLink("reset") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
 
    /**
+    * @see CloudApi#VirtualMachine(VirtualMachineDto, VirtualMachineInstanceDto)
+    */
+   @Named("vm:snapshot")
+   @POST
+   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
+   @Produces(VirtualMachineInstanceDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<AcceptedRequestDto<String>> snapshotVirtualMachine(
+         @EndpointLink("instance") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
+         @BinderParam(BindToXMLPayload.class) VirtualMachineInstanceDto snapshotConfig);
+
+   /*********************** Virtual Machine Template ***********************/
+
+   /**
     * @see CloudApi#snapshotVirtualMachine(VirtualMachineDto,
     *      VirtualMachineInstanceDto)
     */

@@ -36,6 +36,7 @@ import com.abiquo.server.core.task.TasksDto;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
 
@@ -53,7 +54,7 @@ public abstract class DomainWithTasksWrapper<T extends SingleResourceTransportDt
 
    public List<AsyncTask<?, ?>> listTasks() {
       TasksDto result = context.getApi().getTaskApi().listTasks(target);
-      List<AsyncTask<?, ?>> tasks = new ArrayList<AsyncTask<?, ?>>();
+      List<AsyncTask<?, ?>> tasks = Lists.newArrayList();
       for (TaskDto dto : result.getCollection()) {
          tasks.add(newTask(context, dto));
       }
@@ -66,7 +67,7 @@ public abstract class DomainWithTasksWrapper<T extends SingleResourceTransportDt
          }
       }.reverse());
 
-      return tasks;
+      return ImmutableList.copyOf(tasks);
    }
 
    public List<AsyncTask<?, ?>> listTasks(final Predicate<AsyncTask<?, ?>> filter) {

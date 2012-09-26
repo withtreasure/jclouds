@@ -269,20 +269,19 @@ public abstract class DomainWrapper<T extends SingleResourceTransportDto> {
          case VIRTUAL_MACHINE:
             // A VirtualMachine task can generate a template (if task is an
             // instance)
-            taskClass = dto.getType() == TaskType.INSTANCE || dto.getType() == TaskType.INSTANCE_PERSISTENT ? VirtualMachineTemplateTask.class
+            taskClass = dto.getType() == TaskType.SNAPSHOT || dto.getType() == TaskType.INSTANCE_PERSISTENT ? VirtualMachineTemplateTask.class
                   : VirtualMachineTask.class;
             break;
       }
 
       try {
-         Constructor<? extends AsyncTask<?, ?>> cons = taskClass.getDeclaredConstructor(RestContext.class,
-               dto.getClass());
-         if (!cons.isAccessible()) {
-            cons.setAccessible(true);
-         }
-         return cons.newInstance(context, dto);
-      } catch (Exception ex) {
-         throw new WrapperException(taskClass, dto, ex);
+         Invokable<? extends AsyncTask<?, ?>, ? extends AsyncTask<?, ?>> cons = constructor(taskClass,
+               RestContext.class, dto.getClass());
+         return cons.invoke(null, context, dto);
+      } catch (InvocationTargetException e) {
+         throw new WrapperException(taskClass, dto, e.getTargetException());
+      } catch (IllegalAccessException e) {
+         throw new WrapperException(taskClass, dto, e);
       }
    }
 

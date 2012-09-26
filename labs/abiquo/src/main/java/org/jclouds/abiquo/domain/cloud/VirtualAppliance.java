@@ -268,6 +268,7 @@ public class VirtualAppliance extends DomainWrapper<VirtualApplianceDto> {
       force.setForceEnterpriseSoftLimits(forceEnterpriseSoftLimits);
 
       AcceptedRequestDto<String> response = context.getApi().getCloudApi().deployVirtualAppliance(unwrap(), force);
+
       AsyncTask<?, ?>[] tasks = getTasks(response);
       return Arrays.copyOf(tasks, tasks.length, VirtualMachineTask[].class);
    }

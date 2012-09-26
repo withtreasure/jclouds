@@ -22,6 +22,9 @@ package org.jclouds.abiquo.features;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
+package org.jclouds.abiquo.features;
+
+import static org.testng.Assert.assertNotNull;
 
 import java.net.URI;
 
@@ -35,6 +38,9 @@ import com.abiquo.server.core.cloud.LayerDto;
 import com.abiquo.server.core.cloud.LayersDto;
 import com.abiquo.server.core.cloud.VirtualApplianceDto;
 import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
+import com.abiquo.model.transport.AcceptedRequestDto;
+import com.abiquo.server.core.cloud.VirtualMachineDto;
+import com.abiquo.server.core.cloud.VirtualMachineInstanceDto;
 
 /**
  * Expect tests for the {@link CloudApi} class.
@@ -43,6 +49,7 @@ import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
  */
 @Test(groups = "unit", testName = "CloudApiExpectTest")
 public class CloudApiExpectTest extends BaseAbiquoRestApiExpectTest<CloudApi> {
+
    public void testListAllVirtualMachinesWhenResponseIs2xx() {
       CloudApi api = requestSendsResponse(
             HttpRequest.builder() //
@@ -166,8 +173,39 @@ public class CloudApiExpectTest extends BaseAbiquoRestApiExpectTest<CloudApi> {
       assertNotNull(layer.searchLink("virtualmachine"));
    }
 
+   public void testSnapshotVirtualMachineReturns2xx() {
+      CloudApi api = requestSendsResponse(
+            HttpRequest
+                  .builder()
+                  .method("POST")
+                  .endpoint(
+                        URI.create("http://localhost/api/admin/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/action/instance")) //
+                  .addHeader("Authorization", basicAuth) //
+                  .addHeader("Accept", normalize(AcceptedRequestDto.MEDIA_TYPE)) //
+                  .payload(
+                        payloadFromResourceWithContentType("/payloads/vm-snapshot.xml",
+                              normalize(VirtualMachineInstanceDto.MEDIA_TYPE))) //
+                  .build(), //
+            HttpResponse
+                  .builder()
+                  .statusCode(202)
+                  .payload(
+                        payloadFromResourceWithContentType("/payloads/vm-accepted-request.xml",
+                              normalize(VirtualMachineInstanceDto.MEDIA_TYPE))).build());
+
+      VirtualMachineDto vm = new VirtualMachineDto();
+      vm.addLink(new RESTLink("instance",
+            "http://localhost/api/admin/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/action/instance"));
+      VirtualMachineInstanceDto snapshotConfig = new VirtualMachineInstanceDto();
+      snapshotConfig.setInstanceName("foo");
+
+      AcceptedRequestDto<String> taskRef = api.snapshotVirtualMachine(vm, snapshotConfig);
+      assertNotNull(taskRef);
+   }
+
    @Override
-   protected CloudApi clientFrom(final AbiquoApi api) {
+   protected CloudApi clientFrom(AbiquoApi api) {
       return api.getCloudApi();
    }
+
 }
