@@ -105,7 +105,7 @@ public class CostCodeLiveApiTest extends BaseAbiquoApiLiveApiTest
 
     }
 
-    public void testcreateCostCodewithDefaultPrices()
+    public void testCreateCostCodewithDefaultPrices()
     {
         CostCode costcode2 =
             CostCode.builder(env.context.getApiContext()).name(PREFIX + "ccdefaultprice")
