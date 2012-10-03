@@ -62,6 +62,7 @@ public class BaseMonitoringServiceTest extends BaseInjectionTest
         service.awaitCompletion(new MockMonitor(), new Object[] {});
     }
 
+
     @Test(expectedExceptions = NullPointerException.class)
     public void testMonitorWithNullCompleteCondition()
     {
