@@ -521,7 +521,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
     }
 
     public AsyncTask setNics(final Network< ? > gatewayNetwork, final List<Ip< ? , ? >> ips,
-        final List<UnmanagedNetwork> unmanagetNetworks)
+        final List<UnmanagedNetwork> unmanagedNetworks)
     {
         RESTLink configLink =
             checkNotNull(target.searchLink(ParentLinkName.NETWORK_CONFIGURATIONS),
@@ -547,9 +547,9 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
         }
 
         // Add unmanaged network references, if given
-        if (unmanagetNetworks != null)
+        if (unmanagedNetworks != null)
         {
-            for (UnmanagedNetwork unmanaged : unmanagetNetworks)
+            for (UnmanagedNetwork unmanaged : unmanagedNetworks)
             {
                 RESTLink source =
                     checkNotNull(unmanaged.unwrap().searchLink("ips"),

@@ -23,8 +23,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 
-import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.AbiquoApi;
+import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.domain.enterprise.Enterprise;
 import org.jclouds.abiquo.domain.infrastructure.Datacenter;
 import org.jclouds.abiquo.domain.network.options.IpOptions;
@@ -96,8 +96,7 @@ public class UnmanagedNetwork extends Network<UnmanagedIp>
     public void save()
     {
         this.addEnterpriseLink();
-        target =
-            context.getApi().getInfrastructureApi().createNetwork(datacenter.unwrap(), target);
+        target = context.getApi().getInfrastructureApi().createNetwork(datacenter.unwrap(), target);
     }
 
     /**
@@ -197,6 +196,8 @@ public class UnmanagedNetwork extends Network<UnmanagedIp>
 
         private Enterprise enterprise;
 
+        private NetworkServiceType nst;
+
         public Builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context,
             final Datacenter datacenter, final Enterprise enterprise)
         {
@@ -220,6 +221,12 @@ public class UnmanagedNetwork extends Network<UnmanagedIp>
             return this;
         }
 
+        public Builder networkServiceType(final NetworkServiceType nst)
+        {
+            this.nst = nst;
+            return this;
+        }
+
         public UnmanagedNetwork build()
         {
             VLANNetworkDto dto = new VLANNetworkDto();
@@ -234,6 +241,13 @@ public class UnmanagedNetwork extends Network<UnmanagedIp>
             dto.setDefaultNetwork(defaultNetwork);
             dto.setUnmanaged(true);
             dto.setType(NetworkType.UNMANAGED);
+
+            if (nst == null)
+            {
+                nst = datacenter.defaultNetworkServiceType();
+            }
+            dto.getLinks().add(
+                new RESTLink("networkservicetype", nst.unwrap().getEditLink().getHref()));
 
             UnmanagedNetwork network = new UnmanagedNetwork(context, dto);
             network.datacenter = datacenter;

@@ -31,6 +31,7 @@ import org.jclouds.abiquo.domain.cloud.VirtualMachine;
 import org.jclouds.abiquo.domain.enterprise.Enterprise;
 import org.jclouds.abiquo.domain.infrastructure.options.MachineOptions;
 import org.jclouds.abiquo.predicates.infrastructure.DatastorePredicates;
+import org.jclouds.abiquo.predicates.infrastructure.NetworkInterfacePredicates;
 import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.abiquo.rest.internal.ExtendedUtils;
@@ -48,6 +49,7 @@ import com.abiquo.server.core.infrastructure.DatastoresDto;
 import com.abiquo.server.core.infrastructure.MachineDto;
 import com.abiquo.server.core.infrastructure.MachineStateDto;
 import com.abiquo.server.core.infrastructure.RackDto;
+import com.abiquo.server.core.infrastructure.network.NetworkInterfacesDto;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -140,6 +142,18 @@ public class Machine extends AbstractPhysicalMachine
     public Datastore findDatastore(final String name)
     {
         return find(getDatastores(), DatastorePredicates.name(name), null);
+    }
+
+    @Override
+    public List<NetworkInterface> getNetworkInterfaces()
+    {
+        return wrap(context, NetworkInterface.class, target.getNetworkInterfaces().getCollection());
+    }
+
+    @Override
+    public NetworkInterface findNetworkInterface(final String name)
+    {
+        return find(getNetworkInterfaces(), NetworkInterfacePredicates.name(name), null);
     }
 
     /**
@@ -320,6 +334,8 @@ public class Machine extends AbstractPhysicalMachine
 
         private Iterable<Datastore> datastores;
 
+        private Iterable<NetworkInterface> networkInterfaces;
+
         private String ipmiIp;
 
         private Integer ipmiPort;
@@ -426,6 +442,12 @@ public class Machine extends AbstractPhysicalMachine
             return this;
         }
 
+        public Builder networkInterfaces(final Iterable<NetworkInterface> networkInterfaces)
+        {
+            this.networkInterfaces = networkInterfaces;
+            return this;
+        }
+
         public Builder virtualRamInMb(final int virtualRamInMb)
         {
             this.virtualRamInMb = virtualRamInMb;
@@ -479,7 +501,6 @@ public class Machine extends AbstractPhysicalMachine
             dto.setVirtualRamUsedInMb(virtualRamUsedInMb);
             dto.setVirtualCpuCores(virtualCpuCores);
             dto.setVirtualCpusUsed(virtualCpusUsed);
-            dto.setVirtualSwitch(virtualSwitch);
             if (port != null)
             {
                 dto.setPort(port);
@@ -502,6 +523,10 @@ public class Machine extends AbstractPhysicalMachine
             datastoresDto.getCollection().addAll(unwrap(datastores));
             dto.setDatastores(datastoresDto);
 
+            NetworkInterfacesDto networkInterfacesDto = new NetworkInterfacesDto();
+            networkInterfacesDto.getCollection().addAll(unwrap(networkInterfaces));
+            dto.setNetworkInterfaces(networkInterfacesDto);
+
             Machine machine = new Machine(context, dto);
             machine.rack = rack;
 
@@ -515,12 +540,12 @@ public class Machine extends AbstractPhysicalMachine
                     .description(in.getDescription()).virtualCpuCores(in.getVirtualCpuCores())
                     .virtualCpusUsed(in.getVirtualCpusUsed())
                     .virtualRamInMb(in.getVirtualRamInMb())
-                    .virtualRamUsedInMb(in.getVirtualRamUsedInMb())
-                    .virtualSwitch(in.getVirtualSwitch()).port(in.getPort()).ip(in.getIp())
-                    .ipService(in.getIpService()).hypervisorType(in.getType()).user(in.getUser())
-                    .password(in.getPassword()).ipmiIp(in.getIpmiIp())
+                    .virtualRamUsedInMb(in.getVirtualRamUsedInMb()).port(in.getPort())
+                    .ip(in.getIp()).ipService(in.getIpService()).hypervisorType(in.getType())
+                    .user(in.getUser()).password(in.getPassword()).ipmiIp(in.getIpmiIp())
                     .ipmiPassword(in.getIpmiPassword()).ipmiUser(in.getIpmiUser())
-                    .state(in.getState()).datastores(in.getDatastores());
+                    .state(in.getState()).datastores(in.getDatastores())
+                    .networkInterfaces(in.getNetworkInterfaces());
 
             // Parameters that can be null
             if (in.getIpmiPort() != null)
