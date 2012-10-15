@@ -483,6 +483,16 @@ public interface CloudAsyncApi {
    /*********************** Virtual Machine ***********************/
 
    /**
+    * @see CloudApi#listAllVirtualMachines()
+    */
+   @Named("vm:listall")
+   @GET
+   @Path("/virtualmachines")
+   @Consumes(VirtualMachinesWithNodeExtendedDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<VirtualMachinesWithNodeExtendedDto> listAllVirtualMachines();
+
+   /**
     * @see CloudApi#listVirtualMachines(VirtualApplianceDto)
     */
    @Named("vm:list")
