@@ -420,6 +420,7 @@ public interface CloudApi {
    VirtualMachinesWithNodeExtendedDto listAllVirtualMachines();
 
    /**
+    * List all virtual machines for a virtual appliance.
     * 
     * @param virtualAppliance
     *           The virtual appliance.

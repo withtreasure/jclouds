@@ -485,6 +485,7 @@ public interface CloudAsyncApi {
    /**
     * @see CloudApi#listAllVirtualMachines()
     */
+   @Named("vm:listall")
    @GET
    @Path("/virtualmachines")
    @Consumes(VirtualMachinesWithNodeExtendedDto.BASE_MEDIA_TYPE)

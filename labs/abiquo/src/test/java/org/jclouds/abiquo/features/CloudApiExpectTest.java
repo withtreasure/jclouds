@@ -22,7 +22,6 @@ package org.jclouds.abiquo.features;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
-package org.jclouds.abiquo.features;
 
 import static org.testng.Assert.assertNotNull;
 
@@ -41,6 +40,7 @@ import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
 import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.server.core.cloud.VirtualMachineDto;
 import com.abiquo.server.core.cloud.VirtualMachineInstanceDto;
+import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
 
 /**
  * Expect tests for the {@link CloudApi} class.
