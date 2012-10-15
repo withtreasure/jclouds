@@ -446,6 +446,15 @@ public interface CloudAsyncApi
     /*********************** Virtual Machine ***********************/
 
     /**
+     * @see CloudApi#listAllVirtualMachines()
+     */
+    @GET
+    @Path("/virtualmachines")
+    @Consumes(VirtualMachinesWithNodeExtendedDto.BASE_MEDIA_TYPE)
+    @JAXBResponseParser
+    ListenableFuture<VirtualMachinesWithNodeExtendedDto> listAllVirtualMachines();
+
+    /**
      * @see CloudApi#listVirtualMachines(VirtualApplianceDto)
      */
     @GET

@@ -371,6 +371,13 @@ public interface CloudApi
     /*********************** Virtual Machine ***********************/
 
     /**
+     * List all virtual machines available to the current user.
+     * 
+     * @return The list of all virtual machines available to the current user.
+     */
+    VirtualMachinesWithNodeExtendedDto listAllVirtualMachines();
+
+    /**
      * List all virtual machines for a virtual appliance.
      * 
      * @param virtualAppliance The virtual appliance.
