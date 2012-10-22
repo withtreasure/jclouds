@@ -518,13 +518,13 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
         return setVolumes(true, volumes);
     }
 
-    public VirtualMachineTask setNics(final List<Ip< ? , ? >> ips)
+    public VirtualMachineTask setNics(final List< ? extends Ip< ? , ? >> ips)
     {
         // By default the network of the first ip will be used as a gateway
         return setNics(ips != null && !ips.isEmpty() ? ips.get(0).getNetwork() : null, ips, null);
     }
 
-    public VirtualMachineTask setNics(final List<Ip< ? , ? >> ips,
+    public VirtualMachineTask setNics(final List< ? extends Ip< ? , ? >> ips,
         final List<UnmanagedNetwork> unmanagetNetworks)
     {
         // By default the network of the first ip will be used as a gateway
@@ -541,13 +541,14 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
         return setNics(gateway, ips, unmanagetNetworks);
     }
 
-    public VirtualMachineTask setNics(final Network< ? > gatewayNetwork, final List<Ip< ? , ? >> ips)
+    public VirtualMachineTask setNics(final Network< ? > gatewayNetwork,
+        final List< ? extends Ip< ? , ? >> ips)
     {
         return setNics(gatewayNetwork, ips, null);
     }
 
     public VirtualMachineTask setNics(final Network< ? > gatewayNetwork,
-        final List<Ip< ? , ? >> ips, final List<UnmanagedNetwork> unmanagetNetworks)
+        final List< ? extends Ip< ? , ? >> ips, final List<UnmanagedNetwork> unmanagetNetworks)
     {
         // Remove the gateway configuration and the current nics
         Iterables.removeIf(
@@ -584,7 +585,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
             }
         }
 
-        AsyncTask task = update(true);
+        VirtualMachineTask task = update(true);
         if (gatewayNetwork == null)
         {
             return task;
