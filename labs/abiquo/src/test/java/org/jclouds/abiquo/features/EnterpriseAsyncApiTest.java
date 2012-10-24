@@ -27,7 +27,6 @@ import java.lang.reflect.Method;
 import org.jclouds.abiquo.domain.EnterpriseResources;
 import org.jclouds.abiquo.domain.InfrastructureResources;
 import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
-import org.jclouds.abiquo.domain.options.search.reference.OrderBy;
 import org.jclouds.http.functions.ParseXMLWithJAXB;
 import org.jclouds.http.functions.ReleasePayloadAndReturn;
 import org.jclouds.rest.functions.MapHttp4xxCodesToExceptions;
@@ -82,7 +81,7 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
    }
 
    public void testListEnterprisesWithOptions() throws SecurityException, NoSuchMethodException, IOException {
-      EnterpriseOptions options = EnterpriseOptions.builder().has("abi").orderBy(OrderBy.NAME).ascendant(true).build();
+      EnterpriseOptions options = EnterpriseOptions.builder().has("abi").orderBy("name").ascendant(true).build();
 
       Method method = EnterpriseAsyncApi.class.getMethod("listEnterprises", EnterpriseOptions.class);
       GeneratedHttpRequest request = processor.createRequest(method, options);

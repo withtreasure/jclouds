@@ -35,7 +35,6 @@ import org.jclouds.abiquo.domain.cloud.options.VirtualMachineOptions;
 import org.jclouds.abiquo.domain.cloud.options.VirtualMachineTemplateOptions;
 import org.jclouds.abiquo.domain.cloud.options.VolumeOptions;
 import org.jclouds.abiquo.domain.network.options.IpOptions;
-import org.jclouds.abiquo.domain.options.search.reference.OrderBy;
 import org.jclouds.abiquo.functions.ReturnTaskReferenceOrNull;
 import org.jclouds.abiquo.functions.cloud.ReturnMovedVolume;
 import org.jclouds.http.functions.ParseXMLWithJAXB;
@@ -1157,7 +1156,7 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
       Method method = CloudAsyncApi.class.getMethod("listVolumes", VirtualDatacenterDto.class, VolumeOptions.class);
 
       GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut(),
-            VolumeOptions.builder().has("vol").orderBy(OrderBy.NAME).ascendant(true).build());
+            VolumeOptions.builder().has("vol").orderBy("name").ascendant(true).build());
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/cloud/virtualdatacenters/1/volumes?has=vol&by=name&asc=true HTTP/1.1");
