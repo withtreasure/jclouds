@@ -28,6 +28,7 @@ import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.abiquo.domain.EnterpriseResources;
 import org.jclouds.abiquo.domain.InfrastructureResources;
 import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
+import org.jclouds.fallbacks.MapHttp4xxCodesToExceptions;
 import org.jclouds.http.functions.ParseXMLWithJAXB;
 import org.jclouds.http.functions.ReleasePayloadAndReturn;
 import org.jclouds.reflect.Invocation;

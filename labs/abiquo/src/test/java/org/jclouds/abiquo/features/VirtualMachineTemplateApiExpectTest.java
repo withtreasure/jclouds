@@ -23,8 +23,6 @@ import static org.testng.Assert.assertNotNull;
 
 import java.net.URI;
 
-import javax.ws.rs.core.Response.Status;
-
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.domain.cloud.options.VirtualMachineTemplateOptions;
 import org.jclouds.http.HttpRequest;
@@ -40,6 +38,7 @@ import com.abiquo.server.core.appslibrary.VirtualMachineTemplatesDto;
  * Expect tests for the {@link VirtualMachineTemplateApi}.
  * 
  * @author Ignasi Barrera
+ * 
  */
 @Test(groups = "unit", testName = "VirtualMachineTemplateApiExpectTest")
 public class VirtualMachineTemplateApiExpectTest extends BaseAbiquoRestApiExpectTest<VirtualMachineTemplateApi> {
