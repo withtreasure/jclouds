@@ -435,6 +435,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#refreshTemplateDefinitionList(TemplateDefinitionListDto)
     */
+   @Named("templatedefinitionlist:refresh")
    @PUT
    @Consumes(TemplateDefinitionListDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
@@ -477,6 +478,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#listTemplateDefinitions(TemplateDefinitionDto)
     */
+   @Named("templatedefinition:list")
    @GET
    @Consumes(TemplateDefinitionsDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
@@ -486,10 +488,11 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#getTemplateDefinition(TemplateDefinitionDto, Integer)
     */
+   @Named("templatedefinition:get")
    @GET
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
    @Consumes(TemplateDefinitionDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<TemplateDefinitionDto> getTemplateDefinition(
          @EndpointLink("appslib/templateDefinitions") @BinderParam(BindToPath.class) EnterpriseDto enterprise,
          @BinderParam(AppendToPath.class) Integer templateDefinitionId);
@@ -497,6 +500,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#createTemplateDefinition(EnterpriseDto, Integer)
     */
+   @Named("templatedefinition:create")
    @POST
    @Produces(TemplateDefinitionDto.BASE_MEDIA_TYPE)
    @Consumes(TemplateDefinitionDto.BASE_MEDIA_TYPE)
@@ -508,6 +512,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#updateTemplateDefinition(TemplateDefinitionDto)
     */
+   @Named("templatedefinition:update")
    @PUT
    @Produces(TemplateDefinitionDto.BASE_MEDIA_TYPE)
    @Consumes(TemplateDefinitionDto.BASE_MEDIA_TYPE)
@@ -518,6 +523,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#deleteTemplateDefinition(TemplateDefinitionDto)
     */
+   @Named("templatedefinition:delete")
    @DELETE
    ListenableFuture<Void> deleteTemplateDefinition(
          @EndpointLink("edit") @BinderParam(BindToPath.class) TemplateDefinitionDto templateDefinition);

@@ -149,6 +149,7 @@ public interface VirtualMachineTemplateAsyncApi {
     * @see VirtualMachineTemplateApi#createVirtualMachineTemplate(Integer,Integer,
     *      VirtualMachineTemplateRequestDto)
     */
+   @Named("template:create")
    @POST
    @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
    @Produces(VirtualMachineTemplateRequestDto.BASE_MEDIA_TYPE)

@@ -148,6 +148,21 @@ public class VirtualMachineTemplateInVirtualDatacenterToHardwareTest {
       }
    }
 
+   private static class MockVirtualMachineTemplateInVirtualDatacenterToHardware implements
+         Function<VirtualMachineTemplateInVirtualDatacenter, Hardware> {
+      private Function<VirtualDatacenter, Location> vdcToLocation = mockVirtualDatacenterToLocation();
+
+      private VirtualMachineTemplateInVirtualDatacenterToHardware function = new VirtualMachineTemplateInVirtualDatacenterToHardware(
+            vdcToLocation);
+
+      @Override
+      public Hardware apply(VirtualMachineTemplateInVirtualDatacenter input) {
+         Hardware hw = function.apply(input);
+         verify(vdcToLocation);
+         return hw;
+      }
+   }
+
    @SuppressWarnings("unchecked")
    private static Function<VirtualDatacenter, Location> mockVirtualDatacenterToLocation() {
       Function<VirtualDatacenter, Location> mock = EasyMock.createMock(Function.class);

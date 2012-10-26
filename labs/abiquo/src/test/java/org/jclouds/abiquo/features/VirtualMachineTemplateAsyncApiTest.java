@@ -85,7 +85,7 @@ public class VirtualMachineTemplateAsyncApiTest extends BaseAbiquoAsyncApiTest<V
                   1,
                   1,
                   VirtualMachineTemplateOptions.builder().hypervisorType(HypervisorType.XENSERVER)
-                        .categoryName("Firewalls").build())));
+                        .categoryName("Firewalls").osType(OSType.MACOS).build())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates"
