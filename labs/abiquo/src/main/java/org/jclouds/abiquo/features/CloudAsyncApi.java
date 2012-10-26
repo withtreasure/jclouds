@@ -816,6 +816,7 @@ public interface CloudAsyncApi {
    /**
     * @see CloudApi#createLayer(VirtualApplianceDto, LayerDto)
     */
+   @Named("layer:create")
    @POST
    @Consumes(LayerDto.MEDIA_TYPE)
    @Produces(LayerDto.MEDIA_TYPE)
@@ -827,12 +828,14 @@ public interface CloudAsyncApi {
    /**
     * @see CloudApi#deleteLayer(LayerDto)
     */
+   @Named("layer:delete")
    @DELETE
    ListenableFuture<Void> deleteLayer(@EndpointLink("edit") @BinderParam(BindToPath.class) LayerDto layer);
 
    /**
     * @see CloudApi#getLayers(VirtualApplianceDto)
     */
+   @Named("layer:list")
    @GET
    @Consumes(LayersDto.MEDIA_TYPE)
    @JAXBResponseParser
@@ -842,6 +845,7 @@ public interface CloudAsyncApi {
    /**
     * @see CloudApi#getLayer(VirtualApplianceDto, String)
     */
+   @Named("layer:get")
    @GET
    @Consumes(LayerDto.MEDIA_TYPE)
    @JAXBResponseParser
@@ -853,6 +857,7 @@ public interface CloudAsyncApi {
    /**
     * @see CloudApi#updateLayer(LayerDto)
     */
+   @Named("layer:update")
    @PUT
    @Consumes(LayerDto.MEDIA_TYPE)
    @Produces(LayerDto.MEDIA_TYPE)

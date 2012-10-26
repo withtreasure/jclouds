@@ -23,7 +23,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
@@ -39,6 +38,7 @@ import com.abiquo.server.core.cloud.LayerDto;
 import com.abiquo.server.core.cloud.VirtualApplianceDto;
 import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
 import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
+import com.google.common.base.Strings;
 import com.google.inject.TypeLiteral;
 
 /**
@@ -114,7 +114,7 @@ public class Layer extends DomainWrapper<LayerDto> {
       }
 
       public Builder name(final String name) {
-         this.name = name;
+         this.name = checkNotNull(name, "name must not be null");
          return this;
       }
 
@@ -125,7 +125,7 @@ public class Layer extends DomainWrapper<LayerDto> {
 
       public Layer build() {
          checkNotNull(virtualMachine, ValidationErrors.NULL_RESOURCE + VirtualMachine.class);
-         checkArgument(!StringUtils.isBlank(name), ValidationErrors.MISSING_REQUIRED_FIELD + "name");
+         checkArgument(!Strings.isNullOrEmpty(name), ValidationErrors.MISSING_REQUIRED_FIELD + "name");
 
          LayerDto dto = new LayerDto();
          dto.setName(name);
@@ -134,14 +134,14 @@ public class Layer extends DomainWrapper<LayerDto> {
       }
    }
 
-   public List<VirtualMachine> getVirtualMachines() {
+   public List<VirtualMachine> listVirtualMachines() {
       ExtendedUtils utils = (ExtendedUtils) context.getUtils();
       VirtualMachinesWithNodeExtendedDto vms = new VirtualMachinesWithNodeExtendedDto();
 
-      for (RESTLink vmlink : target.searchLinks(ParentLinkName.VIRTUAL_MACHINE)) {
-
-         vmlink.setType(VirtualMachineWithNodeExtendedDto.MEDIA_TYPE);
-         HttpResponse response = utils.getAbiquoHttpClient().get(vmlink);
+      List<RESTLink> vmLinks = target.searchLinks(ParentLinkName.VIRTUAL_MACHINE);
+      for (RESTLink vmLink : vmLinks) {
+         vmLink.setType(VirtualMachineWithNodeExtendedDto.MEDIA_TYPE);
+         HttpResponse response = utils.getAbiquoHttpClient().get(vmLink);
 
          vms.add(new ParseXMLWithJAXB<VirtualMachineWithNodeExtendedDto>(utils.getXml(), TypeLiteral
                .get(VirtualMachineWithNodeExtendedDto.class)).apply(response));

@@ -292,6 +292,46 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
     *           The new anti-affinity group.
     */
    @SinceApiVersion("2.4")
+   public AsyncTask setLayer(Layer layer) {
+      RESTLink newlayerLink = layer.unwrap().getEditLink();
+      RESTLink layerLink = target.searchLink(ParentLinkName.LAYER);
+      if (layerLink != null) {
+         layerLink.setHref(newlayerLink.getHref());
+      } else {
+         target.addLink(new RESTLink(ParentLinkName.LAYER, newlayerLink.getHref()));
+      }
+      return update(true);
+   }
+
+   // Children access
+
+   public List<HardDisk> listAttachedHardDisks() {
+      refresh();
+      DisksManagementDto hardDisks = context.getApi().getCloudApi().listAttachedHardDisks(target);
+      return wrap(context, HardDisk.class, hardDisks.getCollection());
+   }
+
+   public List<HardDisk> listAttachedHardDisks(final Predicate<HardDisk> filter) {
+      return ImmutableList.copyOf(filter(listAttachedHardDisks(), filter));
+   }
+
+   public HardDisk findAttachedHardDisk(final Predicate<HardDisk> filter) {
+      return Iterables.getFirst(filter(listAttachedHardDisks(), filter), null);
+   }
+
+   public List<Volume> listAttachedVolumes() {
+      refresh();
+      VolumesManagementDto volumes = context.getApi().getCloudApi().listAttachedVolumes(target);
+      return wrap(context, Volume.class, volumes.getCollection());
+   }
+
+   /**
+    * Updates the virtual machine to include it into an anti-affinity group.
+    * 
+    * @param layer
+    *           The new anti-affinity group.
+    */
+   @SinceApiVersion("2.4")
    public VirtualMachineTask setLayer(Layer layer) {
       RESTLink newlayerLink = layer.unwrap().getEditLink();
       RESTLink layerLink = target.searchLink(ParentLinkName.LAYER);
@@ -633,9 +673,8 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
          return this;
       }
 
-      // This methods are used only to build a builder from an existing
-      // VirtualMachine but should
-      // never be used by the user. This fields are set automatically by Abiquo
+      // VirtualMachine but should never be used by the user. This fields are
+      // set automatically by Abiquo
 
       private Builder vncPort(final int vdrpPort) {
          this.vncPort = vdrpPort;
@@ -704,7 +743,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
          dto.setUuid(uuid);
 
          if (layer != null) {
-            dto.addLink(layer.unwrap().getEditLink());
+            dto.addLink(new RESTLink(ParentLinkName.LAYER, layer.unwrap().getEditLink().getHref()));
          }
 
          // DVD
@@ -726,8 +765,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
          return VirtualMachine.builder(in.context, in.virtualAppliance, in.template).internalName(in.getInternalName())
                .nameLabel(in.getNameLabel()).description(in.getDescription()).ram(in.getRam()).cpu(in.getCpu())
                .vncAddress(in.getVncAddress()).vncPort(in.getVncPort()).idState(in.getIdState()).idType(in.getIdType())
-               .password(in.getPassword()).keymap(in.getKeymap()).dvd(in.hasDvd())
-               .layer(in.getLayer().isPresent() ? in.getLayer().get() : null);
+               .password(in.getPassword()).keymap(in.getKeymap()).dvd(in.hasDvd()).layer(in.getLayer().orNull());
       }
    }
 
