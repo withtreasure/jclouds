@@ -37,6 +37,9 @@ import com.abiquo.server.core.cloud.LayersDto;
 import com.abiquo.server.core.cloud.VirtualApplianceDto;
 import com.abiquo.server.core.cloud.VirtualMachineDto;
 import com.abiquo.server.core.cloud.VirtualMachineInstanceDto;
+import com.abiquo.server.core.cloud.LayerDto;
+import com.abiquo.server.core.cloud.LayersDto;
+import com.abiquo.server.core.cloud.VirtualApplianceDto;
 import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
 
 /**
@@ -162,6 +165,7 @@ public class CloudApiExpectTest extends BaseAbiquoRestApiExpectTest<CloudApi> {
       LayerDto dto = new LayerDto();
       RESTLink link = new RESTLink("edit",
             "http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/layers/layer1");
+      link.setType(LayerDto.BASE_MEDIA_TYPE);
       dto.setName("updatedName");
       dto.addLink(link);
 

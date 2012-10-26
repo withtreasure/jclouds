@@ -206,6 +206,7 @@ public class PricingResources {
       buffer.append("<defaultTemplate>true</defaultTemplate>");
       buffer.append("<link href='http://localhost/api/config/currencies/1' rel='currency'/>");
       buffer.append("<id>1</id>");
+      buffer.append("<layer>0</layer>");
       buffer.append(link("/config/pricingtemplates/1", "edit"));
       buffer.append("</pricingTemplate>");
       return buffer.toString();
