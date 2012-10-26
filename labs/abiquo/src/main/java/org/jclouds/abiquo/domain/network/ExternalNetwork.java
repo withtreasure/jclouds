@@ -23,8 +23,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 
-import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.AbiquoApi;
+import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.domain.enterprise.Enterprise;
 import org.jclouds.abiquo.domain.infrastructure.Datacenter;
 import org.jclouds.abiquo.domain.network.options.IpOptions;
@@ -174,6 +174,8 @@ public class ExternalNetwork extends Network<ExternalIp> {
 
       private Enterprise enterprise;
 
+      private NetworkServiceType nst;
+
       public Builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context, final Datacenter datacenter,
             final Enterprise enterprise) {
          super(context);
@@ -194,6 +196,11 @@ public class ExternalNetwork extends Network<ExternalIp> {
          return this;
       }
 
+      public Builder networkServiceType(final NetworkServiceType nst) {
+         this.nst = nst;
+         return this;
+      }
+
       public ExternalNetwork build() {
          VLANNetworkDto dto = new VLANNetworkDto();
          dto.setName(name);
@@ -207,6 +214,11 @@ public class ExternalNetwork extends Network<ExternalIp> {
          dto.setDefaultNetwork(defaultNetwork == null ? Boolean.FALSE : defaultNetwork);
          dto.setUnmanaged(Boolean.FALSE);
          dto.setType(NetworkType.EXTERNAL);
+
+         if (nst == null) {
+            nst = datacenter.defaultNetworkServiceType();
+         }
+         dto.getLinks().add(new RESTLink("networkservicetype", nst.unwrap().getEditLink().getHref()));
 
          ExternalNetwork network = new ExternalNetwork(context, dto);
          network.datacenter = datacenter;
