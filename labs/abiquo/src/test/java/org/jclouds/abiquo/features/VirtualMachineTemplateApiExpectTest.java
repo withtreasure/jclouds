@@ -56,7 +56,7 @@ public class VirtualMachineTemplateApiExpectTest extends BaseAbiquoRestApiExpect
                               normalize(VirtualMachineTemplateRequestDto.MEDIA_TYPE))).build(),
             HttpResponse
                   .builder()
-                  .statusCode(Status.CREATED.getStatusCode())
+                  .statusCode(201)
                   .payload(
                         payloadFromResourceWithContentType("/payloads/virtualmachinetemplate-create-response.xml",
                               normalize(AcceptedRequestDto.MEDIA_TYPE))).build());
@@ -82,7 +82,7 @@ public class VirtualMachineTemplateApiExpectTest extends BaseAbiquoRestApiExpect
                               normalize(VirtualMachineTemplateRequestDto.MEDIA_TYPE))).build(),
             HttpResponse
                   .builder()
-                  .statusCode(Status.CREATED.getStatusCode())
+                  .statusCode(201)
                   .payload(
                         payloadFromResourceWithContentType("/payloads/virtualmachinetemplate-create-response.xml",
                               normalize(AcceptedRequestDto.MEDIA_TYPE))).build());

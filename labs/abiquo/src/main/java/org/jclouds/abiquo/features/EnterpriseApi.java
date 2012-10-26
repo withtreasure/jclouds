@@ -24,8 +24,10 @@ import org.jclouds.abiquo.reference.annotations.EnterpriseEdition;
 
 import com.abiquo.am.model.TemplatesStateDto;
 import com.abiquo.server.core.appslibrary.DatacenterRepositoryDto;
+import com.abiquo.server.core.appslibrary.TemplateDefinitionDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListsDto;
+import com.abiquo.server.core.appslibrary.TemplateDefinitionsDto;
 import com.abiquo.server.core.cloud.VirtualAppliancesDto;
 import com.abiquo.server.core.cloud.VirtualDatacentersDto;
 import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
@@ -335,6 +337,8 @@ public interface EnterpriseApi {
     */
    MachinesDto listReservedMachines(EnterpriseDto enterprise);
 
+   /*********************** Template definition list ***********************/
+
    /**
     * List all template definitions in apps library.
     * 
@@ -367,6 +371,15 @@ public interface EnterpriseApi {
    TemplateDefinitionListDto updateTemplateDefinitionList(TemplateDefinitionListDto templateList);
 
    /**
+    * Refresh an existing template definition list using the source ''ovfindex.xml'' url.
+    *
+    * @param template
+    *           The template to be update, require ''url'' set.
+    * @return The updated template list after fetching new template definitions form the ovfindex source.
+    */
+   TemplateDefinitionListDto refreshTemplateDefinitionList(TemplateDefinitionListDto templateList);
+
+   /**
     * Deletes existing user.
     * 
     * @param user
@@ -395,4 +408,49 @@ public interface EnterpriseApi {
     * @return The list of states.
     */
    TemplatesStateDto listTemplateListStatus(TemplateDefinitionListDto templateList, DatacenterDto datacenter);
+
+   /*********************** Template definition ************************/
+
+   /**
+    * Template Definitions are a summarized version of the OVF Envelope format.
+    * list all Template Definitions for a given enterprise.
+    * 
+    * @return The list of template definitions
+    */
+   TemplateDefinitionsDto listTemplateDefinitions(EnterpriseDto enterprise);
+
+   /**
+    * Creates a template definition
+    * 
+    * @param templateDefinition
+    * @return The created template definition
+    */
+   TemplateDefinitionDto createTemplateDefinition(EnterpriseDto enterprise, TemplateDefinitionDto templateDefinition);
+
+   /**
+    * Updates an existing template definition
+    * 
+    * @param templateDefinition
+    *           The new attributes for the templateDefinition.
+    * @return The updated templateDefinition.
+    */
+   TemplateDefinitionDto updateTemplateDefinition(TemplateDefinitionDto templateDefinition);
+
+   /**
+    * Get the given template definition
+    * 
+    * @param enterprise
+    *           The enterprise
+    * @param templateDefinitionId
+    *           The id of the template definition.
+    * @return The template definition or <code>null</code> if it does not exist.
+    */
+   TemplateDefinitionDto getTemplateDefinition(final EnterpriseDto enterprise, Integer templateDefinitionId);
+
+   /**
+    * Deletes an existing template definition
+    * 
+    * @param templateDefinition
+    */
+   void deleteTemplateDefinition(TemplateDefinitionDto templateDefinition);
 }

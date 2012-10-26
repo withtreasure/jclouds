@@ -82,7 +82,7 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
    }
 
    public void testListEnterprisesWithOptions() throws SecurityException, NoSuchMethodException, IOException {
-      EnterpriseOptions options = EnterpriseOptions.builder().has("abi").orderBy(OrderBy.NAME).ascendant(true).build();
+      EnterpriseOptions options = EnterpriseOptions.builder().has("abi").orderBy("name").ascendant(true).build();
 
       Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "listEnterprises", EnterpriseOptions.class);
       GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(options)));

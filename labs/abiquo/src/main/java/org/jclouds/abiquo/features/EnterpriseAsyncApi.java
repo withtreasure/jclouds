@@ -49,8 +49,10 @@ import org.jclouds.rest.binders.BindToXMLPayload;
 
 import com.abiquo.am.model.TemplatesStateDto;
 import com.abiquo.server.core.appslibrary.DatacenterRepositoryDto;
+import com.abiquo.server.core.appslibrary.TemplateDefinitionDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListsDto;
+import com.abiquo.server.core.appslibrary.TemplateDefinitionsDto;
 import com.abiquo.server.core.cloud.VirtualAppliancesDto;
 import com.abiquo.server.core.cloud.VirtualDatacentersDto;
 import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
@@ -419,6 +421,16 @@ public interface EnterpriseAsyncApi {
          @EndpointLink("edit") @BinderParam(BindToXMLPayloadAndPath.class) TemplateDefinitionListDto templateList);
 
    /**
+    * @see EnterpriseApi#refreshTemplateDefinitionList(TemplateDefinitionListDto)
+    */
+   @Named("templatedefinitionlist:refresh")
+   @PUT
+   @Consumes(TemplateDefinitionListDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<TemplateDefinitionListDto> refreshTemplateDefinitionList(
+         @EndpointLink("edit") @BinderParam(BindToPath.class) TemplateDefinitionListDto templateList);
+
+   /**
     * @see EnterpriseApi#deleteTemplateDefinitionList(EnterpriseDto)
     */
    @Named("templatedefinitionlist:delete")
@@ -448,4 +460,60 @@ public interface EnterpriseAsyncApi {
    ListenableFuture<TemplatesStateDto> listTemplateListStatus(
          @EndpointLink("repositoryStatus") @BinderParam(BindToPath.class) TemplateDefinitionListDto templateList,
          @QueryParam("datacenterId") @ParamParser(ParseDatacenterId.class) DatacenterDto datacenter);
+
+   /*********************** Template definition ************************/
+
+   /**
+    * @see EnterpriseApi#listTemplateDefinitions(TemplateDefinitionDto)
+    */
+   @Named("templatedefinition:list")
+   @GET
+   @Consumes(TemplateDefinitionsDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<TemplateDefinitionsDto> listTemplateDefinitions(
+         @EndpointLink("appslib/templateDefinitions") @BinderParam(BindToPath.class) EnterpriseDto enterprise);
+
+   /**
+    * @see EnterpriseApi#getTemplateDefinition(TemplateDefinitionDto, Integer)
+    */
+   @Named("templatedefinition:get")
+   @GET
+   @Consumes(TemplateDefinitionDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   @Fallback(NullOnNotFoundOr404.class)
+   ListenableFuture<TemplateDefinitionDto> getTemplateDefinition(
+         @EndpointLink("appslib/templateDefinitions") @BinderParam(BindToPath.class) EnterpriseDto enterprise,
+         @BinderParam(AppendToPath.class) Integer templateDefinitionId);
+
+   /**
+    * @see EnterpriseApi#createTemplateDefinition(EnterpriseDto, Integer)
+    */
+   @Named("templatedefinition:create")
+   @POST
+   @Produces(TemplateDefinitionDto.BASE_MEDIA_TYPE)
+   @Consumes(TemplateDefinitionDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<TemplateDefinitionDto> createTemplateDefinition(
+         @EndpointLink("appslib/templateDefinitions") @BinderParam(BindToPath.class) EnterpriseDto enterprise,
+         @BinderParam(BindToXMLPayload.class) TemplateDefinitionDto templateDefinition);
+
+   /**
+    * @see EnterpriseApi#updateTemplateDefinition(TemplateDefinitionDto)
+    */
+   @Named("templatedefinition:update")
+   @PUT
+   @Produces(TemplateDefinitionDto.BASE_MEDIA_TYPE)
+   @Consumes(TemplateDefinitionDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<TemplateDefinitionDto> updateTemplateDefinition(
+         @EndpointLink("edit") @BinderParam(BindToXMLPayloadAndPath.class) TemplateDefinitionDto templateDefinition);
+
+   /**
+    * @see EnterpriseApi#deleteTemplateDefinition(TemplateDefinitionDto)
+    */
+   @Named("templatedefinition:delete")
+   @DELETE
+   ListenableFuture<Void> deleteTemplateDefinition(
+         @EndpointLink("edit") @BinderParam(BindToPath.class) TemplateDefinitionDto templateDefinition);
+
 }
