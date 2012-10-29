@@ -22,6 +22,7 @@ package org.jclouds.abiquo.domain.cloud;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.jclouds.abiquo.AbiquoApi;
@@ -243,8 +244,8 @@ public class VirtualAppliance extends DomainWrapper<VirtualApplianceDto> {
       force.setForceEnterpriseSoftLimits(forceEnterpriseSoftLimits);
 
       AcceptedRequestDto<String> response = context.getApi().getCloudApi().deployVirtualAppliance(unwrap(), force);
-
-      return (VirtualMachineTask[]) getTasks(response);
+      AsyncTask<?, ?>[] tasks = getTasks(response);
+      return Arrays.copyOf(tasks, tasks.length, VirtualMachineTask[].class);
    }
 
    /**
@@ -282,7 +283,8 @@ public class VirtualAppliance extends DomainWrapper<VirtualApplianceDto> {
 
       AcceptedRequestDto<String> response = context.getApi().getCloudApi().undeployVirtualAppliance(unwrap(), force);
 
-      return (VirtualMachineTask[]) getTasks(response);
+      AsyncTask<?, ?>[] tasks = getTasks(response);
+      return Arrays.copyOf(tasks, tasks.length, VirtualMachineTask[].class);
    }
 
    /**
