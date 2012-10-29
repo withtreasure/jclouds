@@ -32,19 +32,14 @@ import com.abiquo.server.core.task.TaskDto;
  * 
  * @author Ignasi Barrera
  */
-public class VirtualMachineTemplateTask extends
-    AsyncTask<VirtualMachineTemplate, VirtualMachineTemplateDto>
-{
-    protected VirtualMachineTemplateTask(final RestContext<AbiquoApi, AbiquoAsyncApi> context,
-        final TaskDto target)
-    {
-        super(context, target, VirtualMachineTemplate.class, VirtualMachineTemplateDto.class);
-    }
+public class VirtualMachineTemplateTask extends AsyncTask<VirtualMachineTemplate, VirtualMachineTemplateDto> {
+   protected VirtualMachineTemplateTask(final RestContext<AbiquoApi, AbiquoAsyncApi> context, final TaskDto target) {
+      super(context, target, VirtualMachineTemplate.class, VirtualMachineTemplateDto.class);
+   }
 
-    @Override
-    public String toString()
-    {
-        return "VirtualMachineTemplate" + super.toString();
-    }
+   @Override
+   public String toString() {
+      return "VirtualMachineTemplate" + super.toString();
+   }
 
 }

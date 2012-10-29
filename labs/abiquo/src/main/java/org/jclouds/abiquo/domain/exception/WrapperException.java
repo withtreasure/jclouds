@@ -26,48 +26,39 @@ import com.abiquo.model.transport.SingleResourceTransportDto;
  * 
  * @author Ignasi Barrera
  */
-public class WrapperException extends RuntimeException
-{
-    private static final long serialVersionUID = 1L;
+public class WrapperException extends RuntimeException {
+   private static final long serialVersionUID = 1L;
 
-    private Class< ? > wrapperClass;
+   private Class<?> wrapperClass;
 
-    private SingleResourceTransportDto target;
+   private SingleResourceTransportDto target;
 
-    public WrapperException(final Class< ? > wrapperClass, final SingleResourceTransportDto target,
-        final Throwable cause)
-    {
-        super(cause);
-        this.wrapperClass = wrapperClass;
-        this.target = target;
-    }
+   public WrapperException(final Class<?> wrapperClass, final SingleResourceTransportDto target, final Throwable cause) {
+      super(cause);
+      this.wrapperClass = wrapperClass;
+      this.target = target;
+   }
 
-    @Override
-    public String getMessage()
-    {
-        String msg =
-            "Could not wrap object [" + target + "] in class " + wrapperClass.getName() + ": ";
-        return msg + super.getMessage();
-    }
+   @Override
+   public String getMessage() {
+      String msg = "Could not wrap object [" + target + "] in class " + wrapperClass.getName() + ": ";
+      return msg + super.getMessage();
+   }
 
-    public Class< ? > getWrapperClass()
-    {
-        return wrapperClass;
-    }
+   public Class<?> getWrapperClass() {
+      return wrapperClass;
+   }
 
-    public void setWrapperClass(final Class< ? > wrapperClass)
-    {
-        this.wrapperClass = wrapperClass;
-    }
+   public void setWrapperClass(final Class<?> wrapperClass) {
+      this.wrapperClass = wrapperClass;
+   }
 
-    public SingleResourceTransportDto getTarget()
-    {
-        return target;
-    }
+   public SingleResourceTransportDto getTarget() {
+      return target;
+   }
 
-    public void setTarget(final SingleResourceTransportDto target)
-    {
-        this.target = target;
-    }
+   public void setTarget(final SingleResourceTransportDto target) {
+      this.target = target;
+   }
 
 }

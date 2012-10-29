@@ -38,33 +38,27 @@ import com.google.inject.Module;
  * 
  * @author Ignasi Barrera
  */
-public abstract class BaseAbiquoRestApiExpectTest<S> extends BaseRestApiExpectTest<S>
-{
-    protected final String basicAuth = "Basic aWRlbnRpdHk6Y3JlZGVudGlhbA==";
+public abstract class BaseAbiquoRestApiExpectTest<S> extends BaseRestApiExpectTest<S> {
+   protected final String basicAuth = "Basic aWRlbnRpdHk6Y3JlZGVudGlhbA==";
 
-    public BaseAbiquoRestApiExpectTest()
-    {
-        provider = "abiquo";
-    }
+   public BaseAbiquoRestApiExpectTest() {
+      provider = "abiquo";
+   }
 
-    @Override
-    protected ApiMetadata createApiMetadata()
-    {
-        return new AbiquoApiMetadata();
-    }
+   @Override
+   protected ApiMetadata createApiMetadata() {
+      return new AbiquoApiMetadata();
+   }
 
-    @Override
-    public S createClient(final Function<HttpRequest, HttpResponse> fn, final Module module,
-        final Properties props)
-    {
-        return clientFrom(createInjector(fn, module, props).getInstance(AbiquoApi.class));
-    }
+   @Override
+   public S createClient(final Function<HttpRequest, HttpResponse> fn, final Module module, final Properties props) {
+      return clientFrom(createInjector(fn, module, props).getInstance(AbiquoApi.class));
+   }
 
-    protected abstract S clientFrom(AbiquoApi api);
+   protected abstract S clientFrom(AbiquoApi api);
 
-    protected String normalize(final String mediatType)
-    {
-        return MediaType.valueOf(mediatType).toString();
-    }
+   protected String normalize(final String mediatType) {
+      return MediaType.valueOf(mediatType).toString();
+   }
 
 }

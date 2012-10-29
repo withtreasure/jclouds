@@ -32,18 +32,14 @@ import com.abiquo.server.core.task.TaskDto;
  * 
  * @author Ignasi Barrera
  */
-public class ConversionTask extends AsyncTask<Conversion, ConversionDto>
-{
-    protected ConversionTask(final RestContext<AbiquoApi, AbiquoAsyncApi> context,
-        final TaskDto target)
-    {
-        super(context, target, Conversion.class, ConversionDto.class);
-    }
+public class ConversionTask extends AsyncTask<Conversion, ConversionDto> {
+   protected ConversionTask(final RestContext<AbiquoApi, AbiquoAsyncApi> context, final TaskDto target) {
+      super(context, target, Conversion.class, ConversionDto.class);
+   }
 
-    @Override
-    public String toString()
-    {
-        return "Conversion" + super.toString();
-    }
+   @Override
+   public String toString() {
+      return "Conversion" + super.toString();
+   }
 
 }

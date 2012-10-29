@@ -40,49 +40,40 @@ import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
 
 /**
- * This class is used to decorate transport objects that are owners of some {@link TaskDto}
+ * This class is used to decorate transport objects that are owners of some
+ * {@link TaskDto}
  * 
  * @author Ignasi Barrera
  */
-public abstract class DomainWithTasksWrapper<T extends SingleResourceTransportDto> extends
-    DomainWrapper<T>
-{
+public abstract class DomainWithTasksWrapper<T extends SingleResourceTransportDto> extends DomainWrapper<T> {
 
-    protected DomainWithTasksWrapper(final RestContext<AbiquoApi, AbiquoAsyncApi> context,
-        final T target)
-    {
-        super(context, target);
-    }
+   protected DomainWithTasksWrapper(final RestContext<AbiquoApi, AbiquoAsyncApi> context, final T target) {
+      super(context, target);
+   }
 
-    public List<AsyncTask< ? , ? >> listTasks()
-    {
-        TasksDto result = context.getApi().getTaskApi().listTasks(target);
-        List<AsyncTask< ? , ? >> tasks = new ArrayList<AsyncTask< ? , ? >>();
-        for (TaskDto dto : result.getCollection())
-        {
-            tasks.add(newTask(context, dto));
-        }
+   public List<AsyncTask<?, ?>> listTasks() {
+      TasksDto result = context.getApi().getTaskApi().listTasks(target);
+      List<AsyncTask<?, ?>> tasks = new ArrayList<AsyncTask<?, ?>>();
+      for (TaskDto dto : result.getCollection()) {
+         tasks.add(newTask(context, dto));
+      }
 
-        // Return the most recent task first
-        Collections.sort(tasks, new Ordering<AsyncTask< ? , ? >>()
-        {
-            @Override
-            public int compare(final AsyncTask< ? , ? > left, final AsyncTask< ? , ? > right)
-            {
-                return Longs.compare(left.getTimestamp(), right.getTimestamp());
-            }
-        }.reverse());
+      // Return the most recent task first
+      Collections.sort(tasks, new Ordering<AsyncTask<?, ?>>() {
+         @Override
+         public int compare(final AsyncTask<?, ?> left, final AsyncTask<?, ?> right) {
+            return Longs.compare(left.getTimestamp(), right.getTimestamp());
+         }
+      }.reverse());
 
-        return tasks;
-    }
+      return tasks;
+   }
 
-    public List<AsyncTask< ? , ? >> listTasks(final Predicate<AsyncTask< ? , ? >> filter)
-    {
-        return Lists.newLinkedList(filter(listTasks(), filter));
-    }
+   public List<AsyncTask<?, ?>> listTasks(final Predicate<AsyncTask<?, ?>> filter) {
+      return Lists.newLinkedList(filter(listTasks(), filter));
+   }
 
-    public AsyncTask< ? , ? > findTask(final Predicate<AsyncTask< ? , ? >> filter)
-    {
-        return Iterables.getFirst(filter(listTasks(), filter), null);
-    }
+   public AsyncTask<?, ?> findTask(final Predicate<AsyncTask<?, ?>> filter) {
+      return Iterables.getFirst(filter(listTasks(), filter), null);
+   }
 }

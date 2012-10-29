@@ -30,15 +30,13 @@ import org.testng.annotations.Test;
  * @author Ignasi Barrera
  */
 @Test(groups = "unit", testName = "BaseCloudServiceTest")
-public class BaseCloudServiceTest extends BaseInjectionTest
-{
+public class BaseCloudServiceTest extends BaseInjectionTest {
 
-    public void testAllPropertiesInjected()
-    {
-        BaseCloudService service = (BaseCloudService) injector.getInstance(CloudService.class);
+   public void testAllPropertiesInjected() {
+      BaseCloudService service = (BaseCloudService) injector.getInstance(CloudService.class);
 
-        assertNotNull(service.context);
-        assertNotNull(service.listVirtualDatacenters);
-        assertNotNull(service.listVirtualAppliances);
-    }
+      assertNotNull(service.context);
+      assertNotNull(service.listVirtualDatacenters);
+      assertNotNull(service.listVirtualAppliances);
+   }
 }

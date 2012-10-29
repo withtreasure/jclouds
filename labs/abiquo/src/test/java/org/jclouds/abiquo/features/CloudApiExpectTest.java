@@ -37,36 +37,32 @@ import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
  * @author Ignasi Barrera
  */
 @Test(groups = "unit", testName = "CloudApiExpectTest")
-public class CloudApiExpectTest extends BaseAbiquoRestApiExpectTest<CloudApi>
-{
-    public void testListAllVirtualMachinesWhenResponseIs2xx()
-    {
-        CloudApi api =
-            requestSendsResponse(
-                HttpRequest.builder() //
-                    .method("GET") //
-                    .endpoint(URI.create("http://localhost/api/cloud/virtualmachines")) //
-                    .addHeader("Authorization", basicAuth) //
-                    .addHeader("Accept", normalize(VirtualMachinesWithNodeExtendedDto.MEDIA_TYPE)) //
-                    .build(),
-                HttpResponse
-                    .builder()
-                    .statusCode(200)
-                    .payload(
+public class CloudApiExpectTest extends BaseAbiquoRestApiExpectTest<CloudApi> {
+   public void testListAllVirtualMachinesWhenResponseIs2xx() {
+      CloudApi api = requestSendsResponse(
+            HttpRequest.builder() //
+                  .method("GET") //
+                  .endpoint(URI.create("http://localhost/api/cloud/virtualmachines")) //
+                  .addHeader("Authorization", basicAuth) //
+                  .addHeader("Accept", normalize(VirtualMachinesWithNodeExtendedDto.MEDIA_TYPE)) //
+                  .build(),
+            HttpResponse
+                  .builder()
+                  .statusCode(200)
+                  .payload(
                         payloadFromResourceWithContentType("/payloads/all-vms.xml",
-                            normalize(VirtualMachinesWithNodeExtendedDto.MEDIA_TYPE))) //
-                    .build());
+                              normalize(VirtualMachinesWithNodeExtendedDto.MEDIA_TYPE))) //
+                  .build());
 
-        VirtualMachinesWithNodeExtendedDto vms = api.listAllVirtualMachines();
-        assertEquals(vms.getCollection().size(), 1);
-        assertEquals(vms.getCollection().get(0).getId(), Integer.valueOf(1));
-        assertEquals(vms.getCollection().get(0).getName(), "VM");
-        assertNotNull(vms.getCollection().get(0).getEditLink());
-    }
+      VirtualMachinesWithNodeExtendedDto vms = api.listAllVirtualMachines();
+      assertEquals(vms.getCollection().size(), 1);
+      assertEquals(vms.getCollection().get(0).getId(), Integer.valueOf(1));
+      assertEquals(vms.getCollection().get(0).getName(), "VM");
+      assertNotNull(vms.getCollection().get(0).getEditLink());
+   }
 
-    @Override
-    protected CloudApi clientFrom(final AbiquoApi api)
-    {
-        return api.getCloudApi();
-    }
+   @Override
+   protected CloudApi clientFrom(final AbiquoApi api) {
+      return api.getCloudApi();
+   }
 }
