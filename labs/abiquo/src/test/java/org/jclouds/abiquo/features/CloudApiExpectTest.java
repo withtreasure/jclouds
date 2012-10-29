@@ -21,6 +21,7 @@ package org.jclouds.abiquo.features;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 
 import java.net.URI;
 
@@ -29,6 +30,8 @@ import org.jclouds.http.HttpRequest;
 import org.jclouds.http.HttpResponse;
 import org.testng.annotations.Test;
 
+import com.abiquo.model.rest.RESTLink;
+import com.abiquo.server.core.cloud.VirtualApplianceDto;
 import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
 
 /**
@@ -59,6 +62,106 @@ public class CloudApiExpectTest extends BaseAbiquoRestApiExpectTest<CloudApi> {
       assertEquals(vms.getCollection().get(0).getId(), Integer.valueOf(1));
       assertEquals(vms.getCollection().get(0).getName(), "VM");
       assertNotNull(vms.getCollection().get(0).getEditLink());
+   }
+
+   public void testListVirtualAppliancesLayersWhenResponseIs2xx() {
+      CloudApi api = requestSendsResponse(
+            HttpRequest.builder().method("GET")
+                  .endpoint(URI.create("http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/layers")) //
+                  .addHeader("Authorization", basicAuth) //
+                  .addHeader("Accept", normalize(LayersDto.MEDIA_TYPE)) //
+                  .build(),
+            HttpResponse.builder().statusCode(200)
+                  .payload(payloadFromResourceWithContentType("/payloads/layers.xml", normalize(LayersDto.MEDIA_TYPE))) //
+                  .build());
+
+      VirtualApplianceDto vappDto = new VirtualApplianceDto();
+      RESTLink link = new RESTLink("layers",
+            "http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/layers");
+      vappDto.addLink(link);
+
+      LayersDto layers = api.listLayers(vappDto);
+
+      assertEquals(layers.getCollection().size(), 1);
+      assertEquals(layers.getCollection().get(0).getName(), "layer1");
+      assertNotNull(layers.getCollection().get(0).searchLink("virtualmachine"));
+   }
+
+   public void testGetLayerWhenResponseIs2xx() {
+      CloudApi api = requestSendsResponse(
+            HttpRequest
+                  .builder()
+                  .method("GET")
+                  .endpoint(
+                        URI.create("http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/layers/layer1"))
+                  .addHeader("Authorization", basicAuth) //
+                  .addHeader("Accept", normalize(LayerDto.MEDIA_TYPE)) //
+                  .build(),
+            HttpResponse.builder().statusCode(200)
+                  .payload(payloadFromResourceWithContentType("/payloads/layer.xml", normalize(LayerDto.MEDIA_TYPE))) //
+                  .build());
+
+      VirtualApplianceDto vappDto = new VirtualApplianceDto();
+      RESTLink link = new RESTLink("layers",
+            "http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/layers");
+      vappDto.addLink(link);
+
+      LayerDto layer = api.getLayer(vappDto, "layer1");
+      assertEquals(layer.getName(), "layer1");
+      assertNotNull(layer.searchLink("virtualmachine"));
+   }
+
+   public void testGetLayerWhenResponseIs404() {
+      CloudApi api = requestSendsResponse(
+            HttpRequest
+                  .builder()
+                  .method("GET")
+                  .endpoint(
+                        URI.create("http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/layers/nonexistentlayer"))
+                  .addHeader("Authorization", basicAuth) //
+                  .addHeader("Accept", normalize(LayerDto.MEDIA_TYPE)) //
+                  .build(), HttpResponse.builder().statusCode(404).build());
+
+      VirtualApplianceDto vappDto = new VirtualApplianceDto();
+      RESTLink link = new RESTLink("layers",
+            "http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/layers");
+      vappDto.addLink(link);
+
+      LayerDto layer = api.getLayer(vappDto, "nonexistentlayer");
+      assertNull(layer);
+   }
+
+   public void testUpdateLayer() {
+      CloudApi api = requestSendsResponse(
+            HttpRequest
+                  .builder()
+                  .method("PUT")
+                  .endpoint(
+                        URI.create("http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/layers/layer1"))
+                  .addHeader("Authorization", basicAuth) //
+                  .addHeader("Accept", normalize(LayerDto.MEDIA_TYPE))
+                  //
+                  .payload(
+                        payloadFromResourceWithContentType("/payloads/updatelayer-request.xml",
+                              normalize(LayerDto.MEDIA_TYPE))) //
+                  .build(),
+            HttpResponse
+                  .builder()
+                  .statusCode(200)
+                  .payload(
+                        payloadFromResourceWithContentType("/payloads/updatelayer-response.xml",
+                              normalize(LayerDto.MEDIA_TYPE))) //
+                  .build());
+
+      LayerDto dto = new LayerDto();
+      RESTLink link = new RESTLink("edit",
+            "http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/layers/layer1");
+      dto.setName("updatedName");
+      dto.addLink(link);
+
+      LayerDto layer = api.updateLayer(dto);
+      assertEquals(layer.getName(), "updatedName");
+      assertNotNull(layer.searchLink("virtualmachine"));
    }
 
    @Override
