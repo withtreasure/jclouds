@@ -144,9 +144,8 @@ public class AbiquoComputeServiceAdapter
       // Once the virtual machine is created, override the default network
       // settings if needed
       // If no public ip is available in the virtual datacenter, the virtual
-      // machine will be
-      // assigned by default an ip address in the default private VLAN for the
-      // virtual datacenter
+      // machine will be assigned by default an ip address in the default
+      // private VLAN for the virtual datacenter
       PublicIp publicIp = vdc.findPurchasedPublicIp(IpPredicates.<PublicIp> notUsed());
       if (publicIp != null) {
          List<PublicIp> ips = Lists.newArrayList();
@@ -155,8 +154,7 @@ public class AbiquoComputeServiceAdapter
       }
 
       // This is an async operation, but jclouds already waits until the node is
-      // RUNNING, so there
-      // is no need to block here
+      // RUNNING, so there is no need to block here
       vm.deploy();
 
       return new NodeAndInitialCredentials<VirtualMachine>(vm, vm.getId().toString(), null);
@@ -165,10 +163,8 @@ public class AbiquoComputeServiceAdapter
    @Override
    public Iterable<VirtualMachineTemplateInVirtualDatacenter> listHardwareProfiles() {
       // In Abiquo, images are scoped to a region (physical datacenter), and
-      // hardware profiles are
-      // scoped to a zone (a virtual datacenter in the region, with a concrete
-      // virtualization
-      // technology)
+      // hardware profiles are scoped to a zone (a virtual datacenter in the
+      // region, with a concrete virtualization technology)
 
       return concat(transform(listImages(),
             new Function<VirtualMachineTemplate, Iterable<VirtualMachineTemplateInVirtualDatacenter>>() {
