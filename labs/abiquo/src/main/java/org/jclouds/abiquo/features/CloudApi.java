@@ -33,6 +33,8 @@ import org.jclouds.concurrent.Timeout;
 import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplatesDto;
+import com.abiquo.server.core.cloud.LayerDto;
+import com.abiquo.server.core.cloud.LayersDto;
 import com.abiquo.server.core.cloud.VirtualApplianceDto;
 import com.abiquo.server.core.cloud.VirtualApplianceStateDto;
 import com.abiquo.server.core.cloud.VirtualAppliancesDto;
@@ -416,6 +418,13 @@ public interface CloudApi {
    /*********************** Virtual Machine ***********************/
 
    /**
+    * List all virtual machines available to the current user.
+    * 
+    * @return The list of all virtual machines available to the current user.
+    */
+   VirtualMachinesWithNodeExtendedDto listAllVirtualMachines();
+
+   /**
     * List all virtual machines for a virtual appliance.
     * 
     * @param virtualAppliance
@@ -783,5 +792,41 @@ public interface CloudApi {
     */
    @EnterpriseEdition
    VolumeManagementDto moveVolume(VolumeManagementDto volume, VirtualDatacenterDto newVirtualDatacenter);
+
+   /*********************** AntiAffinity ***********************/
+
+   /**
+    * Antiaffinity related resource. Returns the list of layers and the set of
+    * virtual machines included in these layers
+    * 
+    * @param virtualAppliance
+    *           The virtual appliance.
+    * @return The layers and its virtual machines
+    */
+   LayersDto listLayers(VirtualApplianceDto virtualAppliance);
+
+   /**
+    * Antiaffinity related resource. Returns the set of virtual machines
+    * included in the given layer
+    * 
+    * @param virtualAppliance
+    *           The virtual appliance.
+    * @param layerName
+    *           The name of the layer
+    * @return The requested layer name or <code>null</code> if it does not exist
+    */
+   LayerDto getLayer(VirtualApplianceDto virtualAppliance, String layerName);
+
+   /**
+    * Antiaffinity related resource. Modifies virtual machines layer name of a
+    * given layer
+    * 
+    * @param virtualAppliance
+    *           The virtual appliance.
+    * @param layerName
+    *           The name of the layer
+    * @return Layer name modified and consequently its virtual machines
+    */
+   LayerDto updateLayer(LayerDto layer);
 
 }

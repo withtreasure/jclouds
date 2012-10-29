@@ -613,6 +613,8 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
 
       private boolean dvd;
 
+      private String layer;
+
       public Builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context, final VirtualAppliance virtualAppliance,
             final VirtualMachineTemplate template) {
          super();
@@ -654,6 +656,11 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
 
       public Builder dvd(final boolean dvd) {
          this.dvd = dvd;
+         return this;
+      }
+
+      public Builder layer(final String layer) {
+         this.layer = layer;
          return this;
       }
 
@@ -726,6 +733,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
          dto.setPassword(password);
          dto.setKeymap(keymap);
          dto.setUuid(uuid);
+         dto.setLayer(layer);
 
          // DVD
          if (dvd) {
@@ -746,7 +754,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
          return VirtualMachine.builder(in.context, in.virtualAppliance, in.template).internalName(in.getInternalName())
                .nameLabel(in.getNameLabel()).description(in.getDescription()).ram(in.getRam()).cpu(in.getCpu())
                .vncAddress(in.getVncAddress()).vncPort(in.getVncPort()).idState(in.getIdState()).idType(in.getIdType())
-               .password(in.getPassword()).keymap(in.getKeymap()).dvd(in.hasDvd());
+               .password(in.getPassword()).keymap(in.getKeymap()).dvd(in.hasDvd()).layer(in.getLayer());
       }
    }
 
@@ -813,6 +821,10 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
       return target.getKeymap();
    }
 
+   public String getLayer() {
+      return target.getLayer();
+   }
+
    public void setCpu(final int cpu) {
       target.setCpu(cpu);
    }
@@ -835,6 +847,10 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
 
    public void setKeymap(final String keymap) {
       target.setKeymap(keymap);
+   }
+
+   public void setLayer(final String layer) {
+      target.setLayer(layer);
    }
 
    private static VolumeManagementDto[] toVolumeDto(final Volume... volumes) {
@@ -905,6 +921,6 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
             + ", description=" + getDescription() + ", hdInBytes=" + getHdInBytes() + ", idType=" + getIdType()
             + ", nameLabel=" + getNameLabel() + ", internalName=" + getInternalName() + ", password=" + getPassword()
             + ", ram=" + getRam() + ", uuid=" + getUuid() + ", vncAddress=" + getVncAddress() + ", vncPort="
-            + getVncPort() + ", keymap=" + getKeymap() + ", dvd=" + hasDvd() + "]";
+            + getVncPort() + ", keymap=" + getKeymap() + ", dvd=" + hasDvd() + ", layer=" + getLayer() + "]";
    }
 }

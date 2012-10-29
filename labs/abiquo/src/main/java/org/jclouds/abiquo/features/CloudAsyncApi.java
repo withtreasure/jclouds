@@ -449,6 +449,15 @@ public interface CloudAsyncApi {
    /*********************** Virtual Machine ***********************/
 
    /**
+    * @see CloudApi#listAllVirtualMachines()
+    */
+   @GET
+   @Path("/virtualmachines")
+   @Consumes(VirtualMachinesWithNodeExtendedDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<VirtualMachinesWithNodeExtendedDto> listAllVirtualMachines();
+
+   /**
     * @see CloudApi#listVirtualMachines(VirtualApplianceDto)
     */
    @GET
@@ -761,7 +770,7 @@ public interface CloudAsyncApi {
          @EndpointLink("edit") @BinderParam(BindToXMLPayloadAndPath.class) VolumeManagementDto volume);
 
    /**
-    * @see CloudApi#updateVolume(VolumeManagementDto)
+    * @see CloudApi#deleteVolume(VolumeManagementDto)
     */
    @EnterpriseEdition
    @DELETE
@@ -779,5 +788,37 @@ public interface CloudAsyncApi {
    ListenableFuture<VolumeManagementDto> moveVolume(
          @BinderParam(BindMoveVolumeToPath.class) VolumeManagementDto volume,
          @BinderParam(BindVirtualDatacenterRefToPayload.class) VirtualDatacenterDto newVirtualDatacenter);
+
+   /*********************** AntiAffinity ***********************/
+
+   /**
+    * @see CloudApi#getLayers(VirtualApplianceDto)
+    */
+   @GET
+   @Consumes(LayersDto.MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<LayersDto> listLayers(
+         @EndpointLink("layers") @BinderParam(BindToPath.class) VirtualApplianceDto virtualAppliance);
+
+   /**
+    * @see CloudApi#getLayer(VirtualApplianceDto, String)
+    */
+   @GET
+   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Consumes(LayerDto.MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<LayerDto> getLayer(
+         @EndpointLink("layers") @BinderParam(BindToPath.class) VirtualApplianceDto virtualAppliance,
+         @BinderParam(AppendToPath.class) String layerName);
+
+   /**
+    * @see CloudApi#updateLayer(LayerDto)
+    */
+   @PUT
+   @Consumes(LayerDto.MEDIA_TYPE)
+   @Produces(LayerDto.MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<LayerDto> updateLayer(
+         @EndpointLink("edit") @BinderParam(BindToXMLPayloadAndPath.class) LayerDto layer);
 
 }
