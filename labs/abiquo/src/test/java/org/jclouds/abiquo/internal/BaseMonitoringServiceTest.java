@@ -20,7 +20,6 @@
 package org.jclouds.abiquo.internal;
 
 import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.fail;
 
 import org.jclouds.abiquo.features.services.MonitoringService;
 import org.jclouds.abiquo.monitor.MonitorStatus;

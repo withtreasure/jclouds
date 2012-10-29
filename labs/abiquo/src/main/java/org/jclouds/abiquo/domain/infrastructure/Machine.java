@@ -308,8 +308,6 @@ public class Machine extends AbstractPhysicalMachine {
 
       private Integer virtualCpusUsed = DEFAULT_VCPU_USED;
 
-      private String virtualSwitch;
-
       private Integer port;
 
       private String ip;
@@ -390,11 +388,6 @@ public class Machine extends AbstractPhysicalMachine {
 
       public Builder password(final String password) {
          this.password = password;
-         return this;
-      }
-
-      public Builder virtualSwitch(final String virtualSwitch) {
-         this.virtualSwitch = virtualSwitch;
          return this;
       }
 

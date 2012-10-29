@@ -62,9 +62,6 @@ public class ExternalNetwork extends Network<ExternalIp> {
    /** The enterprise where the network belongs. */
    private Enterprise enterprise;
 
-   /** The network service type where the vlan is defined. */
-   private NetworkServiceType nst;
-
    /**
     * Constructor to be used only by the builder.
     */
