@@ -111,7 +111,7 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
       return makePersistent(vdc, storageLink, persistentTemplateName, persistentVolumeName);
    }
 
-   private VirtualMachineTemplateTask makePeristent(final VirtualDatacenter vdc, final RESTLink storageLink,
+   private VirtualMachineTemplateTask makePersistent(final VirtualDatacenter vdc, final RESTLink storageLink,
          final String persistentTemplateName, final String persistentVolumeName) {
       VirtualMachineTemplatePersistentDto persistentData = new VirtualMachineTemplatePersistentDto();
       persistentData.setPersistentTemplateName(persistentTemplateName);
