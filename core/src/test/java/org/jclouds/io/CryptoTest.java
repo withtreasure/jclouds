@@ -18,6 +18,7 @@
  */
 package org.jclouds.io;
 
+import static javax.xml.bind.DatatypeConverter.parseBase64Binary;
 import static org.testng.Assert.assertEquals;
 
 import java.io.IOException;
@@ -32,7 +33,6 @@ import java.util.concurrent.ExecutorCompletionService;
 import org.jclouds.PerformanceTest;
 import org.jclouds.crypto.Crypto;
 import org.jclouds.crypto.CryptoStreams;
-import org.jclouds.encryption.internal.Base64;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -46,7 +46,7 @@ import com.google.inject.Injector;
  * @author Adrian Cole
  */
 // NOTE:without testName, this will not call @Before* and fail w/NPE during surefire
-@Test(groups = "performance", sequential = true, timeOut = 2 * 60 * 1000, testName = "CryptoTest")
+@Test(groups = "performance", singleThreaded = true, timeOut = 2 * 60 * 1000, testName = "CryptoTest")
 public class CryptoTest extends PerformanceTest {
 
    protected Crypto crypto;
@@ -57,17 +57,13 @@ public class CryptoTest extends PerformanceTest {
       crypto = i.getInstance(Crypto.class);
    }
 
-   public final static Object[][] base64KeyMessageDigest = {
-            { Base64.decode("CwsLCwsLCwsLCwsLCwsLCwsLCws="), "Hi There", "thcxhlUFcmTii8C2+zeMjvFGvgA=" },
-            { Base64.decode("SmVmZQ=="), "what do ya want for nothing?", "7/zfauXrL6LSdBbV8YTfnCWafHk=" },
-            { Base64.decode("DAwMDAwMDAwMDAwMDAwMDAwMDAw="), "Test With Truncation", "TBoDQktV4H/n8nvh1Yu5MkqaWgQ=" },
-            {
-                     Base64
-                              .decode("qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo="),
+   public static final Object[][] base64KeyMessageDigest = {
+            { parseBase64Binary("CwsLCwsLCwsLCwsLCwsLCwsLCws="), "Hi There", "thcxhlUFcmTii8C2+zeMjvFGvgA=" },
+            { parseBase64Binary("SmVmZQ=="), "what do ya want for nothing?", "7/zfauXrL6LSdBbV8YTfnCWafHk=" },
+            { parseBase64Binary("DAwMDAwMDAwMDAwMDAwMDAwMDAw="), "Test With Truncation", "TBoDQktV4H/n8nvh1Yu5MkqaWgQ=" },
+            { parseBase64Binary("qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo="),
                      "Test Using Larger Than Block-Size Key - Hash Key First", "qkrl4VJy0A6VcFY3zoo7Ve1AIRI=" },
-            {
-                     Base64
-                              .decode("qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo="),
+            { parseBase64Binary("qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo="),
                      "Test Using Larger Than Block-Size Key and Larger Than One Block-Size Data",
                      "6OmdD0UjfXhta7qnllx4CLv/GpE=" } };
 
@@ -111,7 +107,7 @@ public class CryptoTest extends PerformanceTest {
       return hexMD5MessageDigest;
    }
 
-   public final static Object[][] hexMD5MessageDigest = { { "apple", "1f3870be274f6c49b3e31a0c6728957f" },
+   public static final Object[][] hexMD5MessageDigest = { { "apple", "1f3870be274f6c49b3e31a0c6728957f" },
             { "bear", "893b56e3cfe153fb770a120b83bac20c" }, { "candy", "c48ba993d35c3abe0380f91738fe2a34" },
             { "dogma", "95eb470e4faee302e9cd3063b1923dab" }, { "emma", "00a809937eddc44521da9521269e75c6" } };
 

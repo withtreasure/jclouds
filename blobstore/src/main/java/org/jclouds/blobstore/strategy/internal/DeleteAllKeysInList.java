@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 import javax.inject.Named;
@@ -62,12 +63,10 @@ public class DeleteAllKeysInList implements ClearListStrategy, ClearContainerStr
    private final ExecutorService userExecutor;
 
    protected final AsyncBlobStore connection;
-   /**
-    * maximum duration of an blob Request
-    */
+   /** Maximum duration in milliseconds of a request. */
    @Inject(optional = true)
    @Named(Constants.PROPERTY_REQUEST_TIMEOUT)
-   protected Long maxTime;
+   protected Long maxTime = Long.MAX_VALUE;
 
    @Inject
    DeleteAllKeysInList(@Named(Constants.PROPERTY_USER_THREADS) ExecutorService userExecutor,
@@ -91,12 +90,14 @@ public class DeleteAllKeysInList implements ClearListStrategy, ClearContainerStr
       if (options.isRecursive())
          message = message + " recursively";
       Map<StorageMetadata, Exception> exceptions = Maps.newHashMap();
-      PageSet<? extends StorageMetadata> listing;
       int maxErrors = 3; // TODO parameterize
       for (int numErrors = 0; numErrors < maxErrors; ) {
          // fetch partial directory listing
+         PageSet<? extends StorageMetadata> listing;
+         Future<PageSet<? extends StorageMetadata>> listFuture =
+               connection.list(containerName, options);
          try {
-            listing = connection.list(containerName, options).get();
+            listing = listFuture.get(maxTime, TimeUnit.MILLISECONDS);
          } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
             break;
@@ -107,6 +108,15 @@ public class DeleteAllKeysInList implements ClearListStrategy, ClearContainerStr
             }
             retryHandler.imposeBackoffExponentialDelay(numErrors, message);
             continue;
+         } catch (TimeoutException te) {
+            ++numErrors;
+            if (numErrors == maxErrors) {
+               throw propagate(te);
+            }
+            retryHandler.imposeBackoffExponentialDelay(numErrors, message);
+            continue;
+         } finally {
+            listFuture.cancel(true);
          }
 
          // recurse on subdirectories
@@ -162,7 +172,12 @@ public class DeleteAllKeysInList implements ClearListStrategy, ClearContainerStr
             }
             retryHandler.imposeBackoffExponentialDelay(numErrors, message);
             continue;
+         } finally {
+            for (Future<?> future : responses.values()) {
+               future.cancel(true);
+            }
          }
+
          if (!exceptions.isEmpty()) {
             ++numErrors;
             retryHandler.imposeBackoffExponentialDelay(numErrors, message);
@@ -186,6 +201,6 @@ public class DeleteAllKeysInList implements ClearListStrategy, ClearContainerStr
    }
 
    private boolean parentIsFolder(final ListContainerOptions options, final StorageMetadata md) {
-      return (options.getDir() != null && md.getName().indexOf('/') == -1);
+      return options.getDir() != null && md.getName().indexOf('/') == -1;
    }
 }

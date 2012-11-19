@@ -235,7 +235,7 @@ public interface InfrastructureApi {
          final HypervisorType hypervisorType, final String user, final String password, final MachineOptions options);
 
    /**
-    * Retreives limits for the given datacenter and any enterprise.
+    * Retrieves limits for the given datacenter and any enterprise.
     * 
     * @param datacenter
     *           The datacenter.
@@ -323,7 +323,7 @@ public interface InfrastructureApi {
    /*********************** Hypervisor ***********************/
 
    /**
-    * Retreives the hypervisor type of a remote a machine.
+    * Retrieves the hypervisor type of a remote a machine.
     * 
     * @param datacenter
     *           The datacenter.
@@ -334,7 +334,7 @@ public interface InfrastructureApi {
    String getHypervisorTypeFromMachine(DatacenterDto datacenter, DatacenterOptions options);
 
    /**
-    * Retreives the hypervisor types in the datacenter.
+    * Retrieves the hypervisor types in the datacenter.
     * 
     * @param datacenter
     *           The datacenter.
@@ -518,7 +518,7 @@ public interface InfrastructureApi {
     * Clone a service profile.
     * 
     * @param rack
-    *           The managed rack where thw service profile will be created.
+    *           The managed rack where the service profile will be created.
     * @param logicServer
     *           The original logic server.
     * @param organization
@@ -632,7 +632,7 @@ public interface InfrastructureApi {
     *           The datacenter.
     * @return The list of remote services for the datacenter.
     */
-   RemoteServicesDto listRemoteServices(DatacenterDto dataceter);
+   RemoteServicesDto listRemoteServices(DatacenterDto datacenter);
 
    /**
     * Create a new remote service in a datacenter.
@@ -712,7 +712,7 @@ public interface InfrastructureApi {
     * 
     * @param machine
     *           The machine to check
-    * @paran boolean that indicates a database synchronization
+    * @param sync boolean that indicates a database synchronization
     * @return A machineStateDto with a machine state value from enum
     *         MachineState
     */
@@ -780,8 +780,8 @@ public interface InfrastructureApi {
    /**
     * Power off a physical machine in a UCS rack.
     * 
-    * @param machime
-    *           The phyisical machine.
+    * @param machine
+    *           The physical machine.
     */
    @EnterpriseEdition
    void powerOff(MachineDto machine);
@@ -789,17 +789,17 @@ public interface InfrastructureApi {
    /**
     * Power on a physical machine in a UCS rack.
     * 
-    * @param machime
-    *           The phyisical machine.
+    * @param machine
+    *           The physical machine.
     */
    @EnterpriseEdition
    void powerOn(MachineDto machine);
 
    /**
-    * Get the logic server associated with a machine in a Cisc UCS rack.
+    * Get the logic server associated with a machine in a Cisco UCS rack.
     * 
-    * @param machime
-    *           The phyisical machine.
+    * @param machine
+    *           The physical machine.
     * @return The logic server.
     */
    @EnterpriseEdition
@@ -808,8 +808,8 @@ public interface InfrastructureApi {
    /**
     * Turn off locator led of a physical machine in a UCS rack.
     * 
-    * @param machime
-    *           The phyisical machine.
+    * @param machine
+    *           The physical machine.
     */
    @EnterpriseEdition
    void ledOn(MachineDto machine);
@@ -817,8 +817,8 @@ public interface InfrastructureApi {
    /**
     * Light locator led of a physical machine in a UCS rack.
     * 
-    * @param machime
-    *           The phyisical machine.
+    * @param machine
+    *           The physical machine.
     */
    @EnterpriseEdition
    void ledOff(MachineDto machine);
@@ -826,8 +826,8 @@ public interface InfrastructureApi {
    /**
     * Get led locator info from a physical machine in a UCS rack.
     * 
-    * @param machime
-    *           The phyisical machine.
+    * @param machine
+    *           The physical machine.
     * @return Led locator information.
     */
    @EnterpriseEdition

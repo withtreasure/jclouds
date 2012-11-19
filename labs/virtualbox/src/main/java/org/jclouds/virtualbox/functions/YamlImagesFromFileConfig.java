@@ -23,12 +23,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.io.IOUtils;
+import org.jclouds.util.Strings2;
 import org.jclouds.virtualbox.config.VirtualBoxConstants;
 
 import com.google.common.base.Charsets;
@@ -58,7 +57,7 @@ public class YamlImagesFromFileConfig implements Supplier<String> {
          String yamlDesc = null;
          // if the yaml file does not exist just use default-images.yaml
          if (!yamlFile.exists()) {
-            yamlDesc = IOUtils.toString(new InputStreamReader(getClass().getResourceAsStream("/default-images.yaml")));
+            yamlDesc = Strings2.toStringAndClose(getClass().getResourceAsStream("/default-images.yaml"));
          } else {
             yamlDesc = Files.toString(yamlFile, Charsets.UTF_8);
          }

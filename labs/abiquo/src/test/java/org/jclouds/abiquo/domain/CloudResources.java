@@ -152,7 +152,7 @@ public class CloudResources {
    }
 
    public static String virtualMachineStatePayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<virtualmachinestate>");
       buffer.append("<state>ON</state>");
       buffer.append("</virtualmachinestate>");
@@ -240,7 +240,7 @@ public class CloudResources {
    }
 
    public static String virtualDatacenterPostPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<virtualDatacenter>");
       buffer.append("<cpuHard>0</cpuHard>");
       buffer.append("<cpuSoft>0</cpuSoft>");
@@ -262,7 +262,7 @@ public class CloudResources {
    }
 
    public static String virtualAppliancePostPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<virtualAppliance>");
       buffer.append("<error>0</error>");
       buffer.append("<highDisponibility>0</highDisponibility>");
@@ -273,7 +273,7 @@ public class CloudResources {
    }
 
    public static String virtualMachinePostPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<virtualMachine>");
       buffer.append("<cpu>0</cpu>");
       buffer.append("<hdInBytes>0</hdInBytes>");
@@ -288,7 +288,7 @@ public class CloudResources {
    }
 
    public static String virtualDatacenterPutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<virtualDatacenter>");
       buffer.append(link("/admin/datacenters/1", "datacenter"));
       buffer.append(link("/cloud/virtualdatacenters/1/disks", "disks"));
@@ -324,7 +324,7 @@ public class CloudResources {
    }
 
    public static String virtualDatacenterRefPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<links>");
       buffer.append(link("/cloud/virtualdatacenters/1", "virtualdatacenter"));
       buffer.append("</links>");
@@ -332,7 +332,7 @@ public class CloudResources {
    }
 
    public static String virtualAppliancePutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<virtualAppliance>");
       buffer.append(link("/cloud/virtualdatacenters/1", "virtualdatacenter"));
       buffer.append(link("/cloud/virtualdatacenters/1/virtualappliances/1/action/deploy", "deploy"));
@@ -351,7 +351,7 @@ public class CloudResources {
    }
 
    public static String virtualMachinePutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<virtualMachine>");
       buffer.append(link("/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/action/deploy", "deploy"));
       buffer.append(link("/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/storage/disks", "disks"));
@@ -387,7 +387,7 @@ public class CloudResources {
    }
 
    public static String volumePostPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<volume>");
       buffer.append(link("/cloud/virtualdatacenters/1/tiers/1", "tier"));
       buffer.append("<name>Volume</name>");
@@ -397,7 +397,7 @@ public class CloudResources {
    }
 
    public static String volumePutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<volume>");
       buffer.append(link("/cloud/virtualdatacenters/1/volumes/1/action/initiatormappings", "action",
             "initiator mappings"));
@@ -413,7 +413,7 @@ public class CloudResources {
    }
 
    public static String cloudTierPutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<tier>");
       buffer.append(link("/cloud/virtualdatacenters/1/tiers/1", "edit"));
       buffer.append("<enabled>true</enabled>");
@@ -424,7 +424,7 @@ public class CloudResources {
    }
 
    public static String deployPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<virtualmachinetask>");
       buffer.append("<forceEnterpriseSoftLimits>false</forceEnterpriseSoftLimits>");
       buffer.append("</virtualmachinetask>");
@@ -432,7 +432,7 @@ public class CloudResources {
    }
 
    public static String undeployPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<virtualmachinetask>");
       buffer.append("<forceEnterpriseSoftLimits>false</forceEnterpriseSoftLimits>");
       buffer.append("<forceUndeploy>true</forceUndeploy>");
@@ -454,7 +454,7 @@ public class CloudResources {
    }
 
    public static String hardDiskPostPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<disk>");
       buffer.append("<sizeInMb>1024</sizeInMb>");
       buffer.append("</disk>");
@@ -462,7 +462,7 @@ public class CloudResources {
    }
 
    public static String hardDiskPutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<disk>");
       buffer.append(link("/cloud/virtualdatacenters/1", "virtualdatacenter"));
       buffer.append(link("/cloud/virtualdatacenters/1/disks/1", "edit"));

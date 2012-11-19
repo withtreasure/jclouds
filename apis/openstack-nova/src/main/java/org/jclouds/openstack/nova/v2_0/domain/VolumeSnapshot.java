@@ -31,7 +31,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
 
 /**
- * An Openstack Nova Volume Snapshot
+ * An OpenStack Nova Volume Snapshot
 */
 public class VolumeSnapshot {
 
@@ -43,7 +43,7 @@ public class VolumeSnapshot {
       return new ConcreteBuilder().fromVolumeSnapshot(this);
    }
 
-   public static abstract class Builder<T extends Builder<T>>  {
+   public abstract static class Builder<T extends Builder<T>>  {
       protected abstract T self();
 
       protected String id;

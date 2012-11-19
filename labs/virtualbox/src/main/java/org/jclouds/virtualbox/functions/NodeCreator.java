@@ -160,7 +160,7 @@ public class NodeCreator implements Function<NodeSpec, NodeAndInitialCredentials
        machineUtils.runScriptOnNode(partialNodeMetadata, new DeleteGShadowLock(), RunScriptOptions.NONE);
 
       if(optionalNatIfaceCard.isPresent())
-         checkState(networkUtils.enableNetworkInterface(partialNodeMetadata, optionalNatIfaceCard.get()) == true, 
+         checkState(networkUtils.enableNetworkInterface(partialNodeMetadata, optionalNatIfaceCard.get()),
          "cannot enable Nat Interface");
       
       LoginCredentials credentials = partialNodeMetadata.getCredentials();
@@ -182,7 +182,8 @@ public class NodeCreator implements Function<NodeSpec, NodeAndInitialCredentials
    }
 
    private long findSlotForNetworkAttachment(IMachine clone, NetworkAttachmentType networkAttachmentType) {
-      long slot = -1, i = 0;
+      long slot = -1;
+      long i = 0;
       while (slot == -1 && i < 4) {
          if(clone.getNetworkAdapter(i).getAttachmentType().equals(networkAttachmentType))
             slot = i;

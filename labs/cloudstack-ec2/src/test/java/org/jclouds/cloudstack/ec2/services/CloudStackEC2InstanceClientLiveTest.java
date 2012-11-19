@@ -25,7 +25,7 @@ import org.testng.annotations.Test;
  * 
  * @author Adrian Cole
  */
-@Test(groups = "live", singleThreaded = true, testName = "CloudStackEC2InstanceClientLiveTest")
+@Test(groups = "live", singleThreaded = true, testName = "CloudStackInstanceClientLiveTest")
 public class CloudStackEC2InstanceClientLiveTest extends InstanceClientLiveTest {
    public CloudStackEC2InstanceClientLiveTest() {
       provider = "cloudstack-ec2";

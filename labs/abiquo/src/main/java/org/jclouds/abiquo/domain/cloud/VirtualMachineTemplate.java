@@ -96,7 +96,7 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
          final String persistentTemplateName) {
       RESTLink storageLink = volume.unwrap().getEditLink();
       storageLink.setRel("volume");
-      return makePeristent(vdc, storageLink, persistentTemplateName, null);
+      return makePersistent(vdc, storageLink, persistentTemplateName, null);
    }
 
    public VirtualMachineTemplateTask makePersistent(final VirtualDatacenter vdc, final Tier tier,
@@ -108,7 +108,7 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
          storageLink = tier.unwrap().searchLink("self");
       }
       storageLink.setRel(ParentLinkName.TIER);
-      return makePeristent(vdc, storageLink, persistentTemplateName, persistentVolumeName);
+      return makePersistent(vdc, storageLink, persistentTemplateName, persistentVolumeName);
    }
 
    private VirtualMachineTemplateTask makePeristent(final VirtualDatacenter vdc, final RESTLink storageLink,

@@ -20,9 +20,15 @@ package org.jclouds.ec2.config;
 
 import java.util.Map;
 
+import javax.inject.Singleton;
+
 import org.jclouds.aws.config.WithZonesFormSigningRestClientModule;
+import org.jclouds.ec2.EC2Api;
+import org.jclouds.ec2.EC2AsyncApi;
 import org.jclouds.ec2.EC2AsyncClient;
 import org.jclouds.ec2.EC2Client;
+import org.jclouds.ec2.features.TagApi;
+import org.jclouds.ec2.features.TagAsyncApi;
 import org.jclouds.ec2.features.WindowsApi;
 import org.jclouds.ec2.features.WindowsAsyncApi;
 import org.jclouds.ec2.services.AMIAsyncClient;
@@ -56,6 +62,7 @@ import org.jclouds.rest.ConfiguresRestClient;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.TypeToken;
+import com.google.inject.Provides;
 import com.google.inject.Scopes;
 
 /**
@@ -64,7 +71,8 @@ import com.google.inject.Scopes;
  * @author Adrian Cole (EDIT: Nick Terry nterry@familysearch.org)
  */
 @ConfiguresRestClient
-public class EC2RestClientModule<S extends EC2Client, A extends EC2AsyncClient> extends
+// EC2Api not EC2Client so that this can be used for new apps that only depend on EC2Api
+public class EC2RestClientModule<S extends EC2Api, A extends EC2AsyncApi> extends
          WithZonesFormSigningRestClientModule<S, A> {
    public static final Map<Class<?>, Class<?>> DELEGATE_MAP = ImmutableMap.<Class<?>, Class<?>> builder()//
                         .put(AMIClient.class, AMIAsyncClient.class)//
@@ -76,16 +84,39 @@ public class EC2RestClientModule<S extends EC2Client, A extends EC2AsyncClient> 
                         .put(AvailabilityZoneAndRegionClient.class, AvailabilityZoneAndRegionAsyncClient.class)//
                         .put(ElasticBlockStoreClient.class, ElasticBlockStoreAsyncClient.class)//
                         .put(WindowsApi.class, WindowsAsyncApi.class)//
+                        .put(TagApi.class, TagAsyncApi.class)//
                         .build();
    
    @SuppressWarnings("unchecked")
    public EC2RestClientModule() {
+      // retaining top-level type of EC2Client vs EC2Api until we migrate all functionality up
       super(TypeToken.class.cast(TypeToken.of(EC2Client.class)), TypeToken.class.cast(TypeToken.of(EC2AsyncClient.class)), DELEGATE_MAP);
    }
 
    protected EC2RestClientModule(TypeToken<S> syncClientType, TypeToken<A> asyncClientType,
             Map<Class<?>, Class<?>> sync2Async) {
       super(syncClientType, asyncClientType, sync2Async);
+   }
+   
+
+   /**
+    * so that we can make bindings to {@link EC2Api directly} until we switch
+    * off {@link @EC2Client}
+    */
+   @Singleton
+   @Provides
+   EC2Api provideEC2Api(EC2Client in) {
+      return in;
+   }
+   
+   /**
+    * so that we can make bindings to {@link EC2AsyncApi directly} until we switch
+    * off {@link @EC2AsyncClient}
+    */
+   @Singleton
+   @Provides
+   EC2AsyncApi provideEC2Api(EC2AsyncClient in) {
+      return in;
    }
    
    @Override

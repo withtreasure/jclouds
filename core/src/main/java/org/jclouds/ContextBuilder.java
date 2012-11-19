@@ -30,10 +30,16 @@ import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.find;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
-import static org.jclouds.Constants.*;
+import static org.jclouds.Constants.PROPERTY_API;
+import static org.jclouds.Constants.PROPERTY_API_VERSION;
+import static org.jclouds.Constants.PROPERTY_BUILD_VERSION;
+import static org.jclouds.Constants.PROPERTY_CREDENTIAL;
+import static org.jclouds.Constants.PROPERTY_ENDPOINT;
+import static org.jclouds.Constants.PROPERTY_IDENTITY;
+import static org.jclouds.Constants.PROPERTY_ISO3166_CODES;
+import static org.jclouds.Constants.PROPERTY_PROVIDER;
 import static org.jclouds.util.Throwables2.propagateAuthorizationOrOriginalException;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -79,6 +85,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.ImmutableMultimap.Builder;
 import com.google.common.reflect.TypeToken;
@@ -91,17 +98,46 @@ import com.google.inject.Stage;
 import com.google.inject.TypeLiteral;
 
 /**
- * Creates {@link RestContext} or {@link Injector} instances based on the most commonly requested
- * arguments.
+ * Creates {@link Context} or {@link Injector} configured to an api and
+ * endpoint. Alternatively, this can be used to make a portable {@link View} of
+ * that api.
+ * 
+ * <br/>
+ * ex. to build a {@link RestContext} on a particular endpoint using the typed
+ * interface
+ * 
+ * <pre>
+ * context = ContextBuilder.newBuilder(new NovaApiMetadata())
+ *                         .endpoint("http://10.10.10.10:5000/v2.0")
+ *                         .credentials(user, pass)
+ *                         .build(NovaApiMetadata.CONTEXT_TOKEN)
+ * </pre>
+ * 
+ * <br/>
+ * ex. to build a {@link View} of a particular backend context, looked up by
+ * key.
+ * 
+ * <pre>
+ * context = ContextBuilder.newBuilder("aws-s3")
+ *                         .credentials(apikey, secret)
+ *                         .buildView(BlobStoreContext.class);
+ * </pre>
+ * 
+ * <h4>Assumptions</h4>
+ * 
+ * Threadsafe objects will be bound as singletons to the Injector or Context
+ * provided.
  * <p/>
- * Note that Threadsafe objects will be bound as singletons to the Injector or Context provided.
- * <p/>
- * <p/>
- * If no <code>Module</code>s are specified, the default {@link JDKLoggingModule logging} and
- * {@link JavaUrlHttpCommandExecutorServiceModule http transports} will be installed.
+ * If no <code>Module</code>s are specified, the default
+ * {@link JDKLoggingModule logging} and
+ * {@link JavaUrlHttpCommandExecutorServiceModule http transports} will be
+ * installed.
  * 
  * @author Adrian Cole, Andrew Newdigate
- * @see RestContext
+ * @see Context
+ * @see View
+ * @see ApiMetadata
+ * @see ProviderMetadata
  */
 public class ContextBuilder {
 
@@ -157,7 +193,7 @@ public class ContextBuilder {
    protected String apiVersion;
    protected String buildVersion;
    protected Optional<Properties> overrides = Optional.absent();
-   protected List<Module> modules = new ArrayList<Module>(3);
+   protected List<Module> modules = Lists.newArrayListWithCapacity(3);
 
    @Override
    public String toString() {
@@ -390,12 +426,12 @@ public class ContextBuilder {
    }
 
    static boolean nothingConfiguresAnHttpService(List<Module> modules) {
-      return (!any(modules, new Predicate<Module>() {
+      return !any(modules, new Predicate<Module>() {
          public boolean apply(Module input) {
             return input.getClass().isAnnotationPresent(ConfiguresHttpCommandExecutorService.class);
          }
 
-      }));
+      });
    }
 
    @VisibleForTesting

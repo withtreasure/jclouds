@@ -77,7 +77,58 @@ public class CryptoStreams {
    public static String base64(byte[] in) {
       return Base64.encodeBytes(in, Base64.DONT_BREAK_LINES);
    }
+   
+   /**
+    * encodes value substituting {@code '-' and '_'} for {@code '+' and '/'},
+    * and without adding trailing {@code '='} padding.
+    * 
+    * <h3>Note</h3>
+    * This utility will be replaced with Guava 14+ BaseEncoding.base64Url()
+    * 
+    * @see <a
+    *      href="http://en.wikipedia.org/wiki/Base64#URL_applications">url-safe
+    *      encoding</a>
+    */
+   @Beta
+   public static String base64Url(byte[] in) {
+      String provisional = base64(in);
+      int length = provisional.length();
+      if (length == 0)
+         return provisional;
+      // we know base64 is in 4 character chunks, so out of bounds risk here
+      else if (provisional.charAt(length - 2) == '=')
+         length-=2;
+      else if (provisional.charAt(length - 1) == '=')
+         length-=1;
+      
+      char[] tmp = new char[length];
 
+      for (int i = 0; i < length; i++) {
+         char c = provisional.charAt(i);
+         switch (c) {
+         case '+':
+            tmp[i] = '-';
+            break;
+         case '/':
+            tmp[i] = '_';
+            break;
+         default:
+            tmp[i] = c;
+            break;
+         }
+      }
+      return new String(tmp);
+   }
+   
+   /**
+    * decodes base 64 encoded string, regardless of whether padding {@code '='} padding is present.
+    * 
+    * Note this seamlessly handles the URL-safe case where {@code '-' and '_'} are substituted for {@code '+' and '/'}.
+    * 
+    * @see <a
+    *      href="http://en.wikipedia.org/wiki/Base64#URL_applications">url-safe
+    *      encoding</a>
+    */
    public static byte[] base64(String in) {
       return Base64.decode(in);
    }
@@ -295,7 +346,7 @@ public class CryptoStreams {
             });
    }
 
-   private final static char[] HEX_CHAR_TABLE = {
+   private static final char[] HEX_CHAR_TABLE = {
       '0', '1', '2', '3', '4', '5', '6', '7',
       '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
    };

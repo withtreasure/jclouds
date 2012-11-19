@@ -18,6 +18,8 @@
  */
 package org.jclouds.cloudstack.compute.options;
 
+import static org.jclouds.cloudstack.compute.options.CloudStackTemplateOptions.Builder.account;
+import static org.jclouds.cloudstack.compute.options.CloudStackTemplateOptions.Builder.domainId;
 import static org.jclouds.cloudstack.compute.options.CloudStackTemplateOptions.Builder.ipOnDefaultNetwork;
 import static org.jclouds.cloudstack.compute.options.CloudStackTemplateOptions.Builder.ipsToNetworks;
 import static org.jclouds.cloudstack.compute.options.CloudStackTemplateOptions.Builder.keyPair;
@@ -29,6 +31,7 @@ import static org.jclouds.cloudstack.compute.options.CloudStackTemplateOptions.B
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 import java.util.Map;
 
@@ -176,10 +179,22 @@ public class CloudStackTemplateOptionsTest {
    }
 
    @Test
+   public void testAccount() {
+      TemplateOptions options = account("test");
+      assertEquals(options.as(CloudStackTemplateOptions.class).getAccount(), "test");
+   }
+
+   @Test
+   public void testDomainId() {
+      TemplateOptions options = domainId("test");
+      assertEquals(options.as(CloudStackTemplateOptions.class).getDomainId(), "test");
+   }
+
+   @Test
    public void testSecurityGroupIdsNullHasDecentMessage() {
       try {
          new CloudStackTemplateOptions().securityGroupIds(null);
-         assert false : "should NPE";
+         fail("should NPE");
       } catch (NullPointerException e) {
          assertEquals(e.getMessage(), "securityGroupIds was null");
       }

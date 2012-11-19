@@ -38,6 +38,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Closeables;
+import com.google.common.util.concurrent.Atomics;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.inject.TypeLiteral;
@@ -69,11 +70,11 @@ public class ParseFirstJsonValueNamed<T> implements Function<HttpResponse, T> {
          reader = new JsonReader(new InputStreamReader(arg0.getPayload().getInput()));
          // in case keys are not in quotes
          reader.setLenient(true);
-         AtomicReference<String> name = new AtomicReference<String>();
+         AtomicReference<String> name = Atomics.newReference();
          JsonToken token = reader.peek();
          for (; token != JsonToken.END_DOCUMENT && nnn(this.name, reader, token, name); token = skipAndPeek(token,
-               reader))
-            ;
+               reader)) {
+         }
          if (name.get() == null) {
             logger.trace("did not object named %s in json from response %s", this.name, arg0);
             return nothing();

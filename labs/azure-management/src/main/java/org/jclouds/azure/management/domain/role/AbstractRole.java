@@ -1,10 +1,11 @@
 package org.jclouds.azure.management.domain.role;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
+
+import com.google.common.collect.Lists;
 
 import org.jclouds.azure.management.domain.role.conf.ConfigurationSet;
 
@@ -24,7 +25,7 @@ public abstract class AbstractRole {
    private String roleType;
 
    /**
-    * Required. You must specifye either a WindowsProvisioningConfigurationSet or
+    * Required. You must specify either a WindowsProvisioningConfigurationSet or
     * LinuxProvisioningConfigurationSet configuration set.
     * 
     * Optional. You can specify a NetworkConfigurationSet which contains the metadata required to
@@ -32,7 +33,7 @@ public abstract class AbstractRole {
     */
    @XmlElementWrapper(name = "ConfigurationSets")
    @XmlElement(name = "ConfigurationSet")
-   private List<ConfigurationSet> configurationSets = new ArrayList<ConfigurationSet>(0);
+   private List<ConfigurationSet> configurationSets = Lists.newArrayListWithCapacity(0);
    
    /**
     * Specifies the name of an availability set to which to add the virtual machine. This value
@@ -45,7 +46,7 @@ public abstract class AbstractRole {
 
    @XmlElementWrapper(name = "DataVirtualHardDisks")
    @XmlElement(name = "DataVirtualHardDisk")
-   private List<DataVirtualHardDisk> dataVirtualHardDisks = new ArrayList<DataVirtualHardDisk>(0);
+   private List<DataVirtualHardDisk> dataVirtualHardDisks = Lists.newArrayListWithCapacity(0);
    
    @XmlElement(name = "OSVirtualHardDisk")
    private OSVirtualHardDisk osVirtualHardDisk;

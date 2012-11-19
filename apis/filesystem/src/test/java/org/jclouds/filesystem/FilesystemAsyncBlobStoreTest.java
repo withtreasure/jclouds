@@ -31,12 +31,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
 import org.jclouds.ContextBuilder;
 import org.jclouds.blobstore.BlobRequestSigner;
 import org.jclouds.blobstore.BlobStore;
@@ -52,6 +50,7 @@ import org.jclouds.blobstore.options.GetOptions;
 import org.jclouds.blobstore.options.ListContainerOptions;
 import org.jclouds.crypto.CryptoStreams;
 import org.jclouds.filesystem.reference.FilesystemConstants;
+import org.jclouds.filesystem.util.Utils;
 import org.jclouds.filesystem.utils.TestUtils;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.io.InputSuppliers;
@@ -64,6 +63,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
@@ -106,7 +106,7 @@ public class FilesystemAsyncBlobStoreTest {
     @AfterMethod
     protected void tearDown() throws IOException {
         context.close();
-        FileUtils.forceDelete(new File(TestUtils.TARGET_BASE_DIR));
+        Utils.deleteRecursively(new File(TestUtils.TARGET_BASE_DIR));
     }
 
     /**
@@ -136,7 +136,7 @@ public class FilesystemAsyncBlobStoreTest {
      */
     public void testList_Root() throws IOException {
         PageSet<? extends StorageMetadata> containersRetrieved;
-        Set<String> containersCreated = new HashSet<String>();
+        Set<String> containersCreated = Sets.newHashSet();
 
         // Testing list with no containers
         containersRetrieved = blobStore.list();
@@ -144,7 +144,7 @@ public class FilesystemAsyncBlobStoreTest {
 
         // Testing list with some containers
         String[] containerNames = new String[]{"34343", "aaaa", "bbbbb"};
-        containersCreated = new HashSet<String>();
+        containersCreated = Sets.newHashSet();
         for (String containerName : containerNames) {
             blobStore.createContainerInLocation(null, containerName);
             containersCreated.add(containerName);
@@ -839,7 +839,7 @@ public class FilesystemAsyncBlobStoreTest {
         }
 
         // copies values
-        Set<String> expectedBlobKeysCopy = new HashSet<String>();
+        Set<String> expectedBlobKeysCopy = Sets.newHashSet();
         for (String value : expectedBlobKeys) {
             expectedBlobKeysCopy.add(value);
         }

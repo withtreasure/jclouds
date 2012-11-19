@@ -22,7 +22,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -30,12 +29,13 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 
+import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 
-import org.apache.commons.io.FileUtils;
 import org.jclouds.blobstore.LocalStorageStrategy;
 import org.jclouds.blobstore.domain.Blob;
 import org.jclouds.blobstore.domain.BlobBuilder;
@@ -46,6 +46,7 @@ import org.jclouds.domain.Location;
 import org.jclouds.filesystem.predicates.validators.FilesystemBlobKeyValidator;
 import org.jclouds.filesystem.predicates.validators.FilesystemContainerNameValidator;
 import org.jclouds.filesystem.reference.FilesystemConstants;
+import org.jclouds.filesystem.util.Utils;
 import org.jclouds.io.Payload;
 import org.jclouds.io.Payloads;
 import org.jclouds.logging.Logger;
@@ -131,7 +132,7 @@ public class FilesystemStorageStrategyImpl implements LocalStorageStrategy {
          File[] children = containerFile.listFiles();
          if (null != children) {
             for (File child : children)
-               FileUtils.forceDelete(child);
+               Utils.deleteRecursively(child);
          }
       } catch (IOException e) {
          logger.error(e, "An error occurred while clearing container %s", container);
@@ -158,22 +159,19 @@ public class FilesystemStorageStrategyImpl implements LocalStorageStrategy {
       filesystemContainerNameValidator.validate(container);
       // check if container exists
       // TODO maybe an error is more appropriate
+      Set<String> blobNames = Sets.newHashSet();
       if (!containerExists(container)) {
-         return new HashSet<String>();
+         return blobNames;
       }
 
       File containerFile = openFolder(container);
       final int containerPathLength = containerFile.getAbsolutePath().length() + 1;
-      Set<String> blobNames = new HashSet<String>() {
-
-         private static final long serialVersionUID = 3152191346558570795L;
-
+      populateBlobKeysInContainer(containerFile, blobNames, new Function<String, String>() {
          @Override
-         public boolean add(String e) {
-            return super.add(e.substring(containerPathLength));
+         public String apply(String string) {
+            return string.substring(containerPathLength);
          }
-      };
-      populateBlobKeysInContainer(containerFile, blobNames);
+      });
       return blobNames;
    }
 
@@ -283,7 +281,7 @@ public class FilesystemStorageStrategyImpl implements LocalStorageStrategy {
       // create complete dir path
       String fullDirPath = buildPathStartingFromBaseDir(container, directory);
       try {
-         FileUtils.forceDelete(new File(fullDirPath));
+         Utils.deleteRecursively(new File(fullDirPath));
       } catch (IOException ex) {
          logger.error("An error occurred removing directory %s.", fullDirPath);
          Throwables.propagate(ex);
@@ -433,13 +431,14 @@ public class FilesystemStorageStrategyImpl implements LocalStorageStrategy {
       return folder;
    }
 
-   private void populateBlobKeysInContainer(File directory, Set<String> blobNames) {
+   private static void populateBlobKeysInContainer(File directory, Set<String> blobNames,
+         Function<String, String> function) {
       File[] children = directory.listFiles();
       for (File child : children) {
          if (child.isFile()) {
-            blobNames.add(child.getAbsolutePath());
+            blobNames.add(function.apply(child.getAbsolutePath()));
          } else if (child.isDirectory()) {
-            populateBlobKeysInContainer(child, blobNames);
+            populateBlobKeysInContainer(child, blobNames, function);
          }
       }
    }

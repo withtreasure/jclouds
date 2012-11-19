@@ -80,46 +80,46 @@ public class Base64
     
     
     /** No options specified. Value is zero. */
-    public final static int NO_OPTIONS = 0;
+    public static final int NO_OPTIONS = 0;
     
     /** Specify encoding. */
-    public final static int ENCODE = 1;
+    public static final int ENCODE = 1;
     
     
     /** Specify decoding. */
-    public final static int DECODE = 0;
+    public static final int DECODE = 0;
     
     
     /** Specify that data should be gzip-compressed. */
-    public final static int GZIP = 2;
+    public static final int GZIP = 2;
     
     
     /** Don't break lines when encoding (violates strict Base64 specification) */
-    public final static int DONT_BREAK_LINES = 8;
+    public static final int DONT_BREAK_LINES = 8;
     
     
 /* ********  P R I V A T E   F I E L D S  ******** */  
     
     
     /** Maximum line length (76) of Base64 output. */
-    private final static int MAX_LINE_LENGTH = 76;
+    private static final int MAX_LINE_LENGTH = 76;
     
     
     /** The equals sign (=) as a byte. */
-    private final static byte EQUALS_SIGN = (byte)'=';
+    private static final byte EQUALS_SIGN = (byte)'=';
     
     
     /** The new line character (\n) as a byte. */
-    private final static byte NEW_LINE = (byte)'\n';
+    private static final byte NEW_LINE = (byte)'\n';
     
     
     /** Preferred encoding. */
-    private final static String PREFERRED_ENCODING = "UTF-8";
+    private static final String PREFERRED_ENCODING = "UTF-8";
     
     
     /** The 64 valid Base64 values. */
-    private final static byte[] ALPHABET;
-    private final static byte[] _NATIVE_ALPHABET = /* May be something funny like EBCDIC */
+    private static final byte[] ALPHABET;
+    private static final byte[] _NATIVE_ALPHABET = /* May be something funny like EBCDIC */
     {
         (byte)'A', (byte)'B', (byte)'C', (byte)'D', (byte)'E', (byte)'F', (byte)'G',
         (byte)'H', (byte)'I', (byte)'J', (byte)'K', (byte)'L', (byte)'M', (byte)'N',
@@ -152,8 +152,14 @@ public class Base64
     /** 
      * Translates a Base64 value to either its 6-bit reconstruction value
      * or a negative number indicating some other meaning.
+     * 
+     * <h4>Note</h4>
+     * {@code +} and {@code -} both decode to 62. {@code /} and {@code _} both decode to 63
+     * 
+     * This accomodates URL-safe encoding
+     * @see <a href="http://en.wikipedia.org/wiki/Base64#URL_applications">url-safe base64</a>
      **/
-    private final static byte[] DECODABET =
+    private static final byte[] DECODABET =
     {   
         -9,-9,-9,-9,-9,-9,-9,-9,-9,                 // Decimal  0 -  8
         -5,-5,                                      // Whitespace: Tab and Linefeed
@@ -164,7 +170,9 @@ public class Base64
         -5,                                         // Whitespace: Space
         -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,              // Decimal 33 - 42
         62,                                         // Plus sign at decimal 43
-        -9,-9,-9,                                   // Decimal 44 - 46
+        -9,                                         // Decimal 44
+        62,                                         // Hyphen at decimal 45
+        -9,                                         // Decimal 45
         63,                                         // Slash at decimal 47
         52,53,54,55,56,57,58,59,60,61,              // Numbers zero through nine
         -9,-9,-9,                                   // Decimal 58 - 60
@@ -172,7 +180,9 @@ public class Base64
         -9,-9,-9,                                      // Decimal 62 - 64
         0,1,2,3,4,5,6,7,8,9,10,11,12,13,            // Letters 'A' through 'N'
         14,15,16,17,18,19,20,21,22,23,24,25,        // Letters 'O' through 'Z'
-        -9,-9,-9,-9,-9,-9,                          // Decimal 91 - 96
+        -9,-9,-9,-9,                                // Decimal 91 - 94
+        63,                                         // Underscore at decimal 95
+        -9,                                         // Decimal 96
         26,27,28,29,30,31,32,33,34,35,36,37,38,     // Letters 'a' through 'm'
         39,40,41,42,43,44,45,46,47,48,49,50,51,     // Letters 'n' through 'z'
         -9,-9,-9,-9                                 // Decimal 123 - 126
@@ -189,9 +199,9 @@ public class Base64
     };
     
     // I think I end up not using the BAD_ENCODING indicator.
-    //private final static byte BAD_ENCODING    = -9; // Indicates error in encoding
-    private final static byte WHITE_SPACE_ENC = -5; // Indicates white space in encoding
-    private final static byte EQUALS_SIGN_ENC = -1; // Indicates equals sign in encoding
+    //private static final byte BAD_ENCODING    = -9; // Indicates error in encoding
+    private static final byte WHITE_SPACE_ENC = -5; // Indicates white space in encoding
+    private static final byte EQUALS_SIGN_ENC = -1; // Indicates equals sign in encoding
 
     
     /** Defeats instantiation. */
@@ -199,7 +209,7 @@ public class Base64
     
     
     
-/* ********  E N C O D I N G   ApiMetadata E T H O D S  ******** */    
+/* ********  E N C O D I N G   M E T H O D S  ******** */    
     
     
     /**
@@ -231,7 +241,7 @@ public class Base64
      * anywhere along their length by specifying 
      * <var>srcOffset</var> and <var>destOffset</var>.
      * This method does not check to make sure your arrays
-     * are large enough to accomodate <var>srcOffset</var> + 3 for
+     * are large enough to accommodate <var>srcOffset</var> + 3 for
      * the <var>source</var> array or <var>destOffset</var> + 4 for
      * the <var>destination</var> array.
      * The actual number of significant bytes in your array is
@@ -579,7 +589,7 @@ public class Base64
      * anywhere along their length by specifying 
      * <var>srcOffset</var> and <var>destOffset</var>.
      * This method does not check to make sure your arrays
-     * are large enough to accomodate <var>srcOffset</var> + 4 for
+     * are large enough to accommodate <var>srcOffset</var> + 4 for
      * the <var>source</var> array or <var>destOffset</var> + 3 for
      * the <var>destination</var> array.
      * This method returns the actual number of bytes that 
@@ -727,6 +737,16 @@ public class Base64
      */
     public static byte[] decode( String s )
     {   
+        int modulo = s.length() % 4;
+        switch (modulo) {
+        case 2:
+            s += "==";
+            break;
+        case 3:
+            s += "=";
+            break;
+        }
+        
         byte[] bytes;
         try
         {
@@ -737,7 +757,7 @@ public class Base64
             bytes = s.getBytes();
         }   // end catch
 		//</change>
-        
+           
         // Decode
         bytes = decode( bytes, 0, bytes.length );
         

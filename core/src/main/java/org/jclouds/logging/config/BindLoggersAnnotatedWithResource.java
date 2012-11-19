@@ -23,7 +23,6 @@ import static com.google.common.collect.Sets.filter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -35,6 +34,7 @@ import org.jclouds.logging.Logger.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Sets;
 import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.InjectionListener;
@@ -96,7 +96,7 @@ public class BindLoggersAnnotatedWithResource implements TypeListener {
             Predicate<Field> {
         public boolean apply(Field from) {
             Annotation inject = from.getAnnotation(Resource.class);
-            return (inject != null && from.getType().isAssignableFrom(Logger.class));
+            return inject != null && from.getType().isAssignableFrom(Logger.class);
         }
     }
 
@@ -129,7 +129,7 @@ public class BindLoggersAnnotatedWithResource implements TypeListener {
 
     @VisibleForTesting
     Set<Field> getLoggerFieldsAnnotatedWithResource(Class<?> declaredType) {
-        Set<Field> fields = new HashSet<Field>();
+        Set<Field> fields = Sets.newHashSet();
         Class<?> type = declaredType;
         while (type != null) {
             fields.addAll(Arrays.asList(type.getDeclaredFields()));

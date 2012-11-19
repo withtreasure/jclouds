@@ -59,7 +59,7 @@ public class Vdc extends Entity {
    private static class ConcreteBuilder extends Builder<ConcreteBuilder> {
    }
    
-   public static abstract class Builder<B extends Builder<B>> extends Entity.Builder<B> {
+   public abstract static class Builder<B extends Builder<B>> extends Entity.Builder<B> {
       private String allocationModel;
       private CapacityWithUsage storageCapacity;
       private ComputeCapacity computeCapacity;
@@ -124,7 +124,7 @@ public class Vdc extends Entity {
        * @see Vdc#getAvailableNetworks()
        */
       public B network(Reference availableNetwork) {
-         this.availableNetworks.add(checkNotNull(availableNetwork, "availableNetwork"));;
+         this.availableNetworks.add(checkNotNull(availableNetwork, "availableNetwork"));
          return self();
       }
 

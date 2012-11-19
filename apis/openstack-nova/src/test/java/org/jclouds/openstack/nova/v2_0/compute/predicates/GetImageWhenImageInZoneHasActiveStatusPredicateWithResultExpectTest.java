@@ -20,6 +20,7 @@
 package org.jclouds.openstack.nova.v2_0.compute.predicates;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 import java.util.Map;
@@ -41,7 +42,7 @@ import com.google.inject.Injector;
  * @author David Alves
  * 
  */
-@Test(groups = "unit", testName = "GetImageWhenImageInZoneHasActiveStatucPredicateWithResultExpectTest")
+@Test(groups = "unit", testName = "GetImageWhenImageInZoneHasActiveStatusPredicateWithResultExpectTest")
 public class GetImageWhenImageInZoneHasActiveStatusPredicateWithResultExpectTest extends
          BaseNovaComputeServiceContextExpectTest<Injector> {
 
@@ -60,8 +61,8 @@ public class GetImageWhenImageInZoneHasActiveStatusPredicateWithResultExpectTest
       ZoneAndId zoneAdnId1 = ZoneAndId.fromZoneAndId("az-1.region-a.geo-1", "12");
       ZoneAndId zoneAdnId2 = ZoneAndId.fromZoneAndId("az-1.region-a.geo-1", "15");
       assertTrue(predicate.apply(zoneAdnId0)); // ACTIVE
-      assertTrue(!predicate.apply(zoneAdnId1)); // SAVING
-      assertTrue(!predicate.apply(zoneAdnId2)); // UNRECOGNIZED
+      assertFalse(predicate.apply(zoneAdnId1)); // SAVING
+      assertFalse(predicate.apply(zoneAdnId2)); // UNRECOGNIZED
       assertEquals("oneiric-server-cloudimg-amd64", predicate.getResult().getName());
    }
 

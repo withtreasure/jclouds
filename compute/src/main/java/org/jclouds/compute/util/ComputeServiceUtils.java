@@ -22,7 +22,8 @@ import static com.google.common.base.Predicates.equalTo;
 import static com.google.common.base.Predicates.not;
 import static com.google.common.base.Throwables.getStackTraceAsString;
 import static com.google.common.collect.Iterables.filter;
-import static com.google.common.collect.Maps.*;
+import static com.google.common.collect.Maps.filterKeys;
+import static com.google.common.collect.Maps.filterValues;
 import static org.jclouds.scriptbuilder.domain.Statements.pipeHttpResponseToBash;
 
 import java.net.URI;
@@ -121,7 +122,7 @@ public class ComputeServiceUtils {
    public static double getCoresAndSpeed(Hardware input) {
       double total = 0;
       for (Processor processor : input.getProcessors())
-         total += (processor.getCores() * processor.getSpeed());
+         total += processor.getCores() * processor.getSpeed();
       return total;
    }
 
