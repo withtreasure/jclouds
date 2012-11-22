@@ -914,7 +914,7 @@ public interface InfrastructureAsyncApi {
    /**
     * @see InfrastructureApi#allowTierToAllEnterprises(TierDto)
     */
-   @EnterpriseEdition
+   @Named("tier:allow")
    @PUT
    ListenableFuture<Void> allowTierToAllEnterprises(
          @EndpointLink("allowallenterprises") @BinderParam(BindToPath.class) TierDto tier);
@@ -922,30 +922,31 @@ public interface InfrastructureAsyncApi {
    /**
     * @see InfrastructureApi#restrictTierToAllEnterprises(TierDto, boolean)
     */
-   @EnterpriseEdition
+   @Named("tier:restrict")
    @PUT
    ListenableFuture<Void> restrictTierToAllEnterprises(
          @EndpointLink("restrictallenterprises") @BinderParam(BindToPath.class) TierDto tier,
          @QueryParam("force") boolean force);
 
    /**
-    * @see InfrastructureApi#getEnterprisesByTier(TierDto)
+    * @see InfrastructureApi#listAllowedEnterprisesForTier(TierDto)
     */
-   @EnterpriseEdition
+   @Named("tier:enterprises")
    @GET
    @Consumes(EnterprisesDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
-   ListenableFuture<EnterprisesDto> getEnterprisesByTier(
+   ListenableFuture<EnterprisesDto> listAllowedEnterprisesForTier(
          @EndpointLink("enterprises") @BinderParam(BindToPath.class) TierDto tier);
 
    /**
-    * @see InfrastructureApi#getEnterprisesByTier(TierDto, EnterpriseOptions)
+    * @see InfrastructureApi#listAllowedEnterprisesForTier(TierDto,
+    *      EnterpriseOptions)
     */
-   @EnterpriseEdition
+   @Named("tier:enterprises")
    @GET
    @Consumes(EnterprisesDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
-   ListenableFuture<EnterprisesDto> getEnterprisesByTier(
+   ListenableFuture<EnterprisesDto> listAllowedEnterprisesForTier(
          @EndpointLink("enterprises") @BinderParam(BindToPath.class) TierDto tier, EnterpriseOptions options);
 
    /*********************** Storage Pool ***********************/

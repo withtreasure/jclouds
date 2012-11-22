@@ -19,8 +19,6 @@
 
 package org.jclouds.abiquo.features;
 
-import java.util.concurrent.TimeUnit;
-
 import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.DatacenterOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.IpmiOptions;
@@ -926,27 +924,22 @@ public interface InfrastructureApi {
    TierDto getTier(DatacenterDto datacenter, Integer tierId);
 
    /**
-    * Allow the tier to be used by all enterprises that use the tier's
-    * datacenter
+    * Allow the tier to be used by all enterprises.
     * 
     * @param tier
-    *           to be allowes to all enterprises
+    *           The tier to be allowed.
     */
-   @EnterpriseEdition
    void allowTierToAllEnterprises(TierDto tier);
 
    /**
     * Restrict a tier to all enterprises.
     * 
     * @param tier
-    *           to be restricted to all enterprises
+    *           The tier to be restricted.
     * @param force
-    *           if is <code>true</code> and some enterprises has volumes in the
-    *           given tier throws a list of errors and any enterprise will be
-    *           restricted to this tier (no changes done), else the enterprise
-    *           that has no problem will be restricted (some changes done)
+    *           Boolean indicating if the force the operation must succeed even
+    *           if not all enterprises could be updated
     */
-   @EnterpriseEdition
    void restrictTierToAllEnterprises(TierDto tier, boolean force);
 
    /**
@@ -956,8 +949,7 @@ public interface InfrastructureApi {
     *           The tier for searching its allowed enterprises
     * @return The list of the enterprises with the tier allowed
     */
-   @EnterpriseEdition
-   EnterprisesDto getEnterprisesByTier(TierDto tier);
+   EnterprisesDto listAllowedEnterprisesForTier(TierDto tier);
 
    /**
     * Retrieve list of allowed enterprises for a tier
@@ -968,8 +960,7 @@ public interface InfrastructureApi {
     *           Optional query params
     * @return The list of the enterprises with the tier allowed
     */
-   @EnterpriseEdition
-   EnterprisesDto getEnterprisesByTier(TierDto tier, EnterpriseOptions options);
+   EnterprisesDto listAllowedEnterprisesForTier(TierDto tier, EnterpriseOptions options);
 
    /*********************** Storage Pool ***********************/
 

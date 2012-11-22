@@ -28,11 +28,11 @@ import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
 import org.jclouds.abiquo.internal.BaseAbiquoApiLiveApiTest;
 import org.jclouds.abiquo.predicates.infrastructure.DatacenterPredicates;
 import org.jclouds.abiquo.predicates.infrastructure.TierPredicates;
+import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
 import com.abiquo.server.core.enterprise.DatacentersLimitsDto;
-import com.abiquo.server.core.enterprise.EnterprisesDto;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
@@ -50,7 +50,7 @@ public class TierLiveApiTest extends BaseAbiquoApiLiveApiTest {
       env.tier.allowTierToAllEnterprises();
 
       DatacentersLimitsDto dto = env.enterpriseApi.getLimits(env.enterprise.unwrap(), env.datacenter.unwrap());
-      assertNotNull(dto.getCollection().get(0).searchLink("tier"));
+      assertNotNull(dto.getCollection().get(0).searchLink(ParentLinkName.TIER));
       assertNotNull(dto.getCollection().get(0).searchLinkByHref(env.tier.unwrap().getEditLink().getHref()));
    }
 
@@ -84,7 +84,7 @@ public class TierLiveApiTest extends BaseAbiquoApiLiveApiTest {
       tier.allowTierToAllEnterprises();
 
       DatacentersLimitsDto dto = env.enterpriseApi.getLimits(env.enterprise.unwrap(), env.datacenter.unwrap());
-      assertNotNull(dto.getCollection().get(0).searchLink("tier"));
+      assertNotNull(dto.getCollection().get(0).searchLink(ParentLinkName.TIER));
       assertNotNull(dto.getCollection().get(0).searchLinkByHref(tier.unwrap().getEditLink().getHref()));
    }
 
@@ -96,7 +96,7 @@ public class TierLiveApiTest extends BaseAbiquoApiLiveApiTest {
       assertNull(dto.searchLinkByHref(tier.getURI().getPath()));
    }
 
-   public void testGetEnterprisesByTier() {
+   public void testListAllowedEnterprisesByTier() {
       Iterable<Enterprise> enterprises = env.administrationService.listEnterprises(new Predicate<Enterprise>() {
          @Override
          public boolean apply(Enterprise input) {
@@ -104,15 +104,15 @@ public class TierLiveApiTest extends BaseAbiquoApiLiveApiTest {
          }
       });
 
-      assertEquals(env.tier.getEnterprisesByTier().getCollection().size(), Iterables.size(enterprises));
+      assertEquals(env.tier.listAllowedEnterprises().size(), Iterables.size(enterprises));
    }
 
-   public void testGetEnterprisesByTierWithOptions() {
+   public void testListAllowedEnterprisesByTierWithOptions() {
       String entName = env.enterprise.getName();
       EnterpriseOptions options = EnterpriseOptions.builder().has(entName).limit(1).build();
 
-      EnterprisesDto entsDto = env.tier.getEnterprisesByTier(options);
-      assertEquals(entsDto.getCollection().size(), 1);
-      assertEquals(entsDto.getCollection().get(0).getName(), entName);
+      List<Enterprise> enterprises = env.tier.listAllowedEnterprises(options);
+      assertEquals(enterprises.size(), 1);
+      assertEquals(enterprises.get(0).getName(), entName);
    }
 }

@@ -26,8 +26,6 @@ import static org.testng.Assert.assertNull;
 import java.io.IOException;
 import java.net.URI;
 
-import javax.ws.rs.core.Response.Status;
-
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.http.HttpResponse;
@@ -40,6 +38,7 @@ import com.abiquo.model.rest.RESTLink;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionsDto;
+import com.abiquo.model.rest.RESTLink;
 import com.abiquo.server.core.enterprise.DatacenterLimitsDto;
 import com.abiquo.server.core.enterprise.EnterpriseDto;
 
@@ -52,7 +51,7 @@ import com.abiquo.server.core.enterprise.EnterpriseDto;
 @Test(groups = "unit", testName = "EnterpriseApiExpectTest")
 public class EnterpriseApiExpectTest extends BaseAbiquoRestApiExpectTest<EnterpriseApi> {
 
-   public void testGetLimit() throws SecurityException, NoSuchMethodException, IOException {
+   public void testGetLimitReturns2xx() throws SecurityException, NoSuchMethodException, IOException {
       EnterpriseApi api = requestSendsResponse(
             HttpRequest.builder().method("GET")
                   .endpoint(URI.create("http://localhost/api/admin/enterprises/1/limits/1"))
@@ -60,7 +59,7 @@ public class EnterpriseApiExpectTest extends BaseAbiquoRestApiExpectTest<Enterpr
                   .build(),
             HttpResponse
                   .builder()
-                  .statusCode(Status.OK.getStatusCode())
+                  .statusCode(200)
                   .payload(
                         payloadFromResourceWithContentType("/payloads/limit.xml",
                               normalize(DatacenterLimitsDto.MEDIA_TYPE))).build());
@@ -79,12 +78,12 @@ public class EnterpriseApiExpectTest extends BaseAbiquoRestApiExpectTest<Enterpr
       assertEquals(entLink.getId().intValue(), 1);
    }
 
-   public void testGetLimitNotExistent() throws SecurityException, NoSuchMethodException, IOException {
+   public void testGetLimitReturns4xx() throws SecurityException, NoSuchMethodException, IOException {
       EnterpriseApi api = requestSendsResponse(
             HttpRequest.builder().method("GET")
                   .endpoint(URI.create("http://localhost/api/admin/enterprises/1/limits/1"))
                   .addHeader("Authorization", basicAuth).addHeader("Accept", normalize(DatacenterLimitsDto.MEDIA_TYPE))
-                  .build(), HttpResponse.builder().statusCode(Status.NOT_FOUND.getStatusCode()).build());
+                  .build(), HttpResponse.builder().statusCode(404).build());
 
       EnterpriseDto enterprise = new EnterpriseDto();
       RESTLink link = new RESTLink("limits", "http://localhost/api/admin/enterprises/1/limits");

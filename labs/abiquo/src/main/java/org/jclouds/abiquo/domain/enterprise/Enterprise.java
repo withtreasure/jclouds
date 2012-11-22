@@ -69,6 +69,7 @@ import com.abiquo.server.core.infrastructure.DatacentersDto;
 import com.abiquo.server.core.infrastructure.MachinesDto;
 import com.abiquo.server.core.infrastructure.network.VLANNetworksDto;
 import com.google.common.base.Predicate;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.inject.TypeLiteral;
@@ -714,11 +715,7 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     *      </a>
     */
    public Limits allowDatacenter(final Datacenter datacenter) {
-      return allowDatacenter(datacenter, ImmutableList.<Tier> of());
-   }
-
-   public Limits allowDatacenter(final Datacenter datacenter, final List<Tier> tiers) {
-      DatacenterLimitsDto dto;
+      DatacenterLimitsDto dto = null;
 
       checkNotNull(datacenter, ValidationErrors.NULL_RESOURCE + Datacenter.class);
       checkNotNull(tiers, ValidationErrors.NULL_RESOURCE + List.class + " of " + Tier.class);
@@ -744,7 +741,7 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
             // Should be only one limit
             dto = limits.getCollection().get(0);
          } else {
-            throw ex;
+            Throwables.propagate(ex);
          }
       }
 

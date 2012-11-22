@@ -32,12 +32,19 @@ import org.jclouds.abiquo.domain.infrastructure.Datacenter;
 import org.jclouds.abiquo.domain.infrastructure.Tier;
 import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
+import org.jclouds.abiquo.predicates.LinkPredicates;
+import org.jclouds.abiquo.reference.ValidationErrors;
+import org.jclouds.abiquo.reference.rest.ParentLinkName;
+import org.jclouds.abiquo.strategy.enterprise.ListAllowedTiers;
 import org.jclouds.rest.RestContext;
+import org.jclouds.rest.annotations.SinceApiVersion;
 
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.server.core.enterprise.DatacenterLimitsDto;
 import com.abiquo.server.core.enterprise.EnterpriseDto;
 import com.abiquo.server.core.infrastructure.DatacenterDto;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 
 /**
  * Adds high level functionality to {@link DatacenterLimitsDto}.
@@ -73,15 +80,14 @@ public class Limits extends DomainWithLimitsWrapper<DatacenterLimitsDto> {
    /**
     * Allows a list of tiers to be used by an enterprise
     * 
-    * @SinceApiVersion 2.4
     * @param tiers
     *           The list of tiers to be allowed
     */
+   @SinceApiVersion("2.4")
    public void setAllowedTiers(List<Tier> tiers) {
       checkNotNull(tiers, ValidationErrors.NULL_RESOURCE + List.class + " of " + Tier.class);
 
-      List<RESTLink> tierLinks = this.unwrap().searchLinks(ParentLinkName.TIER);
-      this.unwrap().getLinks().removeAll(tierLinks);
+      Iterables.removeIf(target.getLinks(), LinkPredicates.rel(ParentLinkName.TIER));
 
       for (Tier tier : tiers) {
          checkNotNull(tier.unwrap().getEditLink(), ValidationErrors.MISSING_REQUIRED_LINK + "edit");
@@ -89,7 +95,7 @@ public class Limits extends DomainWithLimitsWrapper<DatacenterLimitsDto> {
          target.addLink(link);
       }
 
-      context.getApi().getEnterpriseApi().updateLimits(this.unwrap());
+      context.getApi().getEnterpriseApi().updateLimits(target);
    }
 
    /**
@@ -97,20 +103,10 @@ public class Limits extends DomainWithLimitsWrapper<DatacenterLimitsDto> {
     * 
     * @return a list of all allowed tiers
     */
+   @SinceApiVersion("2.4")
    public List<Tier> getAllowedTiers() {
-      List<Tier> tiers = new ArrayList<Tier>();
-      List<RESTLink> tierLinks = this.unwrap().searchLinks(ParentLinkName.TIER);
-      Datacenter datacenter = getDatacenter();
-      checkNotNull(datacenter, ValidationErrors.NULL_RESOURCE + Datacenter.class);
-
-      for (RESTLink tierLink : tierLinks) {
-         Tier tier = datacenter.getTier(tierLink.getId());
-         if (tier != null) {
-            tiers.add(tier);
-         }
-      }
-
-      return tiers;
+      ListAllowedTiers strategy = context.getUtils().getInjector().getInstance(ListAllowedTiers.class);
+      return ImmutableList.copyOf(strategy.execute(this));
    }
 
    // ParentAccess

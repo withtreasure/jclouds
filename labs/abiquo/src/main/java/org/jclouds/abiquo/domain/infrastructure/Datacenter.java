@@ -661,8 +661,8 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     * @return Tier with the given id or <code>null</code> if it does not exist.
     */
    public Tier getTier(Integer tierId) {
-      checkNotNull(tierId, ValidationErrors.NULL_RESOURCE);
-      TierDto dto = context.getApi().getInfrastructureApi().getTier(this.unwrap(), tierId);
+      TierDto dto = context.getApi().getInfrastructureApi()
+            .getTier(target, checkNotNull(tierId, ValidationErrors.NULL_RESOURCE));
       return wrap(context, Tier.class, dto);
    }
 

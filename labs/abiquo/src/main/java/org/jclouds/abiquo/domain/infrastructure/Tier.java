@@ -27,10 +27,12 @@ import java.util.List;
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
+import org.jclouds.abiquo.domain.enterprise.Enterprise;
 import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
 import org.jclouds.abiquo.reference.annotations.EnterpriseEdition;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.rest.RestContext;
+import org.jclouds.rest.annotations.SinceApiVersion;
 
 import com.abiquo.server.core.enterprise.EnterprisesDto;
 import com.abiquo.server.core.infrastructure.DatacenterDto;
@@ -41,10 +43,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 /**
- * Adds high level functionality to {@link TierDto}. The Tier Resource offers
- * the functionality of managing the logic of QoS volume management. These are
- * only logical levels of QoS and the real QoS (networking speed, volume
- * replication, availability) must be configured manually in the infrastructure.
+ * Adds high level functionality to {@link TierDto}.
+ * <p>
+ * The Tier Resource offers the functionality of managing the logic of QoS
+ * volume management. These are only logical levels of QoS and the real QoS
+ * (networking speed, volume replication, availability) must be configured
+ * manually in the infrastructure.
  * 
  * @author Ignasi Barrera
  * @author Francesc Montserrat
@@ -126,9 +130,8 @@ public class Tier extends DomainWrapper<TierDto> {
 
    /**
     * Allow the tier to be used to all enterprises.
-    * 
-    * @SinceApiVersion 2.4
     */
+   @SinceApiVersion("2.4")
    public void allowTierToAllEnterprises() {
       context.getApi().getInfrastructureApi().allowTierToAllEnterprises(target);
    }
@@ -137,35 +140,31 @@ public class Tier extends DomainWrapper<TierDto> {
     * Restrict the tier to all enterprises.
     * 
     * @param force
-    *           try to force all or nothing. It means that <code>true</code>
-    *           value will result to a all enterprises restricted ok or any
-    *           enterprise not restricted because some of them have any
-    *           problems. If the value is <code>false</code> could be
-    *           enterprises restricted although some of them have any problems.
-    * 
-    * @SinceApiVersion 2.4
+    *           Boolean indicating if the force the operation must succeed even
+    *           if not all enterprises could be updated
     */
+   @SinceApiVersion("2.4")
    public void restrictTierToAllEnterprises(boolean force) {
       context.getApi().getInfrastructureApi().restrictTierToAllEnterprises(target, force);
    }
 
    /**
-    * Retrieve a list of allowed enterprises for a tier
-    * 
-    * @SinceApiVersion 2.4
+    * Retrieve a list of enterprises with access to the tier.
     */
-   public EnterprisesDto getEnterprisesByTier() {
-      return context.getApi().getInfrastructureApi().getEnterprisesByTier(target);
+   @SinceApiVersion("2.4")
+   public List<Enterprise> listAllowedEnterprises() {
+      EnterprisesDto enterprises = context.getApi().getInfrastructureApi().listAllowedEnterprisesForTier(target);
+      return wrap(context, Enterprise.class, enterprises.getCollection());
    }
 
    /**
-    * Retrieve a list of allowed enterprises for a tier
-    * 
-    * @SinceApiVersion 2.4
+    * Retrieve a list of enterprises with access to the tier.
     */
-   public EnterprisesDto getEnterprisesByTier(EnterpriseOptions options) {
-      checkNotNull(options, "options");
-      return context.getApi().getInfrastructureApi().getEnterprisesByTier(target, options);
+   @SinceApiVersion("2.4")
+   public List<Enterprise> listAllowedEnterprises(EnterpriseOptions options) {
+      EnterprisesDto enterprises = context.getApi().getInfrastructureApi()
+            .listAllowedEnterprisesForTier(target, checkNotNull(options, "options"));
+      return wrap(context, Enterprise.class, enterprises.getCollection());
    }
 
    // Parent access
@@ -215,17 +214,17 @@ public class Tier extends DomainWrapper<TierDto> {
       target.setName(name);
    }
 
-   public boolean isDefaultAllowed() {
+   public boolean isAllowedByDefault() {
       return target.isDefaultAllowed();
    }
 
-   public void setDefaultAllowed(final boolean defaultAllowed) {
-      target.setDefaultAllowed(defaultAllowed);
+   public void setAllowedByDefault(final boolean allowedByDefault) {
+      target.setDefaultAllowed(allowedByDefault);
    }
 
    @Override
    public String toString() {
       return "Tier [id=" + getId() + ", description=" + getDescription() + ", enabled=" + getEnabled() + ", name="
-            + getName() + ", isDefaultAllowed=" + isDefaultAllowed() + "]";
+            + getName() + ", allowedByDefault=" + isAllowedByDefault() + "]";
    }
 }
