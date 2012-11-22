@@ -15,8 +15,8 @@
     <packaging>bundle</packaging>
     
     <properties>
-        <abiquomodel.version>2.2.0</abiquomodel.version>
-        <abiquoam.version>2.1.2</abiquoam.version>
+        <abiquomodel.version>2.3.0-SNAPSHOT</abiquomodel.version>
+        <abiquoam.version>2.2.0-SNAPSHOT</abiquoam.version>
         <test.abiquo.endpoint>http://localhost/api</test.abiquo.endpoint>
         <test.abiquo.identity>FIXME</test.abiquo.identity>
         <test.abiquo.credential>FIXME</test.abiquo.credential>

@@ -69,6 +69,7 @@ import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
 import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
 import com.abiquo.server.core.enterprise.DatacentersLimitsDto;
 import com.abiquo.server.core.enterprise.EnterpriseDto;
+import com.abiquo.server.core.enterprise.EnterprisesDto;
 import com.abiquo.server.core.infrastructure.BladeLocatorLedDto;
 import com.abiquo.server.core.infrastructure.DatacenterDto;
 import com.abiquo.server.core.infrastructure.DatacentersDto;
@@ -839,6 +840,33 @@ public interface InfrastructureAsyncApi {
    @ExceptionParser(ReturnNullOnNotFoundOr404.class)
    ListenableFuture<TierDto> getTier(@EndpointLink("tiers") @BinderParam(BindToPath.class) DatacenterDto datacenter,
          @BinderParam(AppendToPath.class) Integer tierId);
+
+   /**
+    * @see InfrastructureApi#allowTierToAllEnterprises(TierDto)
+    */
+   @EnterpriseEdition
+   @PUT
+   ListenableFuture<Void> allowTierToAllEnterprises(
+         @EndpointLink("allowallenterprises") @BinderParam(BindToPath.class) TierDto tier);
+
+   /**
+    * @see InfrastructureApi#restrictTierToAllEnterprises(TierDto, boolean)
+    */
+   @EnterpriseEdition
+   @PUT
+   ListenableFuture<Void> restrictTierToAllEnterprises(
+         @EndpointLink("restrictallenterprises") @BinderParam(BindToPath.class) TierDto tier,
+         @QueryParam("force") boolean force);
+
+   /**
+    * @see InfrastructureApi#getEnterprisesByTier(TierDto)
+    */
+   @EnterpriseEdition
+   @GET
+   @Consumes(EnterprisesDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<EnterprisesDto> getEnterprisesByTier(
+         @EndpointLink("enterprises") @BinderParam(BindToPath.class) TierDto tier);
 
    /*********************** Storage Pool ***********************/
 

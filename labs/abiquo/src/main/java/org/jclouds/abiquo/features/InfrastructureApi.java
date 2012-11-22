@@ -38,6 +38,7 @@ import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
 import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
 import com.abiquo.server.core.enterprise.DatacentersLimitsDto;
 import com.abiquo.server.core.enterprise.EnterpriseDto;
+import com.abiquo.server.core.enterprise.EnterprisesDto;
 import com.abiquo.server.core.infrastructure.BladeLocatorLedDto;
 import com.abiquo.server.core.infrastructure.DatacenterDto;
 import com.abiquo.server.core.infrastructure.DatacentersDto;
@@ -712,7 +713,8 @@ public interface InfrastructureApi {
     * 
     * @param machine
     *           The machine to check
-    * @param sync boolean that indicates a database synchronization
+    * @param sync
+    *           boolean that indicates a database synchronization
     * @return A machineStateDto with a machine state value from enum
     *         MachineState
     */
@@ -944,6 +946,39 @@ public interface InfrastructureApi {
     */
    @EnterpriseEdition
    TierDto getTier(DatacenterDto datacenter, Integer tierId);
+
+   /**
+    * Allow the tier to be used by all enterprises that use the tier's
+    * datacenter
+    * 
+    * @param tier
+    *           to be allowes to all enterprises
+    */
+   @EnterpriseEdition
+   void allowTierToAllEnterprises(TierDto tier);
+
+   /**
+    * Restrict a tier to all enterprises.
+    * 
+    * @param tier
+    *           to be restricted to all enterprises
+    * @param force
+    *           if is <code>true</code> and some enterprises has volumes in the
+    *           given tier throws a list of errors and any enterprise will be
+    *           restricted to this tier (no changes done), else the enterprise
+    *           that has no problem will be restricted (some changes done)
+    */
+   @EnterpriseEdition
+   void restrictTierToAllEnterprises(TierDto tier, boolean force);
+
+   /**
+    * Retrieve list of allowed enterprises for a tier
+    * 
+    * @param tier
+    *           The tier for searching its allowed enterprises
+    */
+   @EnterpriseEdition
+   EnterprisesDto getEnterprisesByTier(TierDto tier);
 
    /*********************** Storage Pool ***********************/
 

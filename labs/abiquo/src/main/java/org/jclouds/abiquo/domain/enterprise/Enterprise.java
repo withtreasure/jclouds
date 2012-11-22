@@ -19,8 +19,10 @@
 
 package org.jclouds.abiquo.domain.enterprise;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jclouds.abiquo.AbiquoApi;
@@ -34,12 +36,15 @@ import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
 import org.jclouds.abiquo.domain.exception.AbiquoException;
 import org.jclouds.abiquo.domain.infrastructure.Datacenter;
 import org.jclouds.abiquo.domain.infrastructure.Machine;
+import org.jclouds.abiquo.domain.infrastructure.Tier;
 import org.jclouds.abiquo.domain.network.ExternalIp;
 import org.jclouds.abiquo.domain.network.ExternalNetwork;
 import org.jclouds.abiquo.domain.network.Network;
 import org.jclouds.abiquo.domain.network.UnmanagedIp;
 import org.jclouds.abiquo.domain.network.UnmanagedNetwork;
+import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.abiquo.reference.annotations.EnterpriseEdition;
+import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.abiquo.rest.internal.ExtendedUtils;
 import org.jclouds.abiquo.strategy.enterprise.ListVirtualMachineTemplates;
 import org.jclouds.http.HttpResponse;
@@ -293,6 +298,22 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     */
    public Limits findLimits(final Predicate<Limits> filter) {
       return Iterables.getFirst(filter(listLimits(), filter), null);
+   }
+
+   /**
+    * Retrieve a single limit.
+    * 
+    * @param id
+    *           Unique ID of the limit in this enterprise.
+    * @see API: <a href=
+    *      "http://community.abiquo.com/display/ABI20/DatacenterLimitsResource#DatacenterLimitsResource-Retrievelimitbyenterprise"
+    *      > http://community.abiquo.com/display/ABI20/DatacenterLimitsResource#
+    *      DatacenterLimitsResource-Retrievelimitbyenterprise</a>
+    * @return Limit with the given id or <code>null</code> if it does not exist.
+    */
+   public Limits getLimit(final Integer id) {
+      DatacenterLimitsDto limit = context.getApi().getEnterpriseApi().getLimit(target, id);
+      return wrap(context, Limits.class, limit);
    }
 
    /**
@@ -657,11 +678,22 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     *      </a>
     */
    public Limits allowDatacenter(final Datacenter datacenter) {
+      return allowDatacenter(datacenter, new ArrayList<Tier>());
+   }
+
+   public Limits allowDatacenter(final Datacenter datacenter, final List<Tier> tiers) {
       DatacenterLimitsDto dto;
 
       try {
          // Create new limits
          Limits limits = Limits.builder(context).build();
+         limits.unwrap().addLink(new RESTLink(ParentLinkName.DATACENTER, datacenter.unwrap().getEditLink().getHref()));
+
+         for (Tier tier : tiers) {
+            checkNotNull(tier.unwrap().getEditLink(), ValidationErrors.MISSING_REQUIRED_LINK + "edit");
+            RESTLink link = new RESTLink(ParentLinkName.TIER, tier.unwrap().getEditLink().getHref());
+            limits.unwrap().addLink(link);
+         }
 
          // Save new limits
          dto = context.getApi().getEnterpriseApi().createLimits(target, datacenter.unwrap(), limits.unwrap());

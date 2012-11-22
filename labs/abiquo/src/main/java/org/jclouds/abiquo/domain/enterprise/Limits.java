@@ -19,13 +19,24 @@
 
 package org.jclouds.abiquo.domain.enterprise;
 
-import org.jclouds.abiquo.AbiquoAsyncApi;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.List;
+
 import org.jclouds.abiquo.AbiquoApi;
+import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.domain.DomainWithLimitsWrapper;
 import org.jclouds.abiquo.domain.builder.LimitsBuilder;
+import org.jclouds.abiquo.domain.infrastructure.Datacenter;
+import org.jclouds.abiquo.domain.infrastructure.Tier;
+import org.jclouds.abiquo.reference.ValidationErrors;
+import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.rest.RestContext;
 
+import com.abiquo.model.rest.RESTLink;
 import com.abiquo.server.core.enterprise.DatacenterLimitsDto;
+import com.abiquo.server.core.enterprise.EnterpriseDto;
+import com.abiquo.server.core.infrastructure.DatacenterDto;
 
 /**
  * Adds high level functionality to {@link DatacenterLimitsDto}.
@@ -57,6 +68,41 @@ public class Limits extends DomainWithLimitsWrapper<DatacenterLimitsDto> {
     */
    public void update() {
       target = context.getApi().getEnterpriseApi().updateLimits(target);
+   }
+
+   /**
+    * Allows a list of tiers to be used by an enterprise
+    * 
+    * @SinceApiVersion 2.4
+    * @param tiers
+    *           The list of tiers to be allowed
+    */
+   public void setAllowedTiers(List<Tier> tiers) {
+
+      List<RESTLink> tierLinks = this.unwrap().searchLinks(ParentLinkName.TIER);
+      this.unwrap().getLinks().removeAll(tierLinks);
+
+      for (Tier tier : tiers) {
+         checkNotNull(tier.unwrap().getEditLink(), ValidationErrors.MISSING_REQUIRED_LINK + "edit");
+         RESTLink link = new RESTLink(ParentLinkName.TIER, tier.unwrap().getEditLink().getHref());
+         target.addLink(link);
+      }
+
+      context.getApi().getEnterpriseApi().updateLimits(this.unwrap());
+   }
+
+   // ParentAccess
+
+   public Enterprise getEnterprise() {
+      Integer enterpriseId = target.getIdFromLink(ParentLinkName.ENTERPRISE);
+      EnterpriseDto dto = context.getApi().getEnterpriseApi().getEnterprise(enterpriseId);
+      return wrap(context, Enterprise.class, dto);
+   }
+
+   public Datacenter getDatacenter() {
+      Integer datacenterId = target.getIdFromLink(ParentLinkName.DATACENTER);
+      DatacenterDto dto = context.getApi().getInfrastructureApi().getDatacenter(datacenterId);
+      return wrap(context, Datacenter.class, dto);
    }
 
    // Builder
