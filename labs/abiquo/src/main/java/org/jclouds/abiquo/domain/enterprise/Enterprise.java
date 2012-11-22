@@ -65,6 +65,7 @@ import com.abiquo.server.core.infrastructure.DatacentersDto;
 import com.abiquo.server.core.infrastructure.MachinesDto;
 import com.abiquo.server.core.infrastructure.network.VLANNetworksDto;
 import com.google.common.base.Predicate;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.inject.TypeLiteral;
@@ -294,6 +295,18 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     */
    public Limits findLimits(final Predicate<Limits> filter) {
       return Iterables.getFirst(filter(listLimits(), filter), null);
+   }
+
+   /**
+    * Retrieve a single limit.
+    * 
+    * @param id
+    *           Unique ID of the limit in this enterprise.
+    * @return Limit with the given id or <code>null</code> if it does not exist.
+    */
+   public Limits getLimit(final Integer id) {
+      DatacenterLimitsDto limit = context.getApi().getEnterpriseApi().getLimit(target, id);
+      return wrap(context, Limits.class, limit);
    }
 
    /**
@@ -658,7 +671,7 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     *      </a>
     */
    public Limits allowDatacenter(final Datacenter datacenter) {
-      DatacenterLimitsDto dto;
+      DatacenterLimitsDto dto = null;
 
       try {
          // Create new limits
@@ -673,7 +686,7 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
             // Should be only one limit
             dto = limits.getCollection().get(0);
          } else {
-            throw ex;
+            Throwables.propagate(ex);
          }
       }
 

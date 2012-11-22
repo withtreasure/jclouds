@@ -185,6 +185,17 @@ public interface EnterpriseApi {
    DatacentersLimitsDto getLimits(EnterpriseDto enterprise, DatacenterDto datacenter);
 
    /**
+    * Get the given limit from the given enterprise.
+    * 
+    * @param enterprise
+    *           The enterprise.
+    * @param limitId
+    *           The id of the limit.
+    * @return The limit or <code>null</code> if it does not exist.
+    */
+   DatacenterLimitsDto getLimit(EnterpriseDto enterprise, Integer limitId);
+
+   /**
     * Retrieves limits for the given enterprise and any datacenter.
     * 
     * @param enterprise
@@ -395,4 +406,5 @@ public interface EnterpriseApi {
     * @return The list of states.
     */
    TemplatesStateDto listTemplateListStatus(TemplateDefinitionListDto templateList, DatacenterDto datacenter);
+
 }
