@@ -22,7 +22,6 @@ package org.jclouds.abiquo.domain.enterprise;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.jclouds.abiquo.AbiquoApi;
@@ -70,6 +69,7 @@ import com.abiquo.server.core.infrastructure.DatacentersDto;
 import com.abiquo.server.core.infrastructure.MachinesDto;
 import com.abiquo.server.core.infrastructure.network.VLANNetworksDto;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.inject.TypeLiteral;
@@ -305,10 +305,6 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     * 
     * @param id
     *           Unique ID of the limit in this enterprise.
-    * @see API: <a href=
-    *      "http://community.abiquo.com/display/ABI20/DatacenterLimitsResource#DatacenterLimitsResource-Retrievelimitbyenterprise"
-    *      > http://community.abiquo.com/display/ABI20/DatacenterLimitsResource#
-    *      DatacenterLimitsResource-Retrievelimitbyenterprise</a>
     * @return Limit with the given id or <code>null</code> if it does not exist.
     */
    public Limits getLimit(final Integer id) {
@@ -678,15 +674,19 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     *      </a>
     */
    public Limits allowDatacenter(final Datacenter datacenter) {
-      return allowDatacenter(datacenter, new ArrayList<Tier>());
+      return allowDatacenter(datacenter, ImmutableList.<Tier> of());
    }
 
    public Limits allowDatacenter(final Datacenter datacenter, final List<Tier> tiers) {
       DatacenterLimitsDto dto;
 
+      checkNotNull(datacenter, ValidationErrors.NULL_RESOURCE + Datacenter.class);
+      checkNotNull(tiers, ValidationErrors.NULL_RESOURCE + List.class + " of " + Tier.class);
+
       try {
          // Create new limits
          Limits limits = Limits.builder(context).build();
+         checkNotNull(datacenter.unwrap().getEditLink(), ValidationErrors.MISSING_REQUIRED_LINK + "edit");
          limits.unwrap().addLink(new RESTLink(ParentLinkName.DATACENTER, datacenter.unwrap().getEditLink().getHref()));
 
          for (Tier tier : tiers) {

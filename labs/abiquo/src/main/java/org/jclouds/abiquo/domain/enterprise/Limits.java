@@ -78,6 +78,7 @@ public class Limits extends DomainWithLimitsWrapper<DatacenterLimitsDto> {
     *           The list of tiers to be allowed
     */
    public void setAllowedTiers(List<Tier> tiers) {
+      checkNotNull(tiers, ValidationErrors.NULL_RESOURCE + List.class + " of " + Tier.class);
 
       List<RESTLink> tierLinks = this.unwrap().searchLinks(ParentLinkName.TIER);
       this.unwrap().getLinks().removeAll(tierLinks);
@@ -95,12 +96,14 @@ public class Limits extends DomainWithLimitsWrapper<DatacenterLimitsDto> {
 
    public Enterprise getEnterprise() {
       Integer enterpriseId = target.getIdFromLink(ParentLinkName.ENTERPRISE);
+      checkNotNull(enterpriseId, ValidationErrors.MISSING_REQUIRED_LINK);
       EnterpriseDto dto = context.getApi().getEnterpriseApi().getEnterprise(enterpriseId);
       return wrap(context, Enterprise.class, dto);
    }
 
    public Datacenter getDatacenter() {
       Integer datacenterId = target.getIdFromLink(ParentLinkName.DATACENTER);
+      checkNotNull(datacenterId, ValidationErrors.MISSING_REQUIRED_LINK);
       DatacenterDto dto = context.getApi().getInfrastructureApi().getDatacenter(datacenterId);
       return wrap(context, Datacenter.class, dto);
    }

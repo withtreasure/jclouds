@@ -19,6 +19,7 @@
 
 package org.jclouds.abiquo.domain.infrastructure;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.find;
 
@@ -39,6 +40,7 @@ import org.jclouds.abiquo.domain.network.NetworkServiceType;
 import org.jclouds.abiquo.domain.network.PrivateNetwork;
 import org.jclouds.abiquo.domain.network.options.NetworkOptions;
 import org.jclouds.abiquo.predicates.network.NetworkServiceTypePredicates;
+import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.abiquo.reference.annotations.EnterpriseEdition;
 import org.jclouds.rest.RestContext;
 
@@ -663,6 +665,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     * @return Tier with the given id or <code>null</code> if it does not exist.
     */
    public Tier getTier(Integer tierId) {
+      checkNotNull(tierId, ValidationErrors.NULL_RESOURCE);
       TierDto dto = context.getApi().getInfrastructureApi().getTier(this.unwrap(), tierId);
       return wrap(context, Tier.class, dto);
    }
