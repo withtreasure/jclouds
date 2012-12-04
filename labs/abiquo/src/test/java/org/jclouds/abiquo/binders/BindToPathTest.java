@@ -151,6 +151,7 @@ public class BindToPathTest {
    }
 
    static class TestDto extends SingleResourceTransportDto {
+      private static final long serialVersionUID = 1L;
 
       public TestDto() {
          addLink(new RESTLink("edit", "http://linkuri"));
