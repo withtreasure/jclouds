@@ -35,12 +35,9 @@ import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.abiquo.binders.AppendToPath;
 import org.jclouds.abiquo.binders.BindToPath;
 import org.jclouds.abiquo.binders.BindToXMLPayloadAndPath;
-import org.jclouds.abiquo.binders.cloud.BindHardDiskRefsToPayload;
 import org.jclouds.abiquo.binders.cloud.BindMoveVolumeToPath;
-import org.jclouds.abiquo.binders.cloud.BindNetworkConfigurationRefToPayload;
 import org.jclouds.abiquo.binders.cloud.BindNetworkRefToPayload;
 import org.jclouds.abiquo.binders.cloud.BindVirtualDatacenterRefToPayload;
-import org.jclouds.abiquo.binders.cloud.BindVolumeRefsToPayload;
 import org.jclouds.abiquo.domain.cloud.VirtualDatacenter;
 import org.jclouds.abiquo.domain.cloud.options.VirtualApplianceOptions;
 import org.jclouds.abiquo.domain.cloud.options.VirtualDatacenterOptions;
@@ -89,7 +86,6 @@ import com.abiquo.server.core.infrastructure.network.PublicIpDto;
 import com.abiquo.server.core.infrastructure.network.PublicIpsDto;
 import com.abiquo.server.core.infrastructure.network.VLANNetworkDto;
 import com.abiquo.server.core.infrastructure.network.VLANNetworksDto;
-import com.abiquo.server.core.infrastructure.network.VMNetworkConfigurationDto;
 import com.abiquo.server.core.infrastructure.network.VMNetworkConfigurationsDto;
 import com.abiquo.server.core.infrastructure.storage.DiskManagementDto;
 import com.abiquo.server.core.infrastructure.storage.DisksManagementDto;
@@ -595,17 +591,6 @@ public interface CloudAsyncApi {
          @EndpointLink("configurations") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
 
    /**
-    * @see CloudApi#setGatewayNetwork(VirtualMachineDto,
-    *      VMNetworkConfigurationDto)
-    */
-   @Named("vm:setgateway")
-   @PUT
-   @Produces(LinksDto.BASE_MEDIA_TYPE)
-   ListenableFuture<Void> setGatewayNetwork(
-         @EndpointLink("configurations") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
-         @BinderParam(BindNetworkConfigurationRefToPayload.class) VLANNetworkDto network);
-
-   /**
     * @see CloudApi#rebootVirtualMachine(VirtualMachineDto)
     */
    @Named("vm:reboot")
@@ -638,29 +623,6 @@ public interface CloudAsyncApi {
          @EndpointLink("volumes") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
 
    /**
-    * @see CloudApi#detachAllVolumes(VirtualMachineDto)
-    */
-   @Named("vm:detachvolumes")
-   @DELETE
-   @ResponseParser(ReturnTaskReferenceOrNull.class)
-   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
-   ListenableFuture<AcceptedRequestDto<String>> detachAllVolumes(
-         @EndpointLink("volumes") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
-
-   /**
-    * @see CloudApi#replaceVolumes(VirtualMachineDto, VirtualMachineOptions,
-    *      VolumeManagementDto...)
-    */
-   @Named("vm:changevolumes")
-   @PUT
-   @ResponseParser(ReturnTaskReferenceOrNull.class)
-   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
-   @Produces(LinksDto.BASE_MEDIA_TYPE)
-   ListenableFuture<AcceptedRequestDto<String>> replaceVolumes(
-         @EndpointLink("volumes") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
-         VirtualMachineOptions options, @BinderParam(BindVolumeRefsToPayload.class) VolumeManagementDto... volumes);
-
-   /**
     * @see CloudApi#listAttachedHardDisks(VirtualMachineDto)
     */
    @Named("vm:listharddisks")
@@ -668,29 +630,7 @@ public interface CloudAsyncApi {
    @Consumes(DisksManagementDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
    ListenableFuture<DisksManagementDto> listAttachedHardDisks(
-         @EndpointLink("disks") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
-
-   /**
-    * @see CloudApi#detachAllHardDisks(VirtualMachineDto)
-    */
-   @Named("vm:detachharddisks")
-   @DELETE
-   @ResponseParser(ReturnTaskReferenceOrNull.class)
-   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
-   ListenableFuture<AcceptedRequestDto<String>> detachAllHardDisks(
-         @EndpointLink("disks") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
-
-   /**
-    * @see CloudApi#replaceHardDisks(VirtualMachineDto, DiskManagementDto...)
-    */
-   @Named("vm:changeharddisks")
-   @PUT
-   @ResponseParser(ReturnTaskReferenceOrNull.class)
-   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
-   @Produces(LinksDto.BASE_MEDIA_TYPE)
-   ListenableFuture<AcceptedRequestDto<String>> replaceHardDisks(
-         @EndpointLink("disks") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
-         @BinderParam(BindHardDiskRefsToPayload.class) DiskManagementDto... hardDisks);
+         @EndpointLink("harddisks") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
 
    /**
     * @see CloudApi#deployVirtualMachine(VirtualMachineDto,
