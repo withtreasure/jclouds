@@ -169,7 +169,8 @@ public class EnterpriseLiveApiTest extends BaseAbiquoApiLiveApiTest {
 
       DatacentersLimitsDto limitsDto = env.enterpriseApi.getLimits(enterprise.unwrap(), env.datacenter.unwrap());
       assertNotNull(limitsDto);
-      assertEquals(limitsDto.getCollection().size(), 0);
+      assertEquals(limitsDto.getCollection().size(), 1);
+      assertEquals(limitsDto.getCollection().get(0).searchLinks(ParentLinkName.TIER).size(), 0);
    }
 
    public void testListAllowedDatacenters() {
