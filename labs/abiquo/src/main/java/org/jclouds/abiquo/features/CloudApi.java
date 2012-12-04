@@ -536,16 +536,6 @@ public interface CloudApi {
    VMNetworkConfigurationsDto listNetworkConfigurations(VirtualMachineDto virtualMachine);
 
    /**
-    * Sets the gateway network to be used by this virtual machine.
-    * 
-    * @param virtualMachine
-    *           The virtual machine.
-    * @param network
-    *           The gateway network to use.
-    */
-   void setGatewayNetwork(final VirtualMachineDto virtualMachine, final VLANNetworkDto network);
-
-   /**
     * Reboot a virtual machine.
     * 
     * @param virtualMachine
@@ -553,17 +543,6 @@ public interface CloudApi {
     * @return Response message to the reset request.
     */
    AcceptedRequestDto<String> rebootVirtualMachine(VirtualMachineDto virtualMachine);
-
-   /******************* Virtual Machine Template ***********************/
-
-   /**
-    * Get the template of a virtual machine.
-    * 
-    * @param virtualMachine
-    *           The given virtual machine.
-    * @return The template of the given virtual machine.
-    */
-   VirtualMachineTemplateDto getVirtualMachineTemplate(VirtualMachineDto virtualMachine);
 
    /**
     * Get the volumes attached to the given virtual machine.
@@ -575,38 +554,6 @@ public interface CloudApi {
    VolumesManagementDto listAttachedVolumes(VirtualMachineDto virtualMachine);
 
    /**
-    * Detach all volumes from the given virtual machine.
-    * <p>
-    * If the virtual machine is deployed, the operation will be executed
-    * asynchronously.
-    * 
-    * @param virtualMachine
-    *           The virtual machine.
-    * @return The task reference or <code>null</code> if the operation completed
-    *         synchronously.
-    */
-   AcceptedRequestDto<String> detachAllVolumes(VirtualMachineDto virtualMachine);
-
-   /**
-    * Replaces the current volumes attached to the virtual machine with the
-    * given ones.
-    * <p>
-    * If the virtual machine is deployed, the operation will be executed
-    * asynchronously.
-    * 
-    * @param virtualMachine
-    *           The virtual machine.
-    * @param options
-    *           virtual machine parameters
-    * @param volumes
-    *           The new volumes for the virtual machine.
-    * @return The task reference or <code>null</code> if the operation completed
-    *         synchronously.
-    */
-   AcceptedRequestDto<String> replaceVolumes(VirtualMachineDto virtualMachine, VirtualMachineOptions options,
-         VolumeManagementDto... volumes);
-
-   /**
     * List all hard disks attached to the given virtual machine.
     * 
     * @param virtualMachine
@@ -615,34 +562,16 @@ public interface CloudApi {
     */
    DisksManagementDto listAttachedHardDisks(VirtualMachineDto virtualMachine);
 
-   /**
-    * Detach all hard disks from the given virtual machine.
-    * <p>
-    * If the virtual machine is deployed, the operation will be executed
-    * asynchronously.
-    * 
-    * @param virtualMachine
-    *           The virtual machine.
-    * @return The task reference or <code>null</code> if the operation completed
-    *         synchronously.
-    */
-   AcceptedRequestDto<String> detachAllHardDisks(VirtualMachineDto virtualMachine);
+   /******************* Virtual Machine Template ***********************/
 
    /**
-    * Replaces the current hard disks attached to the virtual machine with the
-    * given ones.
-    * <p>
-    * If the virtual machine is deployed, the operation will be executed
-    * asynchronously.
+    * Get the template of a virtual machine.
     * 
     * @param virtualMachine
-    *           The virtual machine.
-    * @param hardDisks
-    *           The new hard disks for the virtual machine.
-    * @return The task reference or <code>null</code> if the operation completed
-    *         synchronously.
+    *           The given virtual machine.
+    * @return The template of the given virtual machine.
     */
-   AcceptedRequestDto<String> replaceHardDisks(VirtualMachineDto virtualMachine, DiskManagementDto... hardDisks);
+   VirtualMachineTemplateDto getVirtualMachineTemplate(VirtualMachineDto virtualMachine);
 
    /*********************** Hard disks ***********************/
 
