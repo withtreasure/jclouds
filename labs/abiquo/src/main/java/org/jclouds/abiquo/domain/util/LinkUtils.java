@@ -67,6 +67,6 @@ public class LinkUtils {
     * @return A list with all links that point to a virtual disk.
     */
    public static List<RESTLink> filterDiskLinks(final List<RESTLink> links) {
-      return Lists.newLinkedList(filter(links, LinkPredicates.isDisk()));
+      return ImmutableList.copyOf(filter(links, LinkPredicates.isDisk()));
    }
 }
