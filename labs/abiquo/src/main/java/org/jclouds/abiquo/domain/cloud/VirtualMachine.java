@@ -562,8 +562,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    // TODO: Get current gateway network
 
    public void setGatewayNetwork(final Network<?> network) {
-      context.getApi().getCloudApi().setGatewayNetwork(target, network.unwrap());
-      refresh(); // First refresh the target and its links
+      setNics(network, listAttachedNics());
    }
 
    /**
