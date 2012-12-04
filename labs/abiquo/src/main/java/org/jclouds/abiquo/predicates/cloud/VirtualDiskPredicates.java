@@ -34,7 +34,7 @@ import com.google.common.base.Predicate;
  * @author Ignasi Barrera
  */
 public class VirtualDiskPredicates {
-   public static Predicate<Volume> name(final String... names) {
+   public static Predicate<Volume> volumeName(final String... names) {
       checkNotNull(names, "names must be defined");
 
       return new Predicate<Volume>() {
@@ -45,7 +45,7 @@ public class VirtualDiskPredicates {
       };
    }
 
-   public static Predicate<Volume> state(final VolumeState... states) {
+   public static Predicate<Volume> volumeState(final VolumeState... states) {
       checkNotNull(states, "states must be defined");
 
       return new Predicate<Volume>() {
