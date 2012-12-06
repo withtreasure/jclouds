@@ -40,6 +40,8 @@ import com.google.common.collect.Lists;
  */
 public class AbiquoException extends RuntimeException {
 
+   private static final long serialVersionUID = 3627304442037389536L;
+
    /** The HTTP status. */
    private Status httpStatus;
 

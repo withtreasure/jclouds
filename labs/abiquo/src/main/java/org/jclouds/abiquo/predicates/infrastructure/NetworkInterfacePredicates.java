@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /**
  * Licensed to jclouds, Inc. (jclouds) under one or more
  * contributor license agreements.  See the NOTICE file
@@ -16,6 +17,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+=======
+>>>>>>> volume_reorder
 package org.jclouds.abiquo.predicates.infrastructure;
 
 import static com.google.common.base.Preconditions.checkNotNull;

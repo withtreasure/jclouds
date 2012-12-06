@@ -33,17 +33,17 @@ import javax.ws.rs.core.MediaType;
 import org.jclouds.abiquo.binders.AppendToPath;
 import org.jclouds.abiquo.binders.BindToPath;
 import org.jclouds.abiquo.binders.BindToXMLPayloadAndPath;
-import org.jclouds.abiquo.binders.cloud.BindHardDiskRefsToPayload;
 import org.jclouds.abiquo.binders.cloud.BindMoveVolumeToPath;
-import org.jclouds.abiquo.binders.cloud.BindNetworkConfigurationRefToPayload;
 import org.jclouds.abiquo.binders.cloud.BindNetworkRefToPayload;
 import org.jclouds.abiquo.binders.cloud.BindVirtualDatacenterRefToPayload;
-import org.jclouds.abiquo.binders.cloud.BindVolumeRefsToPayload;
+import org.jclouds.abiquo.domain.cloud.VirtualDatacenter;
 import org.jclouds.abiquo.domain.cloud.options.VirtualApplianceOptions;
 import org.jclouds.abiquo.domain.cloud.options.VirtualDatacenterOptions;
 import org.jclouds.abiquo.domain.cloud.options.VirtualMachineOptions;
 import org.jclouds.abiquo.domain.cloud.options.VirtualMachineTemplateOptions;
 import org.jclouds.abiquo.domain.cloud.options.VolumeOptions;
+import org.jclouds.abiquo.domain.enterprise.Enterprise;
+import org.jclouds.abiquo.domain.infrastructure.Datacenter;
 import org.jclouds.abiquo.domain.network.options.IpOptions;
 import org.jclouds.abiquo.functions.ReturnTaskReferenceOrNull;
 import org.jclouds.abiquo.functions.cloud.ReturnMovedVolume;
@@ -559,16 +559,6 @@ public interface CloudAsyncApi {
          @EndpointLink("configurations") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
 
    /**
-    * @see CloudApi#setGatewayNetwork(VirtualMachineDto,
-    *      VMNetworkConfigurationDto)
-    */
-   @PUT
-   @Produces(LinksDto.BASE_MEDIA_TYPE)
-   ListenableFuture<Void> setGatewayNetwork(
-         @EndpointLink("configurations") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
-         @BinderParam(BindNetworkConfigurationRefToPayload.class) VLANNetworkDto network);
-
-   /**
     * @see CloudApi#rebootVirtualMachine(VirtualMachineDto)
     */
    @POST
@@ -610,54 +600,13 @@ public interface CloudAsyncApi {
          @EndpointLink("volumes") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
 
    /**
-    * @see CloudApi#detachAllVolumes(VirtualMachineDto)
-    */
-   @DELETE
-   @ResponseParser(ReturnTaskReferenceOrNull.class)
-   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
-   ListenableFuture<AcceptedRequestDto<String>> detachAllVolumes(
-         @EndpointLink("volumes") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
-
-   /**
-    * @see CloudApi#replaceVolumes(VirtualMachineDto, VirtualMachineOptions,
-    *      VolumeManagementDto...)
-    */
-   @PUT
-   @ResponseParser(ReturnTaskReferenceOrNull.class)
-   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
-   @Produces(LinksDto.BASE_MEDIA_TYPE)
-   ListenableFuture<AcceptedRequestDto<String>> replaceVolumes(
-         @EndpointLink("volumes") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
-         VirtualMachineOptions options, @BinderParam(BindVolumeRefsToPayload.class) VolumeManagementDto... volumes);
-
-   /**
     * @see CloudApi#listAttachedHardDisks(VirtualMachineDto)
     */
    @GET
    @Consumes(DisksManagementDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
    ListenableFuture<DisksManagementDto> listAttachedHardDisks(
-         @EndpointLink("disks") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
-
-   /**
-    * @see CloudApi#detachAllHardDisks(VirtualMachineDto)
-    */
-   @DELETE
-   @ResponseParser(ReturnTaskReferenceOrNull.class)
-   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
-   ListenableFuture<AcceptedRequestDto<String>> detachAllHardDisks(
-         @EndpointLink("disks") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
-
-   /**
-    * @see CloudApi#replaceHardDisks(VirtualMachineDto, DiskManagementDto...)
-    */
-   @PUT
-   @ResponseParser(ReturnTaskReferenceOrNull.class)
-   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
-   @Produces(LinksDto.BASE_MEDIA_TYPE)
-   ListenableFuture<AcceptedRequestDto<String>> replaceHardDisks(
-         @EndpointLink("disks") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
-         @BinderParam(BindHardDiskRefsToPayload.class) DiskManagementDto... hardDisks);
+         @EndpointLink("harddisks") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
 
    /**
     * @see CloudApi#deployVirtualMachine(VirtualMachineDto,
@@ -682,6 +631,17 @@ public interface CloudAsyncApi {
    ListenableFuture<AcceptedRequestDto<String>> undeployVirtualMachine(
          @EndpointLink("undeploy") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
          @BinderParam(BindToXMLPayload.class) VirtualMachineTaskDto task);
+
+   /*********************** Virtual Machine Template ***********************/
+
+   /**
+    * @see CloudApi#getVirtualMachineTemplate(VirtualMachineTemplateDto)
+    */
+   @GET
+   @Consumes(VirtualMachineTemplateDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<VirtualMachineTemplateDto> getVirtualMachineTemplate(
+         @EndpointLink("virtualmachinetemplate") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
 
    /*********************** Hard disks ***********************/
 
