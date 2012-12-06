@@ -30,6 +30,7 @@ import org.jclouds.abiquo.domain.enterprise.Enterprise;
 import org.jclouds.abiquo.internal.BaseAbiquoApiLiveApiTest;
 import org.jclouds.abiquo.predicates.infrastructure.DatacenterPredicates;
 import org.jclouds.abiquo.predicates.infrastructure.TierPredicates;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
 import com.abiquo.server.core.enterprise.DatacentersLimitsDto;
@@ -44,6 +45,15 @@ import com.google.common.collect.Iterables;
  */
 @Test(groups = "api", testName = "TierLiveApiTest")
 public class TierLiveApiTest extends BaseAbiquoApiLiveApiTest {
+
+   @AfterClass
+   public void restoreTiers() {
+      env.tier.allowTierToAllEnterprises();
+
+      DatacentersLimitsDto dto = env.enterpriseApi.getLimits(env.enterprise.unwrap(), env.datacenter.unwrap());
+      assertNotNull(dto.getCollection().get(0).searchLink("tier"));
+      assertNotNull(dto.getCollection().get(0).searchLinkByHref(env.tier.unwrap().getEditLink().getHref()));
+   }
 
    public void testUpdate() {
       Tier tier = env.datacenter.listTiers().get(0);
@@ -71,7 +81,6 @@ public class TierLiveApiTest extends BaseAbiquoApiLiveApiTest {
    }
 
    public void testAllowTierToAllEnterprises() {
-
       Tier tier = env.datacenter.getTier(env.datacenter.listTiers().get(0).getId());
       tier.allowTierToAllEnterprises();
 
