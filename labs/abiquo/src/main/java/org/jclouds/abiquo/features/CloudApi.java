@@ -577,17 +577,6 @@ public interface CloudApi {
    AcceptedRequestDto<String> snapshotVirtualMachine(VirtualMachineDto virtualMachine,
          VirtualMachineInstanceDto snapshotConfig);
 
-   /******************* Virtual Machine Template ***********************/
-
-   /**
-    * Get the template of a virtual machine.
-    * 
-    * @param virtualMachine
-    *           The given virtual machine.
-    * @return The template of the given virtual machine.
-    */
-   VirtualMachineTemplateDto getVirtualMachineTemplate(VirtualMachineDto virtualMachine);
-
    /**
     * Get the volumes attached to the given virtual machine.
     * 

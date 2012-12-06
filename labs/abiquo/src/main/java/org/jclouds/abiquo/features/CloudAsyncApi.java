@@ -579,17 +579,6 @@ public interface CloudAsyncApi {
          @EndpointLink("instance") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
          @BinderParam(BindToXMLPayload.class) VirtualMachineInstanceDto snapshotConfig);
 
-   /*********************** Virtual Machine Template ***********************/
-
-   /**
-    * @see CloudApi#getVirtualMachineTemplate(VirtualMachineTemplateDto)
-    */
-   @GET
-   @Consumes(VirtualMachineTemplateDto.BASE_MEDIA_TYPE)
-   @JAXBResponseParser
-   ListenableFuture<VirtualMachineTemplateDto> getVirtualMachineTemplate(
-         @EndpointLink("virtualmachinetemplate") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
-
    /**
     * @see CloudApi#listAttachedVolumes(VirtualMachineDto)
     */
