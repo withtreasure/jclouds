@@ -38,28 +38,27 @@ import com.google.common.base.Function;
  * @author Ignasi Barrera
  */
 @Singleton
-public class VirtualMachineTemplateToImage implements Function<VirtualMachineTemplate, Image>
-{
+public class VirtualMachineTemplateToImage implements Function<VirtualMachineTemplate, Image> {
 
-    @Override
-    public Image apply(final VirtualMachineTemplate template)
-    {
-        ImageBuilder builder = new ImageBuilder();
-        builder.ids(template.getId().toString());
-        builder.name(template.getName());
-        builder.description(template.getDescription());
+   @Override
+   public Image apply(final VirtualMachineTemplate template) {
+      ImageBuilder builder = new ImageBuilder();
+      builder.ids(template.getId().toString());
+      builder.name(template.getName());
+      builder.description(template.getDescription());
 
-        // Only conversions have a status
-        builder.status(Status.AVAILABLE);
-        builder.backendStatus(Status.AVAILABLE.name()); // Abiquo images do not have a status
+      // Only conversions have a status
+      builder.status(Status.AVAILABLE);
+      builder.backendStatus(Status.AVAILABLE.name()); // Abiquo images do not
+                                                      // have a status
 
-        RESTLink downloadLink = template.unwrap().searchLink("diskfile");
-        builder.uri(downloadLink == null ? null : URI.create(downloadLink.getHref()));
+      RESTLink downloadLink = template.unwrap().searchLink("diskfile");
+      builder.uri(downloadLink == null ? null : URI.create(downloadLink.getHref()));
 
-        // TODO: Operating system not implemented in Abiquo Templates
-        builder.operatingSystem(OperatingSystem.builder().description(template.getName()).build());
-        // TODO: image credentials
-        return builder.build();
-    }
+      // TODO: Operating system not implemented in Abiquo Templates
+      builder.operatingSystem(OperatingSystem.builder().description(template.getName()).build());
+      // TODO: image credentials
+      return builder.build();
+   }
 
 }

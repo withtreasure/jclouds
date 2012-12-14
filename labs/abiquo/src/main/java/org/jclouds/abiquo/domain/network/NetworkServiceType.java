@@ -37,115 +37,95 @@ import com.abiquo.server.core.infrastructure.network.NetworkServiceTypeDto;
  * 
  * @author Jaume Devesa
  */
-public class NetworkServiceType extends DomainWrapper<NetworkServiceTypeDto>
-{
-    public static Builder builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context,
-        final Datacenter datacenter)
-    {
-        return new Builder(context, datacenter);
-    }
+public class NetworkServiceType extends DomainWrapper<NetworkServiceTypeDto> {
+   public static Builder builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context, final Datacenter datacenter) {
+      return new Builder(context, datacenter);
+   }
 
-    /**
-     * Helper class to build {@link NetworkServiceType} in a controlled way.
-     * 
-     * @author Jaume Devesa
-     */
-    public static class Builder
-    {
-        private RestContext<AbiquoApi, AbiquoAsyncApi> context;
+   /**
+    * Helper class to build {@link NetworkServiceType} in a controlled way.
+    * 
+    * @author Jaume Devesa
+    */
+   public static class Builder {
+      private RestContext<AbiquoApi, AbiquoAsyncApi> context;
 
-        private Datacenter datacenter;
+      private Datacenter datacenter;
 
-        private String name;
+      private String name;
 
-        public Builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context,
-            final Datacenter datacenter)
-        {
-            super();
-            checkNotNull(datacenter, ValidationErrors.NULL_RESOURCE + Datacenter.class);
-            this.datacenter = datacenter;
-            this.context = context;
-        }
+      public Builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context, final Datacenter datacenter) {
+         super();
+         checkNotNull(datacenter, ValidationErrors.NULL_RESOURCE + Datacenter.class);
+         this.datacenter = datacenter;
+         this.context = context;
+      }
 
-        public NetworkServiceType build()
-        {
-            NetworkServiceTypeDto dto = new NetworkServiceTypeDto();
-            dto.setName(this.name);
+      public NetworkServiceType build() {
+         NetworkServiceTypeDto dto = new NetworkServiceTypeDto();
+         dto.setName(this.name);
 
-            NetworkServiceType nst = new NetworkServiceType(context, dto);
-            nst.datacenter = this.datacenter;
-            return nst;
-        }
+         NetworkServiceType nst = new NetworkServiceType(context, dto);
+         nst.datacenter = this.datacenter;
+         return nst;
+      }
 
-        public Builder name(final String name)
-        {
-            this.name = name;
-            return this;
-        }
-    }
+      public Builder name(final String name) {
+         this.name = name;
+         return this;
+      }
+   }
 
-    /** The datacenter where the NetworkServiceType belongs. */
-    private Datacenter datacenter;
+   /** The datacenter where the NetworkServiceType belongs. */
+   private Datacenter datacenter;
 
-    /** Constructor will only be used by the builder. */
-    protected NetworkServiceType(final RestContext<AbiquoApi, AbiquoAsyncApi> context,
-        final NetworkServiceTypeDto target)
-    {
-        super(context, target);
-    }
+   /** Constructor will only be used by the builder. */
+   protected NetworkServiceType(final RestContext<AbiquoApi, AbiquoAsyncApi> context, final NetworkServiceTypeDto target) {
+      super(context, target);
+   }
 
-    /**
-     * Delete the Network Service Type.
-     */
-    public void delete()
-    {
-        context.getApi().getInfrastructureApi().deleteNetworkServiceType(target);
-        target = null;
-    }
+   /**
+    * Delete the Network Service Type.
+    */
+   public void delete() {
+      context.getApi().getInfrastructureApi().deleteNetworkServiceType(target);
+      target = null;
+   }
 
-    /**
-     * Create a new Network Service Type
-     */
-    public void save()
-    {
-        target =
-            context.getApi().getInfrastructureApi()
-                .createNetworkServiceType(datacenter.unwrap(), target);
-    }
+   /**
+    * Create a new Network Service Type
+    */
+   public void save() {
+      target = context.getApi().getInfrastructureApi().createNetworkServiceType(datacenter.unwrap(), target);
+   }
 
-    /**
-     * Update Network Service Type information in the server with the data from this NST.
-     */
-    public void update()
-    {
-        target = context.getApi().getInfrastructureApi().updateNetworkServiceType(target);
-    }
+   /**
+    * Update Network Service Type information in the server with the data from
+    * this NST.
+    */
+   public void update() {
+      target = context.getApi().getInfrastructureApi().updateNetworkServiceType(target);
+   }
 
-    public Integer getId()
-    {
-        return target.getId();
-    }
+   public Integer getId() {
+      return target.getId();
+   }
 
-    public String getName()
-    {
-        return target.getName();
-    }
+   public String getName() {
+      return target.getName();
+   }
 
-    public Boolean isDefaultNST()
-    {
-        return target.isDefaultNST();
-    }
+   public Boolean isDefaultNST() {
+      return target.isDefaultNST();
+   }
 
-    public void setName(final String name)
-    {
-        target.setName(name);
-    }
+   public void setName(final String name) {
+      target.setName(name);
+   }
 
-    @Override
-    public String toString()
-    {
-        return "NetworkServiceType [id=" + getId() + ", name=" + getName() + ", isDefault="
-            + isDefaultNST() + "]";
-    }
+   @Override
+   public String toString() {
+      return "NetworkServiceType [id=" + getId() + ", name=" + getName() + ", isDefault=" + isDefaultNST() + "]";
+   }
 
 }

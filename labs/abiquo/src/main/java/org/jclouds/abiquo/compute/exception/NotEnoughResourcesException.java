@@ -20,34 +20,29 @@
 package org.jclouds.abiquo.compute.exception;
 
 /**
- * Exception thrown when there are not enough resources in the infrastructure to deploy the desired
- * template.
+ * Exception thrown when there are not enough resources in the infrastructure to
+ * deploy the desired template.
  * 
  * @author Ignasi Barrera
  */
-public class NotEnoughResourcesException extends RuntimeException
-{
-    /** Serial UID. */
-    private static final long serialVersionUID = 1L;
+public class NotEnoughResourcesException extends RuntimeException {
+   /** Serial UID. */
+   private static final long serialVersionUID = 1L;
 
-    public NotEnoughResourcesException()
-    {
-        super();
-    }
+   public NotEnoughResourcesException() {
+      super();
+   }
 
-    public NotEnoughResourcesException(final String arg0, final Throwable arg1)
-    {
-        super(arg0, arg1);
-    }
+   public NotEnoughResourcesException(final String arg0, final Throwable arg1) {
+      super(arg0, arg1);
+   }
 
-    public NotEnoughResourcesException(final String arg0)
-    {
-        super(arg0);
-    }
+   public NotEnoughResourcesException(final String arg0) {
+      super(arg0);
+   }
 
-    public NotEnoughResourcesException(final Throwable arg0)
-    {
-        super(arg0);
-    }
+   public NotEnoughResourcesException(final Throwable arg0) {
+      super(arg0);
+   }
 
 }

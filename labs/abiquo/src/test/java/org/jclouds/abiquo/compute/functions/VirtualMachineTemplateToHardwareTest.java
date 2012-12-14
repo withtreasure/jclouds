@@ -43,131 +43,129 @@ import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
  * @author Ignasi Barrera
  */
 @Test(groups = "unit", testName = "VirtualMachineTemplateToHardwareTest")
-public class VirtualMachineTemplateToHardwareTest
-{
-    @SuppressWarnings("unchecked")
-    public void testVirtualMachineTemplateToHardware()
-    {
-        RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
-        VirtualMachineTemplateToHardware function = new VirtualMachineTemplateToHardware();
+public class VirtualMachineTemplateToHardwareTest {
+   @SuppressWarnings("unchecked")
+   public void testVirtualMachineTemplateToHardware() {
+      RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
+      VirtualMachineTemplateToHardware function = new VirtualMachineTemplateToHardware();
 
-        // VirtualMachineTemplate domain object does not have a builder, it is read only
-        VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
-        dto.setId(5);
-        dto.setName("Template");
-        dto.setDescription("Template description");
-        dto.setHdRequired(50L * 1024 * 1024 * 1024); // 50 GB
-        dto.setCpuRequired(5);
-        dto.setRamRequired(2048);
-        dto.addLink(new RESTLink("edit", "http://foo/bar"));
+      // VirtualMachineTemplate domain object does not have a builder, it is
+      // read only
+      VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
+      dto.setId(5);
+      dto.setName("Template");
+      dto.setDescription("Template description");
+      dto.setHdRequired(50L * 1024 * 1024 * 1024); // 50 GB
+      dto.setCpuRequired(5);
+      dto.setRamRequired(2048);
+      dto.addLink(new RESTLink("edit", "http://foo/bar"));
 
-        Hardware hardware = function.apply(wrap(context, VirtualMachineTemplate.class, dto));
+      Hardware hardware = function.apply(wrap(context, VirtualMachineTemplate.class, dto));
 
-        assertEquals(hardware.getId(), dto.getId().toString());
-        assertEquals(hardware.getName(), dto.getName());
-        assertEquals(hardware.getUri(), URI.create("http://foo/bar"));
+      assertEquals(hardware.getId(), dto.getId().toString());
+      assertEquals(hardware.getName(), dto.getName());
+      assertEquals(hardware.getUri(), URI.create("http://foo/bar"));
 
-        assertEquals(hardware.getRam(), dto.getRamRequired());
-        assertEquals(hardware.getProcessors().size(), 1);
-        assertEquals(hardware.getProcessors().get(0).getCores(), (double) dto.getCpuRequired());
-        assertEquals(hardware.getProcessors().get(0).getSpeed(),
-            VirtualMachineTemplateToHardware.DEFAULT_CORE_SPEED);
+      assertEquals(hardware.getRam(), dto.getRamRequired());
+      assertEquals(hardware.getProcessors().size(), 1);
+      assertEquals(hardware.getProcessors().get(0).getCores(), (double) dto.getCpuRequired());
+      assertEquals(hardware.getProcessors().get(0).getSpeed(), VirtualMachineTemplateToHardware.DEFAULT_CORE_SPEED);
 
-        assertEquals(hardware.getVolumes().size(), 1);
-        assertEquals(hardware.getVolumes().get(0).getSize(), 50F);
-        assertEquals(hardware.getVolumes().get(0).getType(), Volume.Type.LOCAL);
-        assertEquals(hardware.getVolumes().get(0).isBootDevice(), true);
-        assertEquals(hardware.getVolumes().get(0).isDurable(), false);
-    }
+      assertEquals(hardware.getVolumes().size(), 1);
+      assertEquals(hardware.getVolumes().get(0).getSize(), 50F);
+      assertEquals(hardware.getVolumes().get(0).getType(), Volume.Type.LOCAL);
+      assertEquals(hardware.getVolumes().get(0).isBootDevice(), true);
+      assertEquals(hardware.getVolumes().get(0).isDurable(), false);
+   }
 
-    @SuppressWarnings("unchecked")
-    public void testConvertWithoutEditLink()
-    {
-        RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
-        VirtualMachineTemplateToHardware function = new VirtualMachineTemplateToHardware();
+   @SuppressWarnings("unchecked")
+   public void testConvertWithoutEditLink() {
+      RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
+      VirtualMachineTemplateToHardware function = new VirtualMachineTemplateToHardware();
 
-        // VirtualMachineTemplate domain object does not have a builder, it is read only
-        VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
-        dto.setId(5);
-        dto.setName("Template");
-        dto.setDescription("Template description");
-        dto.setHdRequired(50L * 1024 * 1024 * 1024); // 50 GB
-        dto.setCpuRequired(5);
-        dto.setRamRequired(2048);
+      // VirtualMachineTemplate domain object does not have a builder, it is
+      // read only
+      VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
+      dto.setId(5);
+      dto.setName("Template");
+      dto.setDescription("Template description");
+      dto.setHdRequired(50L * 1024 * 1024 * 1024); // 50 GB
+      dto.setCpuRequired(5);
+      dto.setRamRequired(2048);
 
-        Hardware hardware = function.apply(wrap(context, VirtualMachineTemplate.class, dto));
+      Hardware hardware = function.apply(wrap(context, VirtualMachineTemplate.class, dto));
 
-        assertNull(hardware.getUri());
-    }
+      assertNull(hardware.getUri());
+   }
 
-    @SuppressWarnings("unchecked")
-    @Test(expectedExceptions = NullPointerException.class)
-    public void testConvertWithoutId()
-    {
-        RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
-        VirtualMachineTemplateToHardware function = new VirtualMachineTemplateToHardware();
+   @SuppressWarnings("unchecked")
+   @Test(expectedExceptions = NullPointerException.class)
+   public void testConvertWithoutId() {
+      RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
+      VirtualMachineTemplateToHardware function = new VirtualMachineTemplateToHardware();
 
-        // VirtualMachineTemplate domain object does not have a builder, it is read only
-        VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
-        function.apply(wrap(context, VirtualMachineTemplate.class, dto));
-    }
+      // VirtualMachineTemplate domain object does not have a builder, it is
+      // read only
+      VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
+      function.apply(wrap(context, VirtualMachineTemplate.class, dto));
+   }
 
-    @SuppressWarnings("unchecked")
-    public void testConvertWithoutCpu()
-    {
-        RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
-        VirtualMachineTemplateToHardware function = new VirtualMachineTemplateToHardware();
+   @SuppressWarnings("unchecked")
+   public void testConvertWithoutCpu() {
+      RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
+      VirtualMachineTemplateToHardware function = new VirtualMachineTemplateToHardware();
 
-        // VirtualMachineTemplate domain object does not have a builder, it is read only
-        VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
-        dto.setId(5);
-        dto.setName("Template");
-        dto.setDescription("Template description");
-        dto.setHdRequired(50L * 1024 * 1024 * 1024); // 50 GB
-        dto.setRamRequired(2048);
+      // VirtualMachineTemplate domain object does not have a builder, it is
+      // read only
+      VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
+      dto.setId(5);
+      dto.setName("Template");
+      dto.setDescription("Template description");
+      dto.setHdRequired(50L * 1024 * 1024 * 1024); // 50 GB
+      dto.setRamRequired(2048);
 
-        Hardware hardware = function.apply(wrap(context, VirtualMachineTemplate.class, dto));
+      Hardware hardware = function.apply(wrap(context, VirtualMachineTemplate.class, dto));
 
-        assertEquals(hardware.getProcessors().size(), 1);
-        assertEquals(hardware.getProcessors().get(0).getCores(), 0D);
-    }
+      assertEquals(hardware.getProcessors().size(), 1);
+      assertEquals(hardware.getProcessors().get(0).getCores(), 0D);
+   }
 
-    @SuppressWarnings("unchecked")
-    public void testConvertWithoutRam()
-    {
-        RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
-        VirtualMachineTemplateToHardware function = new VirtualMachineTemplateToHardware();
+   @SuppressWarnings("unchecked")
+   public void testConvertWithoutRam() {
+      RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
+      VirtualMachineTemplateToHardware function = new VirtualMachineTemplateToHardware();
 
-        // VirtualMachineTemplate domain object does not have a builder, it is read only
-        VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
-        dto.setId(5);
-        dto.setName("Template");
-        dto.setDescription("Template description");
-        dto.setHdRequired(50L * 1024 * 1024 * 1024); // 50 GB
-        dto.setCpuRequired(5);
+      // VirtualMachineTemplate domain object does not have a builder, it is
+      // read only
+      VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
+      dto.setId(5);
+      dto.setName("Template");
+      dto.setDescription("Template description");
+      dto.setHdRequired(50L * 1024 * 1024 * 1024); // 50 GB
+      dto.setCpuRequired(5);
 
-        Hardware hardware = function.apply(wrap(context, VirtualMachineTemplate.class, dto));
+      Hardware hardware = function.apply(wrap(context, VirtualMachineTemplate.class, dto));
 
-        assertEquals(hardware.getRam(), 0);
-    }
+      assertEquals(hardware.getRam(), 0);
+   }
 
-    @SuppressWarnings("unchecked")
-    public void testConvertWithoutHd()
-    {
-        RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
-        VirtualMachineTemplateToHardware function = new VirtualMachineTemplateToHardware();
+   @SuppressWarnings("unchecked")
+   public void testConvertWithoutHd() {
+      RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
+      VirtualMachineTemplateToHardware function = new VirtualMachineTemplateToHardware();
 
-        // VirtualMachineTemplate domain object does not have a builder, it is read only
-        VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
-        dto.setId(5);
-        dto.setName("Template");
-        dto.setDescription("Template description");
-        dto.setCpuRequired(5);
-        dto.setRamRequired(2048);
+      // VirtualMachineTemplate domain object does not have a builder, it is
+      // read only
+      VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
+      dto.setId(5);
+      dto.setName("Template");
+      dto.setDescription("Template description");
+      dto.setCpuRequired(5);
+      dto.setRamRequired(2048);
 
-        Hardware hardware = function.apply(wrap(context, VirtualMachineTemplate.class, dto));
+      Hardware hardware = function.apply(wrap(context, VirtualMachineTemplate.class, dto));
 
-        assertEquals(hardware.getVolumes().size(), 1);
-        assertEquals(hardware.getVolumes().get(0).getSize(), 0F);
-    }
+      assertEquals(hardware.getVolumes().size(), 1);
+      assertEquals(hardware.getVolumes().get(0).getSize(), 0F);
+   }
 }

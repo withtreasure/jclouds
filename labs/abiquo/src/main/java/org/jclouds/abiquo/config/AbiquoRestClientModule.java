@@ -78,78 +78,65 @@ import com.google.inject.Provides;
  * @author Ignasi Barrera
  */
 @ConfiguresRestClient
-public class AbiquoRestClientModule extends RestClientModule<AbiquoApi, AbiquoAsyncApi>
-{
-    public static final Map<Class< ? >, Class< ? >> DELEGATE_MAP = ImmutableMap
-        .<Class< ? >, Class< ? >> builder() //
-        .put(InfrastructureApi.class, InfrastructureAsyncApi.class) //
-        .put(EnterpriseApi.class, EnterpriseAsyncApi.class) //
-        .put(AdminApi.class, AdminAsyncApi.class) //
-        .put(ConfigApi.class, ConfigAsyncApi.class) //
-        .put(CloudApi.class, CloudAsyncApi.class) //
-        .put(VirtualMachineTemplateApi.class, VirtualMachineTemplateAsyncApi.class) //
-        .put(TaskApi.class, TaskAsyncApi.class) //
-        .put(EventApi.class, EventAsyncApi.class) //
-        .put(PricingApi.class, PricingAsyncApi.class) //
-        .build();
+public class AbiquoRestClientModule extends RestClientModule<AbiquoApi, AbiquoAsyncApi> {
+   public static final Map<Class<?>, Class<?>> DELEGATE_MAP = ImmutableMap.<Class<?>, Class<?>> builder() //
+         .put(InfrastructureApi.class, InfrastructureAsyncApi.class) //
+         .put(EnterpriseApi.class, EnterpriseAsyncApi.class) //
+         .put(AdminApi.class, AdminAsyncApi.class) //
+         .put(ConfigApi.class, ConfigAsyncApi.class) //
+         .put(CloudApi.class, CloudAsyncApi.class) //
+         .put(VirtualMachineTemplateApi.class, VirtualMachineTemplateAsyncApi.class) //
+         .put(TaskApi.class, TaskAsyncApi.class) //
+         .put(EventApi.class, EventAsyncApi.class) //
+         .put(PricingApi.class, PricingAsyncApi.class) //
+         .build();
 
-    public AbiquoRestClientModule()
-    {
-        super(DELEGATE_MAP);
-    }
+   public AbiquoRestClientModule() {
+      super(DELEGATE_MAP);
+   }
 
-    @Override
-    protected void bindAsyncClient()
-    {
-        super.bindAsyncClient();
-        BinderUtils.bindAsyncClient(binder(), AbiquoHttpAsyncClient.class);
-    }
+   @Override
+   protected void bindAsyncClient() {
+      super.bindAsyncClient();
+      BinderUtils.bindAsyncClient(binder(), AbiquoHttpAsyncClient.class);
+   }
 
-    @Override
-    protected void bindClient()
-    {
-        super.bindClient();
-        BinderUtils.bindClient(binder(), AbiquoHttpClient.class, AbiquoHttpAsyncClient.class,
-            ImmutableMap.<Class< ? >, Class< ? >> of(AbiquoHttpClient.class,
-                AbiquoHttpAsyncClient.class));
-    }
+   @Override
+   protected void bindClient() {
+      super.bindClient();
+      BinderUtils.bindClient(binder(), AbiquoHttpClient.class, AbiquoHttpAsyncClient.class,
+            ImmutableMap.<Class<?>, Class<?>> of(AbiquoHttpClient.class, AbiquoHttpAsyncClient.class));
+   }
 
-    @Override
-    protected void configure()
-    {
-        super.configure();
-        bind(Utils.class).to(ExtendedUtils.class);
-    }
+   @Override
+   protected void configure() {
+      super.configure();
+      bind(Utils.class).to(ExtendedUtils.class);
+   }
 
-    @Override
-    protected void bindErrorHandlers()
-    {
-        bind(HttpErrorHandler.class).annotatedWith(Redirection.class).to(AbiquoErrorHandler.class);
-        bind(HttpErrorHandler.class).annotatedWith(ClientError.class).to(AbiquoErrorHandler.class);
-        bind(HttpErrorHandler.class).annotatedWith(ServerError.class).to(AbiquoErrorHandler.class);
-    }
+   @Override
+   protected void bindErrorHandlers() {
+      bind(HttpErrorHandler.class).annotatedWith(Redirection.class).to(AbiquoErrorHandler.class);
+      bind(HttpErrorHandler.class).annotatedWith(ClientError.class).to(AbiquoErrorHandler.class);
+      bind(HttpErrorHandler.class).annotatedWith(ServerError.class).to(AbiquoErrorHandler.class);
+   }
 
-    @Provides
-    @Singleton
-    @Memoized
-    public Supplier<User> getCurrentUser(
-        final AtomicReference<AuthorizationException> authException,
-        @Named(PROPERTY_SESSION_INTERVAL) final long seconds, final GetCurrentUser getCurrentUser)
-    {
-        return MemoizedRetryOnTimeOutButNotOnAuthorizationExceptionSupplier.create(authException,
-            getCurrentUser, seconds, TimeUnit.SECONDS);
-    }
+   @Provides
+   @Singleton
+   @Memoized
+   public Supplier<User> getCurrentUser(final AtomicReference<AuthorizationException> authException,
+         @Named(PROPERTY_SESSION_INTERVAL) final long seconds, final GetCurrentUser getCurrentUser) {
+      return MemoizedRetryOnTimeOutButNotOnAuthorizationExceptionSupplier.create(authException, getCurrentUser,
+            seconds, TimeUnit.SECONDS);
+   }
 
-    @Provides
-    @Singleton
-    @Memoized
-    public Supplier<Enterprise> getCurrentEnterprise(
-        final AtomicReference<AuthorizationException> authException,
-        @Named(PROPERTY_SESSION_INTERVAL) final long seconds,
-        final GetCurrentEnterprise getCurrentEnterprise)
-    {
-        return MemoizedRetryOnTimeOutButNotOnAuthorizationExceptionSupplier.create(authException,
-            getCurrentEnterprise, seconds, TimeUnit.SECONDS);
-    }
+   @Provides
+   @Singleton
+   @Memoized
+   public Supplier<Enterprise> getCurrentEnterprise(final AtomicReference<AuthorizationException> authException,
+         @Named(PROPERTY_SESSION_INTERVAL) final long seconds, final GetCurrentEnterprise getCurrentEnterprise) {
+      return MemoizedRetryOnTimeOutButNotOnAuthorizationExceptionSupplier.create(authException, getCurrentEnterprise,
+            seconds, TimeUnit.SECONDS);
+   }
 
 }

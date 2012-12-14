@@ -37,21 +37,18 @@ import com.google.common.base.Supplier;
  * 
  * @author Ignasi Barrera
  */
-public class GetCurrentUser implements Supplier<User>
-{
-    private RestContext<AbiquoApi, AbiquoAsyncApi> context;
+public class GetCurrentUser implements Supplier<User> {
+   private RestContext<AbiquoApi, AbiquoAsyncApi> context;
 
-    @Inject
-    public GetCurrentUser(final RestContext<AbiquoApi, AbiquoAsyncApi> context)
-    {
-        this.context = checkNotNull(context, "context");
-    }
+   @Inject
+   public GetCurrentUser(final RestContext<AbiquoApi, AbiquoAsyncApi> context) {
+      this.context = checkNotNull(context, "context");
+   }
 
-    @Override
-    public User get()
-    {
-        UserDto user = context.getApi().getAdminApi().getCurrentUser();
-        return wrap(context, User.class, user);
-    }
+   @Override
+   public User get() {
+      UserDto user = context.getApi().getAdminApi().getCurrentUser();
+      return wrap(context, User.class, user);
+   }
 
 }

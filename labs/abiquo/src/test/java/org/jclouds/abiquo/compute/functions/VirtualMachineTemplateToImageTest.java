@@ -43,57 +43,55 @@ import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
  * @author Ignasi Barrera
  */
 @Test(groups = "unit", testName = "VirtualMachineTemplateToImageTest")
-public class VirtualMachineTemplateToImageTest
-{
-    @SuppressWarnings("unchecked")
-    public void testVirtualMachineTemplateToImage()
-    {
-        RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
-        VirtualMachineTemplateToImage function = new VirtualMachineTemplateToImage();
+public class VirtualMachineTemplateToImageTest {
+   @SuppressWarnings("unchecked")
+   public void testVirtualMachineTemplateToImage() {
+      RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
+      VirtualMachineTemplateToImage function = new VirtualMachineTemplateToImage();
 
-        // VirtualMachineTemplate domain object does not have a builder, it is read only
-        VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
-        dto.setId(5);
-        dto.setName("Template");
-        dto.setDescription("Template description");
-        dto.addLink(new RESTLink("diskfile", "http://foo/bar"));
+      // VirtualMachineTemplate domain object does not have a builder, it is
+      // read only
+      VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
+      dto.setId(5);
+      dto.setName("Template");
+      dto.setDescription("Template description");
+      dto.addLink(new RESTLink("diskfile", "http://foo/bar"));
 
-        Image image = function.apply(wrap(context, VirtualMachineTemplate.class, dto));
+      Image image = function.apply(wrap(context, VirtualMachineTemplate.class, dto));
 
-        assertEquals(image.getId(), dto.getId().toString());
-        assertEquals(image.getName(), dto.getName());
-        assertEquals(image.getDescription(), dto.getDescription());
-        assertEquals(image.getUri(), URI.create("http://foo/bar"));
-        assertEquals(image.getOperatingSystem(),
-            OperatingSystem.builder().description(dto.getName()).build());
-    }
+      assertEquals(image.getId(), dto.getId().toString());
+      assertEquals(image.getName(), dto.getName());
+      assertEquals(image.getDescription(), dto.getDescription());
+      assertEquals(image.getUri(), URI.create("http://foo/bar"));
+      assertEquals(image.getOperatingSystem(), OperatingSystem.builder().description(dto.getName()).build());
+   }
 
-    @SuppressWarnings("unchecked")
-    public void testConvertWithoutDownloadLink()
-    {
-        RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
-        VirtualMachineTemplateToImage function = new VirtualMachineTemplateToImage();
+   @SuppressWarnings("unchecked")
+   public void testConvertWithoutDownloadLink() {
+      RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
+      VirtualMachineTemplateToImage function = new VirtualMachineTemplateToImage();
 
-        // VirtualMachineTemplate domain object does not have a builder, it is read only
-        VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
-        dto.setId(5);
-        dto.setName("Template");
-        dto.setDescription("Template description");
+      // VirtualMachineTemplate domain object does not have a builder, it is
+      // read only
+      VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
+      dto.setId(5);
+      dto.setName("Template");
+      dto.setDescription("Template description");
 
-        Image image = function.apply(wrap(context, VirtualMachineTemplate.class, dto));
+      Image image = function.apply(wrap(context, VirtualMachineTemplate.class, dto));
 
-        assertNull(image.getUri());
-    }
+      assertNull(image.getUri());
+   }
 
-    @SuppressWarnings("unchecked")
-    @Test(expectedExceptions = NullPointerException.class)
-    public void testConvertWithoutId()
-    {
-        RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
-        VirtualMachineTemplateToImage function = new VirtualMachineTemplateToImage();
+   @SuppressWarnings("unchecked")
+   @Test(expectedExceptions = NullPointerException.class)
+   public void testConvertWithoutId() {
+      RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
+      VirtualMachineTemplateToImage function = new VirtualMachineTemplateToImage();
 
-        // VirtualMachineTemplate domain object does not have a builder, it is read only
-        VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
-        function.apply(wrap(context, VirtualMachineTemplate.class, dto));
-    }
+      // VirtualMachineTemplate domain object does not have a builder, it is
+      // read only
+      VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
+      function.apply(wrap(context, VirtualMachineTemplate.class, dto));
+   }
 }

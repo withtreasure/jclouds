@@ -37,37 +37,34 @@ import com.google.common.base.Function;
  * @author Ignasi Barrera
  */
 @Singleton
-public class VirtualMachineTemplateToHardware implements Function<VirtualMachineTemplate, Hardware>
-{
-    /** The default core speed, 2.0Ghz. */
-    public static final double DEFAULT_CORE_SPEED = 2.0;
+public class VirtualMachineTemplateToHardware implements Function<VirtualMachineTemplate, Hardware> {
+   /** The default core speed, 2.0Ghz. */
+   public static final double DEFAULT_CORE_SPEED = 2.0;
 
-    @Override
-    public Hardware apply(final VirtualMachineTemplate template)
-    {
-        HardwareBuilder builder = new HardwareBuilder();
-        builder.ids(template.getId().toString());
-        builder.uri(template.getURI());
+   @Override
+   public Hardware apply(final VirtualMachineTemplate template) {
+      HardwareBuilder builder = new HardwareBuilder();
+      builder.ids(template.getId().toString());
+      builder.uri(template.getURI());
 
-        builder.name(template.getName());
-        builder.processor(new Processor(template.getCpuRequired(), DEFAULT_CORE_SPEED));
-        builder.ram(template.getRamRequired());
+      builder.name(template.getName());
+      builder.processor(new Processor(template.getCpuRequired(), DEFAULT_CORE_SPEED));
+      builder.ram(template.getRamRequired());
 
-        // Currently we consider each template as a hardware profile
-        builder.supportsImage(ImagePredicates.idEquals(template.getId().toString()));
+      // Currently we consider each template as a hardware profile
+      builder.supportsImage(ImagePredicates.idEquals(template.getId().toString()));
 
-        VolumeBuilder volumeBuilder = new VolumeBuilder();
-        volumeBuilder.bootDevice(true);
-        volumeBuilder.size(toGb(template.getHdRequired()));
-        volumeBuilder.type(Volume.Type.LOCAL);
-        volumeBuilder.durable(false);
-        builder.volume(volumeBuilder.build());
+      VolumeBuilder volumeBuilder = new VolumeBuilder();
+      volumeBuilder.bootDevice(true);
+      volumeBuilder.size(toGb(template.getHdRequired()));
+      volumeBuilder.type(Volume.Type.LOCAL);
+      volumeBuilder.durable(false);
+      builder.volume(volumeBuilder.build());
 
-        return builder.build();
-    }
+      return builder.build();
+   }
 
-    private static float toGb(final long bytes)
-    {
-        return bytes / 1024 / 1024 / (float) 1024;
-    }
+   private static float toGb(final long bytes) {
+      return bytes / 1024 / 1024 / (float) 1024;
+   }
 }

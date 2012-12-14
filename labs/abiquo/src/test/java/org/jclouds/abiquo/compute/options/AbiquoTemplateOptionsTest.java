@@ -44,102 +44,92 @@ import com.abiquo.server.core.infrastructure.network.VLANNetworkDto;
  * @author Ignasi Barrera
  */
 @Test(groups = "unit", testName = "AbiquoTemplateOptionsTest")
-public class AbiquoTemplateOptionsTest
-{
-    public void testAs()
-    {
-        TemplateOptions options = new AbiquoTemplateOptions();
-        assertEquals(options.as(AbiquoTemplateOptions.class), options);
-    }
+public class AbiquoTemplateOptionsTest {
+   public void testAs() {
+      TemplateOptions options = new AbiquoTemplateOptions();
+      assertEquals(options.as(AbiquoTemplateOptions.class), options);
+   }
 
-    public void testOverrideCores()
-    {
-        TemplateOptions options = new AbiquoTemplateOptions().overrideCores(5);
-        assertEquals(options.as(AbiquoTemplateOptions.class).getOverrideCores(), Integer.valueOf(5));
-    }
+   public void testOverrideCores() {
+      TemplateOptions options = new AbiquoTemplateOptions().overrideCores(5);
+      assertEquals(options.as(AbiquoTemplateOptions.class).getOverrideCores(), Integer.valueOf(5));
+   }
 
-    public void testOverrideRam()
-    {
-        TemplateOptions options = new AbiquoTemplateOptions().overrideRam(2048);
-        assertEquals(options.as(AbiquoTemplateOptions.class).getOverrideRam(),
-            Integer.valueOf(2048));
-    }
+   public void testOverrideRam() {
+      TemplateOptions options = new AbiquoTemplateOptions().overrideRam(2048);
+      assertEquals(options.as(AbiquoTemplateOptions.class).getOverrideRam(), Integer.valueOf(2048));
+   }
 
-    public void testVncPassword()
-    {
-        TemplateOptions options = new AbiquoTemplateOptions().vncPassword("foo");
-        assertEquals(options.as(AbiquoTemplateOptions.class).getVncPassword(), "foo");
-    }
+   public void testVncPassword() {
+      TemplateOptions options = new AbiquoTemplateOptions().vncPassword("foo");
+      assertEquals(options.as(AbiquoTemplateOptions.class).getVncPassword(), "foo");
+   }
 
-    public void testVirtualDatacenter()
-    {
-        TemplateOptions options = new AbiquoTemplateOptions().virtualDatacenter("foo");
-        assertEquals(options.as(AbiquoTemplateOptions.class).getVirtualDatacenter(), "foo");
-    }
+   public void testVirtualDatacenter() {
+      TemplateOptions options = new AbiquoTemplateOptions().virtualDatacenter("foo");
+      assertEquals(options.as(AbiquoTemplateOptions.class).getVirtualDatacenter(), "foo");
+   }
 
-    @SuppressWarnings("unchecked")
-    public void testIps()
-    {
-        RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
+   @SuppressWarnings("unchecked")
+   public void testIps() {
+      RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
 
-        PrivateIpDto dto1 = new PrivateIpDto();
-        dto1.setIp("10.60.0.1");
-        PrivateIpDto dto2 = new PrivateIpDto();
-        dto2.setIp("10.60.0.2");
+      PrivateIpDto dto1 = new PrivateIpDto();
+      dto1.setIp("10.60.0.1");
+      PrivateIpDto dto2 = new PrivateIpDto();
+      dto2.setIp("10.60.0.2");
 
-        PrivateIp ip1 = wrap(context, PrivateIp.class, dto1);
-        PrivateIp ip2 = wrap(context, PrivateIp.class, dto2);
+      PrivateIp ip1 = wrap(context, PrivateIp.class, dto1);
+      PrivateIp ip2 = wrap(context, PrivateIp.class, dto2);
 
-        TemplateOptions options = new AbiquoTemplateOptions().ips(ip1, ip2);
+      TemplateOptions options = new AbiquoTemplateOptions().ips(ip1, ip2);
 
-        Ip< ? , ? >[] ips = options.as(AbiquoTemplateOptions.class).getIps();
-        assertNotNull(ips);
-        assertEquals(ips[0].getIp(), "10.60.0.1");
-        assertEquals(ips[1].getIp(), "10.60.0.2");
-    }
+      Ip<?, ?>[] ips = options.as(AbiquoTemplateOptions.class).getIps();
+      assertNotNull(ips);
+      assertEquals(ips[0].getIp(), "10.60.0.1");
+      assertEquals(ips[1].getIp(), "10.60.0.2");
+   }
 
-    @SuppressWarnings("unchecked")
-    public void testGatewayNetwork()
-    {
-        RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
+   @SuppressWarnings("unchecked")
+   public void testGatewayNetwork() {
+      RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
 
-        VLANNetworkDto dto = new VLANNetworkDto();
-        dto.setAddress("10.0.0.0");
-        dto.setMask(24);
-        dto.setGateway("10.0.0.1");
-        dto.setType(NetworkType.INTERNAL);
+      VLANNetworkDto dto = new VLANNetworkDto();
+      dto.setAddress("10.0.0.0");
+      dto.setMask(24);
+      dto.setGateway("10.0.0.1");
+      dto.setType(NetworkType.INTERNAL);
 
-        PrivateNetwork gateway = wrap(context, PrivateNetwork.class, dto);
+      PrivateNetwork gateway = wrap(context, PrivateNetwork.class, dto);
 
-        TemplateOptions options = new AbiquoTemplateOptions().gatewayNetwork(gateway);
-        assertEquals(options.as(AbiquoTemplateOptions.class).getGatewayNetwork(), gateway);
-    }
+      TemplateOptions options = new AbiquoTemplateOptions().gatewayNetwork(gateway);
+      assertEquals(options.as(AbiquoTemplateOptions.class).getGatewayNetwork(), gateway);
+   }
 
-    @SuppressWarnings("unchecked")
-    public void testUnmanagedIps()
-    {
-        RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
+   @SuppressWarnings("unchecked")
+   public void testUnmanagedIps() {
+      RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
 
-        VLANNetworkDto dto1 = new VLANNetworkDto();
-        dto1.setAddress("10.0.0.0");
-        dto1.setMask(24);
-        dto1.setGateway("10.0.0.1");
-        dto1.setType(NetworkType.UNMANAGED);
+      VLANNetworkDto dto1 = new VLANNetworkDto();
+      dto1.setAddress("10.0.0.0");
+      dto1.setMask(24);
+      dto1.setGateway("10.0.0.1");
+      dto1.setType(NetworkType.UNMANAGED);
 
-        VLANNetworkDto dto2 = new VLANNetworkDto();
-        dto2.setAddress("10.1.0.0");
-        dto2.setMask(24);
-        dto2.setGateway("10.1.0.1");
-        dto2.setType(NetworkType.UNMANAGED);
+      VLANNetworkDto dto2 = new VLANNetworkDto();
+      dto2.setAddress("10.1.0.0");
+      dto2.setMask(24);
+      dto2.setGateway("10.1.0.1");
+      dto2.setType(NetworkType.UNMANAGED);
 
-        UnmanagedNetwork net1 = wrap(context, UnmanagedNetwork.class, dto1);
-        UnmanagedNetwork net2 = wrap(context, UnmanagedNetwork.class, dto2);
+      UnmanagedNetwork net1 = wrap(context, UnmanagedNetwork.class, dto1);
+      UnmanagedNetwork net2 = wrap(context, UnmanagedNetwork.class, dto2);
 
-        TemplateOptions options = new AbiquoTemplateOptions().unmanagedIps(net1, net2);
+      TemplateOptions options = new AbiquoTemplateOptions().unmanagedIps(net1, net2);
 
-        UnmanagedNetwork[] nets = options.as(AbiquoTemplateOptions.class).getUnmanagedIps();
-        assertNotNull(nets);
-        assertEquals(nets[0].getAddress(), "10.0.0.0");
-        assertEquals(nets[1].getAddress(), "10.1.0.0");
-    }
+      UnmanagedNetwork[] nets = options.as(AbiquoTemplateOptions.class).getUnmanagedIps();
+      assertNotNull(nets);
+      assertEquals(nets[0].getAddress(), "10.0.0.0");
+      assertEquals(nets[1].getAddress(), "10.1.0.0");
+   }
 }

@@ -13,20 +13,16 @@ import com.google.common.base.Predicate;
  * 
  * @author Jaume Devesa
  */
-public class NetworkInterfacePredicates
-{
-    public static Predicate<NetworkInterface> name(final String... names)
-    {
-        checkNotNull(names, "names must be defined");
+public class NetworkInterfacePredicates {
+   public static Predicate<NetworkInterface> name(final String... names) {
+      checkNotNull(names, "names must be defined");
 
-        return new Predicate<NetworkInterface>()
-        {
-            @Override
-            public boolean apply(final NetworkInterface ni)
-            {
-                return Arrays.asList(names).contains(ni.getName());
-            }
-        };
-    }
+      return new Predicate<NetworkInterface>() {
+         @Override
+         public boolean apply(final NetworkInterface ni) {
+            return Arrays.asList(names).contains(ni.getName());
+         }
+      };
+   }
 
 }

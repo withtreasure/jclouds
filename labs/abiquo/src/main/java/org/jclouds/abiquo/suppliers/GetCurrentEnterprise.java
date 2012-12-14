@@ -32,19 +32,16 @@ import com.google.common.base.Supplier;
  * 
  * @author Ignasi Barrera
  */
-public class GetCurrentEnterprise implements Supplier<Enterprise>
-{
-    private final GetCurrentUser currentUserSupplier;
+public class GetCurrentEnterprise implements Supplier<Enterprise> {
+   private final GetCurrentUser currentUserSupplier;
 
-    @Inject
-    public GetCurrentEnterprise(final GetCurrentUser currentUserSupplier)
-    {
-        this.currentUserSupplier = checkNotNull(currentUserSupplier, "currentUserSupplier");
-    }
+   @Inject
+   public GetCurrentEnterprise(final GetCurrentUser currentUserSupplier) {
+      this.currentUserSupplier = checkNotNull(currentUserSupplier, "currentUserSupplier");
+   }
 
-    @Override
-    public Enterprise get()
-    {
-        return currentUserSupplier.get().getEnterprise();
-    }
+   @Override
+   public Enterprise get() {
+      return currentUserSupplier.get().getEnterprise();
+   }
 }

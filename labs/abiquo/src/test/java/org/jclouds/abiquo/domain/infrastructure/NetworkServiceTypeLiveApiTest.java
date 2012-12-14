@@ -14,43 +14,37 @@ import org.testng.annotations.Test;
  * @author Jaume Devesa
  */
 @Test(groups = "live")
-public class NetworkServiceTypeLiveApiTest extends BaseAbiquoApiLiveApiTest
-{
+public class NetworkServiceTypeLiveApiTest extends BaseAbiquoApiLiveApiTest {
 
-    NetworkServiceType nst = null;
+   NetworkServiceType nst = null;
 
-    @Test
-    public void testCreate()
-    {
-        nst =
-            NetworkServiceType.builder(env.context.getApiContext(), env.datacenter)
-                .name("Storage Service").build();
-        nst.save();
+   @Test
+   public void testCreate() {
+      nst = NetworkServiceType.builder(env.context.getApiContext(), env.datacenter).name("Storage Service").build();
+      nst.save();
 
-        assertNotNull(nst.getId());
-        NetworkServiceType copy = env.datacenter.getNetworkServiceType(nst.getId());
-        assertEquals(copy.getName(), nst.getName());
+      assertNotNull(nst.getId());
+      NetworkServiceType copy = env.datacenter.getNetworkServiceType(nst.getId());
+      assertEquals(copy.getName(), nst.getName());
 
-    }
+   }
 
-    @Test(dependsOnMethods = "testCreate")
-    public void testUpdate()
-    {
-        nst.setName("Storage Service Updated");
-        nst.update();
+   @Test(dependsOnMethods = "testCreate")
+   public void testUpdate() {
+      nst.setName("Storage Service Updated");
+      nst.update();
 
-        NetworkServiceType copy = env.datacenter.getNetworkServiceType(nst.getId());
-        assertEquals(copy.getName(), nst.getName());
-    }
+      NetworkServiceType copy = env.datacenter.getNetworkServiceType(nst.getId());
+      assertEquals(copy.getName(), nst.getName());
+   }
 
-    @Test(dependsOnMethods = "testUpdate")
-    public void testDelete()
-    {
-        Integer deleteId = nst.getId();
-        nst.delete();
+   @Test(dependsOnMethods = "testUpdate")
+   public void testDelete() {
+      Integer deleteId = nst.getId();
+      nst.delete();
 
-        // Assert it is deleted
-        assertNull(env.datacenter.getNetworkServiceType(deleteId));
+      // Assert it is deleted
+      assertNull(env.datacenter.getNetworkServiceType(deleteId));
 
-    }
+   }
 }

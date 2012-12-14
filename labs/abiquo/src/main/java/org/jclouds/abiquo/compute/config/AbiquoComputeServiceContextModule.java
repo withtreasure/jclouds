@@ -47,36 +47,27 @@ import com.google.inject.TypeLiteral;
  * 
  * @author Ignasi Barrera
  */
-public class AbiquoComputeServiceContextModule
-    extends
-    ComputeServiceAdapterContextModule<VirtualMachine, VirtualMachineTemplate, VirtualMachineTemplate, Datacenter>
-{
+public class AbiquoComputeServiceContextModule extends
+      ComputeServiceAdapterContextModule<VirtualMachine, VirtualMachineTemplate, VirtualMachineTemplate, Datacenter> {
 
-    @Override
-    protected void configure()
-    {
-        super.configure();
-        bind(
-            new TypeLiteral<ComputeServiceAdapter<VirtualMachine, VirtualMachineTemplate, VirtualMachineTemplate, Datacenter>>()
-            {
+   @Override
+   protected void configure() {
+      super.configure();
+      bind(
+            new TypeLiteral<ComputeServiceAdapter<VirtualMachine, VirtualMachineTemplate, VirtualMachineTemplate, Datacenter>>() {
             }).to(AbiquoComputeServiceAdapter.class);
-        bind(new TypeLiteral<Function<VirtualMachine, NodeMetadata>>()
-        {
-        }).to(VirtualMachineToNodeMetadata.class);
-        bind(new TypeLiteral<Function<VirtualMachineTemplate, Image>>()
-        {
-        }).to(VirtualMachineTemplateToImage.class);
-        bind(new TypeLiteral<Function<VirtualMachineTemplate, Hardware>>()
-        {
-        }).to(VirtualMachineTemplateToHardware.class);
-        bind(new TypeLiteral<Function<Datacenter, Location>>()
-        {
-        }).to(DatacenterToLocation.class);
-        bind(ImplicitLocationSupplier.class).to(OnlyLocationOrFirstZone.class).in(Scopes.SINGLETON);
-        bind(TemplateOptions.class).to(AbiquoTemplateOptions.class);
-        install(new LocationsFromComputeServiceAdapterModule<VirtualMachine, VirtualMachineTemplate, VirtualMachineTemplate, Datacenter>()
-        {
-        });
-    }
+      bind(new TypeLiteral<Function<VirtualMachine, NodeMetadata>>() {
+      }).to(VirtualMachineToNodeMetadata.class);
+      bind(new TypeLiteral<Function<VirtualMachineTemplate, Image>>() {
+      }).to(VirtualMachineTemplateToImage.class);
+      bind(new TypeLiteral<Function<VirtualMachineTemplate, Hardware>>() {
+      }).to(VirtualMachineTemplateToHardware.class);
+      bind(new TypeLiteral<Function<Datacenter, Location>>() {
+      }).to(DatacenterToLocation.class);
+      bind(ImplicitLocationSupplier.class).to(OnlyLocationOrFirstZone.class).in(Scopes.SINGLETON);
+      bind(TemplateOptions.class).to(AbiquoTemplateOptions.class);
+      install(new LocationsFromComputeServiceAdapterModule<VirtualMachine, VirtualMachineTemplate, VirtualMachineTemplate, Datacenter>() {
+      });
+   }
 
 }

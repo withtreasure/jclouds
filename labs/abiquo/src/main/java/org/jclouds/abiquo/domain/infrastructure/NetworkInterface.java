@@ -24,43 +24,36 @@ import com.google.inject.TypeLiteral;
  * 
  * @author Jaume Devesa
  */
-public class NetworkInterface extends DomainWrapper<NetworkInterfaceDto>
-{
-    /**
-     * Constructor to be used only by the builder. This resource cannot be created.
-     */
-    protected NetworkInterface(final RestContext<AbiquoApi, AbiquoAsyncApi> context,
-        final NetworkInterfaceDto target)
-    {
-        super(context, target);
-    }
+public class NetworkInterface extends DomainWrapper<NetworkInterfaceDto> {
+   /**
+    * Constructor to be used only by the builder. This resource cannot be
+    * created.
+    */
+   protected NetworkInterface(final RestContext<AbiquoApi, AbiquoAsyncApi> context, final NetworkInterfaceDto target) {
+      super(context, target);
+   }
 
-    public String getName()
-    {
-        return target.getName();
-    }
+   public String getName() {
+      return target.getName();
+   }
 
-    public String getMac()
-    {
-        return target.getMac();
-    }
+   public String getMac() {
+      return target.getMac();
+   }
 
-    public void setNetworkServiceType(final NetworkServiceType type)
-    {
-        target.setNetworkServiceTypeLink(type.unwrap().getEditLink().getHref());
-    }
+   public void setNetworkServiceType(final NetworkServiceType type) {
+      target.setNetworkServiceTypeLink(type.unwrap().getEditLink().getHref());
+   }
 
-    public NetworkServiceType getNetworkServiceType()
-    {
-        RESTLink link = target.getNetworkServiceTypeLink();
+   public NetworkServiceType getNetworkServiceType() {
+      RESTLink link = target.getNetworkServiceTypeLink();
 
-        ExtendedUtils utils = (ExtendedUtils) context.getUtils();
-        HttpResponse response = utils.getAbiquoHttpClient().get(link);
+      ExtendedUtils utils = (ExtendedUtils) context.getUtils();
+      HttpResponse response = utils.getAbiquoHttpClient().get(link);
 
-        ParseXMLWithJAXB<NetworkServiceTypeDto> parser =
-            new ParseXMLWithJAXB<NetworkServiceTypeDto>(utils.getXml(),
-                TypeLiteral.get(NetworkServiceTypeDto.class));
+      ParseXMLWithJAXB<NetworkServiceTypeDto> parser = new ParseXMLWithJAXB<NetworkServiceTypeDto>(utils.getXml(),
+            TypeLiteral.get(NetworkServiceTypeDto.class));
 
-        return wrap(context, NetworkServiceType.class, parser.apply(response));
-    }
+      return wrap(context, NetworkServiceType.class, parser.apply(response));
+   }
 }

@@ -39,62 +39,50 @@ import org.jclouds.rest.annotations.Identity;
 import com.google.common.annotations.VisibleForTesting;
 
 /**
- * Authenticates using Basic Authentication or a generated token from previous API sessions.
+ * Authenticates using Basic Authentication or a generated token from previous
+ * API sessions.
  * 
  * @author Ignasi Barrera
  */
 @Singleton
-public class AbiquoAuthentication implements HttpRequestFilter
-{
-    /** The name of the authentication token. */
-    public static final String AUTH_TOKEN_NAME = "auth";
+public class AbiquoAuthentication implements HttpRequestFilter {
+   /** The name of the authentication token. */
+   public static final String AUTH_TOKEN_NAME = "auth";
 
-    protected String identity;
+   protected String identity;
 
-    protected String credential;
+   protected String credential;
 
-    protected boolean credentialIsToken;
+   protected boolean credentialIsToken;
 
-    @Inject
-    public AbiquoAuthentication(@Identity final String identity,
-        @Credential final String credential,
-        @Named(CREDENTIAL_IS_TOKEN) final String credentialIsToken)
-    {
-        this.identity = checkNotNull(identity, "identity");
-        this.credential = checkNotNull(credential, "credential");
-        this.credentialIsToken = Boolean.valueOf(credentialIsToken);
-    }
+   @Inject
+   public AbiquoAuthentication(@Identity final String identity, @Credential final String credential,
+         @Named(CREDENTIAL_IS_TOKEN) final String credentialIsToken) {
+      this.identity = checkNotNull(identity, "identity");
+      this.credential = checkNotNull(credential, "credential");
+      this.credentialIsToken = Boolean.valueOf(credentialIsToken);
+   }
 
-    @Override
-    public HttpRequest filter(final HttpRequest request) throws HttpException
-    {
-        try
-        {
-            String header =
-                credentialIsToken ? tokenAuth(credential) : basicAuth(identity, credential);
-            return request
-                .toBuilder()
-                .replaceHeader(credentialIsToken ? HttpHeaders.COOKIE : HttpHeaders.AUTHORIZATION,
-                    header).build();
-        }
-        catch (UnsupportedEncodingException ex)
-        {
-            throw new HttpException(ex);
-        }
-    }
+   @Override
+   public HttpRequest filter(final HttpRequest request) throws HttpException {
+      try {
+         String header = credentialIsToken ? tokenAuth(credential) : basicAuth(identity, credential);
+         return request.toBuilder()
+               .replaceHeader(credentialIsToken ? HttpHeaders.COOKIE : HttpHeaders.AUTHORIZATION, header).build();
+      } catch (UnsupportedEncodingException ex) {
+         throw new HttpException(ex);
+      }
+   }
 
-    @VisibleForTesting
-    static String basicAuth(final String user, final String password)
-        throws UnsupportedEncodingException
-    {
-        return "Basic "
+   @VisibleForTesting
+   static String basicAuth(final String user, final String password) throws UnsupportedEncodingException {
+      return "Basic "
             + CryptoStreams.base64(String.format("%s:%s", checkNotNull(user, "user"),
-                checkNotNull(password, "password")).getBytes("UTF-8"));
-    }
+                  checkNotNull(password, "password")).getBytes("UTF-8"));
+   }
 
-    @VisibleForTesting
-    static String tokenAuth(final String token)
-    {
-        return AUTH_TOKEN_NAME + "=" + checkNotNull(token, "token");
-    }
+   @VisibleForTesting
+   static String tokenAuth(final String token) {
+      return AUTH_TOKEN_NAME + "=" + checkNotNull(token, "token");
+   }
 }

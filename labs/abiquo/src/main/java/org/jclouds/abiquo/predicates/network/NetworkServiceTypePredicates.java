@@ -12,17 +12,13 @@ import com.google.common.base.Predicate;
  * 
  * @author Jaume Devesa
  */
-public class NetworkServiceTypePredicates
-{
-    public static Predicate<NetworkServiceType> theDefaultOne()
-    {
-        return new Predicate<NetworkServiceType>()
-        {
-            @Override
-            public boolean apply(final NetworkServiceType ni)
-            {
-                return ni.isDefaultNST();
-            }
-        };
-    }
+public class NetworkServiceTypePredicates {
+   public static Predicate<NetworkServiceType> theDefaultOne() {
+      return new Predicate<NetworkServiceType>() {
+         @Override
+         public boolean apply(final NetworkServiceType ni) {
+            return ni.isDefaultNST();
+         }
+      };
+   }
 }
