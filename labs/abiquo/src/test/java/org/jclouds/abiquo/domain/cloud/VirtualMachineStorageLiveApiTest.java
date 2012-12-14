@@ -110,7 +110,8 @@ public class VirtualMachineStorageLiveApiTest extends BaseAbiquoApiLiveApiTest {
    public void testAttachHardDiskAndVolume() {
       skipIfHardDisksNotSupported();
 
-      VirtualMachineTask task = env.virtualMachine.setVirtualDisks(Lists.<VirtualDisk<?>> newArrayList(hardDisk, volume));
+      VirtualMachineTask task = env.virtualMachine.setVirtualDisks(Lists
+            .<VirtualDisk<?>> newArrayList(hardDisk, volume));
       assertNull(task);
 
       List<VirtualDisk<?>> attached = env.virtualMachine.listVirtualDisks();
@@ -121,7 +122,8 @@ public class VirtualMachineStorageLiveApiTest extends BaseAbiquoApiLiveApiTest {
 
    @Test(dependsOnMethods = "testAttachHardDiskAndVolume")
    public void testReorderVirtualDisks() {
-      VirtualMachineTask task = env.virtualMachine.setVirtualDisks(Lists.<VirtualDisk<?>> newArrayList(volume, hardDisk));
+      VirtualMachineTask task = env.virtualMachine.setVirtualDisks(Lists
+            .<VirtualDisk<?>> newArrayList(volume, hardDisk));
       assertNull(task);
 
       List<VirtualDisk<?>> attached = env.virtualMachine.listVirtualDisks();
