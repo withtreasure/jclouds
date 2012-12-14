@@ -44,6 +44,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.abiquo.server.core.enterprise.DatacenterLimitsDto;
 import com.abiquo.server.core.enterprise.DatacentersLimitsDto;
 import com.abiquo.server.core.enterprise.EnterpriseDto;
 
@@ -160,7 +161,13 @@ public class EnterpriseLiveApiTest extends BaseAbiquoApiLiveApiTest {
       DatacentersLimitsDto limitsDto = env.enterpriseApi.getLimits(enterprise.unwrap(), env.datacenter.unwrap());
       assertNotNull(limitsDto);
       assertEquals(limitsDto.getCollection().size(), 1);
-      assertEquals(limitsDto.getCollection().get(0).searchLinks(ParentLinkName.TIER).size(), tiers.size());
+      DatacenterLimitsDto limit = limitsDto.getCollection().get(0);
+      assertEquals(limit.searchLinks(ParentLinkName.TIER).size(), tiers.size());
+
+      Limits limitUpdated = new Limits(env.context.getApiContext(), limit);
+      List<Tier> retiervedTiers = limitUpdated.getAllowedTiers();
+      assertNotNull(retiervedTiers);
+      assertEquals(retiervedTiers.size(), tiers.size());
    }
 
    public void testSetEmptyAllowedTiers() {
@@ -170,7 +177,13 @@ public class EnterpriseLiveApiTest extends BaseAbiquoApiLiveApiTest {
       DatacentersLimitsDto limitsDto = env.enterpriseApi.getLimits(enterprise.unwrap(), env.datacenter.unwrap());
       assertNotNull(limitsDto);
       assertEquals(limitsDto.getCollection().size(), 1);
-      assertEquals(limitsDto.getCollection().get(0).searchLinks(ParentLinkName.TIER).size(), 0);
+      DatacenterLimitsDto limit = limitsDto.getCollection().get(0);
+      assertEquals(limit.searchLinks(ParentLinkName.TIER).size(), 0);
+
+      Limits limitUpdated = new Limits(env.context.getApiContext(), limit);
+      List<Tier> retiervedTiers = limitUpdated.getAllowedTiers();
+      assertNotNull(retiervedTiers);
+      assertEquals(retiervedTiers.size(), 0);
    }
 
    public void testListAllowedDatacenters() {

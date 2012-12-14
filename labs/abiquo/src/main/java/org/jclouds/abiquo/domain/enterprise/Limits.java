@@ -21,6 +21,7 @@ package org.jclouds.abiquo.domain.enterprise;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jclouds.abiquo.AbiquoApi;
@@ -90,6 +91,27 @@ public class Limits extends DomainWithLimitsWrapper<DatacenterLimitsDto> {
       }
 
       context.getApi().getEnterpriseApi().updateLimits(this.unwrap());
+   }
+
+   /**
+    * Retrieve a list of all allowed tiers
+    * 
+    * @return a list of all allowed tiers
+    */
+   public List<Tier> getAllowedTiers() {
+      List<Tier> tiers = new ArrayList<Tier>();
+      List<RESTLink> tierLinks = this.unwrap().searchLinks(ParentLinkName.TIER);
+      Datacenter datacenter = getDatacenter();
+      checkNotNull(datacenter, ValidationErrors.NULL_RESOURCE + Datacenter.class);
+
+      for (RESTLink tierLink : tierLinks) {
+         Tier tier = datacenter.getTier(tierLink.getId());
+         if (tier != null) {
+            tiers.add(tier);
+         }
+      }
+
+      return tiers;
    }
 
    // ParentAccess
