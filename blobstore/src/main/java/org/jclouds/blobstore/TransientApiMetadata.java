@@ -20,7 +20,6 @@ package org.jclouds.blobstore;
 
 import java.net.URI;
 
-import org.jclouds.apis.ApiMetadata;
 import org.jclouds.apis.internal.BaseApiMetadata;
 import org.jclouds.blobstore.config.TransientBlobStoreContextModule;
 
@@ -30,9 +29,6 @@ import org.jclouds.blobstore.config.TransientBlobStoreContextModule;
  * @author Adrian Cole
  */
 public class TransientApiMetadata extends BaseApiMetadata {
-
-   /** The serialVersionUID */
-   private static final long serialVersionUID = -6541485071006878726L;
 
    public static Builder builder() {
       return new Builder();

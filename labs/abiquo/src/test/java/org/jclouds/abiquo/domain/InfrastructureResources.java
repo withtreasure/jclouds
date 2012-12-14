@@ -196,6 +196,10 @@ public class InfrastructureResources {
       tier.addLink(new RESTLink("edit", "http://localhost/api/admin/datacenters/1/storage/tiers/1"));
       tier.addLink(new RESTLink("datacenter", "http://localhost/api/admin/datacenters/1"));
       tier.addLink(new RESTLink("pools", "http://localhost/api/admin/datacenters/1/storage/tiers/1/pools"));
+      tier.addLink(new RESTLink("allowallenterprises",
+            "http://localhost/api/admin/datacenters/1/storage/tiers/1/action/allowallenterprises"));
+      tier.addLink(new RESTLink("restrictallenterprises",
+            "http://localhost/api/admin/datacenters/1/storage/tiers/1/action/restrictallenterprises"));
 
       return tier;
    }
@@ -259,7 +263,7 @@ public class InfrastructureResources {
    }
 
    public static String datacenterPostPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<datacenter>");
       buffer.append("<location>Honolulu</location>");
       buffer.append("<name>DC</name>");
@@ -268,7 +272,7 @@ public class InfrastructureResources {
    }
 
    public static String rackPostPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<rack>");
       buffer.append("<haEnabled>false</haEnabled>");
       buffer.append("<name>Aloha</name>");
@@ -282,7 +286,7 @@ public class InfrastructureResources {
    }
 
    public static String managedRackPostPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<ucsrack>");
       buffer.append("<haEnabled>false</haEnabled>");
       buffer.append("<name>Aloha</name>");
@@ -296,7 +300,7 @@ public class InfrastructureResources {
    }
 
    public static String storagePoolPostPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<storagePool>");
       buffer.append("<availableSizeInMb>0</availableSizeInMb>");
       buffer.append("<enabled>false</enabled>");
@@ -308,7 +312,7 @@ public class InfrastructureResources {
    }
 
    public static String storageDevicePostPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<device>");
       buffer.append("<iscsiIp>10.10.10.10</iscsiIp>");
       buffer.append("<iscsiPort>99</iscsiPort>");
@@ -336,7 +340,7 @@ public class InfrastructureResources {
    }
 
    public static String machinePostPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<machine>");
       buffer.append("<datastores/>");
       buffer.append("<description>A hawaian machine</description>");
@@ -351,7 +355,7 @@ public class InfrastructureResources {
    }
 
    public static String remoteServicePostPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<remoteService>");
       buffer.append("<status>0</status>");
       buffer.append("<type>NODE_COLLECTOR</type>");
@@ -361,7 +365,7 @@ public class InfrastructureResources {
    }
 
    public static String datacenterPutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<datacenter>");
       buffer.append(link("/admin/datacenters/1/action/checkmachinestate", "checkmachinestate"));
       buffer.append(link("/admin/datacenters/1/action/checkmachineipmistate", "checkmachineipmistate"));
@@ -387,7 +391,7 @@ public class InfrastructureResources {
    }
 
    public static String storagePoolPutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<storagePool>");
       buffer.append(link("/admin/datacenters/1/storage/devices/1", "device"));
       buffer.append(link("/admin/datacenters/1/storage/devices/1/pools/tururututu", "edit"));
@@ -402,11 +406,13 @@ public class InfrastructureResources {
    }
 
    public static String tierPutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<tier>");
       buffer.append(link("/admin/datacenters/1/storage/tiers/1", "edit"));
       buffer.append(link("/admin/datacenters/1", "datacenter"));
       buffer.append(link("/admin/datacenters/1/storage/tiers/1/pools", "pools"));
+      buffer.append(link("/admin/datacenters/1/storage/tiers/1/action/allowallenterprises", "allowallenterprises"));
+      buffer.append(link("/admin/datacenters/1/storage/tiers/1/action/restrictallenterprises", "restrictallenterprises"));
       buffer.append("<enabled>true</enabled>");
       buffer.append("<id>1</id>");
       buffer.append("<name>Tier</name>");
@@ -415,7 +421,7 @@ public class InfrastructureResources {
    }
 
    public static String rackPutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<rack>");
       buffer.append(link("/admin/datacenters/1", "datacenter"));
       buffer.append(link("/admin/datacenters/1/racks/1", "edit"));
@@ -433,7 +439,7 @@ public class InfrastructureResources {
    }
 
    public static String managedRackPutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<ucsrack>");
       buffer.append(link("/admin/datacenters/1", "datacenter"));
       buffer.append(link("/admin/datacenters/1/racks/1", "edit"));
@@ -460,7 +466,7 @@ public class InfrastructureResources {
    }
 
    public static String storageDevicePutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<device>");
       buffer.append(link("/admin/datacenters/1", "datacenter"));
       buffer.append(link("/admin/datacenters/1/storage/devices/1", "edit"));
@@ -475,7 +481,7 @@ public class InfrastructureResources {
    }
 
    public static String remoteServicePutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<remoteService>");
       buffer.append(link("/admin/datacenters/1/remoteservices/nodecollector/action/check", "check"));
       buffer.append(link("/admin/datacenters/1", "datacenter"));
@@ -489,7 +495,7 @@ public class InfrastructureResources {
    }
 
    public static String machinePutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<machine>");
       buffer.append(link("/admin/datacenters/1/racks/1/machines/1", "edit"));
       buffer.append(link("/admin/datacenters/1/racks/1", "rack"));

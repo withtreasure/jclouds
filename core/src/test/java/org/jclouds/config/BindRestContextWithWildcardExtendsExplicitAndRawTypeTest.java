@@ -73,6 +73,7 @@ public class BindRestContextWithWildcardExtendsExplicitAndRawTypeTest {
 
    private Injector injectorFor(ProviderMetadata md) {
       return Guice.createInjector(
+               new BindNameToContext("test"),
                new BindProviderMetadataContextAndCredentials(md, new Credentials("user", "pass")),
                new BindRestContextWithWildcardExtendsExplicitAndRawType(RestApiMetadata.class.cast(md
                                  .getApiMetadata())),
@@ -115,7 +116,6 @@ public class BindRestContextWithWildcardExtendsExplicitAndRawTypeTest {
                IntegrationTestClient.class, IntegrationTestAsyncClient.class, "http://localhost");
 
       TypeToken wildCardExtendsType = new TypeToken<RestContext<? extends IntegrationTestClient, ? extends IntegrationTestAsyncClient>>() {
-         private static final long serialVersionUID = -8170268554700397860L;
       };
       
       md = md.toBuilder().apiMetadata(md.getApiMetadata().toBuilder().context(wildCardExtendsType).build()).build();

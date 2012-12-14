@@ -1,5 +1,5 @@
 /**
-f * Licensed to jclouds, Inc. (jclouds) under one or more
+ * Licensed to jclouds, Inc. (jclouds) under one or more
  * contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
  * regarding copyright ownership.  jclouds licenses this file
@@ -67,7 +67,7 @@ public class Media extends ResourceEntity {
          return stringValue;
       }
 
-      protected final static Map<String, ImageType> STATUS_BY_ID = Maps.uniqueIndex(
+      protected static final Map<String, ImageType> STATUS_BY_ID = Maps.uniqueIndex(
             ImmutableSet.copyOf(ImageType.values()), new Function<ImageType, String>() {
                @Override
                public String apply(ImageType input) {
@@ -93,7 +93,7 @@ public class Media extends ResourceEntity {
    private static class ConcreteBuilder extends Builder<ConcreteBuilder> {
    }
    
-   public static abstract class Builder<B extends Builder<B>> extends ResourceEntity.Builder<B> {
+   public abstract static class Builder<B extends Builder<B>> extends ResourceEntity.Builder<B> {
 
       private Owner owner;
       private ImageType imageType;

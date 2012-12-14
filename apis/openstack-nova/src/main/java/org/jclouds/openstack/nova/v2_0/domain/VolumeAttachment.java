@@ -28,7 +28,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
 
 /**
- * An Openstack Nova Volume Attachment (describes how Volumes are attached to Servers)
+ * An OpenStack Nova Volume Attachment (describes how Volumes are attached to Servers)
 */
 public class VolumeAttachment {
 
@@ -40,7 +40,7 @@ public class VolumeAttachment {
       return new ConcreteBuilder().fromVolumeAttachment(this);
    }
 
-   public static abstract class Builder<T extends Builder<T>>  {
+   public abstract static class Builder<T extends Builder<T>>  {
       protected abstract T self();
 
       protected String id;

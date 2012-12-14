@@ -49,6 +49,7 @@ import org.jclouds.openstack.swift.options.ListContainerOptions;
 import org.jclouds.util.Strings2;
 import org.testng.annotations.Test;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
@@ -247,7 +248,7 @@ public abstract class CommonSwiftClientLiveTest<C extends CommonSwiftClient> ext
          }
 
          // Test PUT chunked/streamed upload with data of "unknown" length
-         ByteArrayInputStream bais = new ByteArrayInputStream(data.getBytes("UTF-8"));
+         ByteArrayInputStream bais = new ByteArrayInputStream(data.getBytes(Charsets.UTF_8));
          SwiftObject blob = getApi().newSwiftObject();
          blob.getInfo().setName("chunked-object");
          blob.setPayload(bais);
@@ -294,7 +295,7 @@ public abstract class CommonSwiftClientLiveTest<C extends CommonSwiftClient> ext
       // test that not giving a destination name *doesn't* copy source name to the destination container with
       // the source name but copy still returns success :(
       assertTrue(getApi().copyObject(sourceContainer, sourceObject, destinationContainer, ""));
-      assertTrue(!getApi().objectExists(destinationContainer, sourceObject));
+      assertFalse(getApi().objectExists(destinationContainer, sourceObject));
       
       // test copy works
       assertTrue(getApi().copyObject(sourceContainer, sourceObject, destinationContainer, destinationObject));      

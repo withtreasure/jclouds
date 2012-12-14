@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
@@ -39,10 +38,10 @@ import org.jclouds.concurrent.MoreExecutors;
 import org.jclouds.lifecycle.Closer;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ExecutionList;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
-import com.google.inject.Stage;
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
@@ -104,7 +103,7 @@ public class LifeCycleModule extends AbstractModule {
    protected void bindPostInjectionInvoke(final Closer closer, final ExecutionList list) {
       bindListener(any(), new TypeListener() {
          public <I> void hear(TypeLiteral<I> injectableType, TypeEncounter<I> encounter) {
-            Set<Method> methods = new HashSet<Method>();
+            Set<Method> methods = Sets.newHashSet();
             Class<? super I> type = injectableType.getRawType();
             while (type != null) {
                methods.addAll(Arrays.asList(type.getDeclaredMethods()));

@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.jclouds</groupId>
     <artifactId>jclouds-project</artifactId>
-    <version>1.6.0-rc.230</version>
+    <version>1.6.0-SNAPSHOT</version>
     <relativePath>../../project/pom.xml</relativePath>
   </parent>
   <groupId>org.jclouds.provider</groupId>
@@ -36,7 +36,12 @@
   <properties>
     <test.hpcloud-compute.endpoint>https://region-a.geo-1.identity.hpcloudsvc.com:35357/v2.0/</test.hpcloud-compute.endpoint>
     <test.hpcloud-compute.api-version>1.1</test.hpcloud-compute.api-version>
-    <test.hpcloud-compute.build-version />
+    <test.hpcloud-compute.build-version></test.hpcloud-compute.build-version>
+    <!--
+        Identity must be tenantName:userName.  Note that the following
+        credentials are the HP Cloud username and password, not the access
+        key id and secret key.
+    -->
     <test.hpcloud-compute.identity>FIXME_IDENTITY</test.hpcloud-compute.identity>
     <test.hpcloud-compute.credential>FIXME_CREDENTIAL</test.hpcloud-compute.credential>
     <test.hpcloud-compute.template />
@@ -77,6 +82,13 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.jclouds.api</groupId>
+      <artifactId>openstack-keystone</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.jclouds.driver</groupId>
       <artifactId>jclouds-slf4j</artifactId>
       <version>${project.version}</version>
@@ -91,7 +103,6 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.0.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

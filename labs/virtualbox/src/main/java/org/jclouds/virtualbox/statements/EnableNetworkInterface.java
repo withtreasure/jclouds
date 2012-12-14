@@ -24,11 +24,12 @@ import static org.jclouds.scriptbuilder.domain.Statements.exec;
 
 import java.util.List;
 
+import com.google.common.collect.Lists;
+
 import org.jclouds.scriptbuilder.domain.OsFamily;
 import org.jclouds.scriptbuilder.domain.Statement;
 import org.jclouds.scriptbuilder.domain.StatementList;
 import org.jclouds.virtualbox.domain.NetworkInterfaceCard;
-import org.testng.collections.Lists;
 
 /**
  * Up the network interface chosen

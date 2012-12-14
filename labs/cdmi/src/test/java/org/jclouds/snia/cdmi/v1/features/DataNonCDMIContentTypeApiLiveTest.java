@@ -24,11 +24,8 @@ import static org.testng.Assert.assertNotNull;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -43,10 +40,11 @@ import org.jclouds.snia.cdmi.v1.domain.DataObject;
 import org.jclouds.snia.cdmi.v1.internal.BaseCDMIApiLiveTest;
 import org.jclouds.snia.cdmi.v1.options.CreateContainerOptions;
 import org.jclouds.snia.cdmi.v1.queryparams.DataObjectQueryParams;
+import org.jclouds.util.Strings2;
 import org.testng.annotations.Test;
 
 import com.google.common.base.Charsets;
-import com.google.common.io.ByteStreams;
+import com.google.common.collect.Maps;
 import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
 import com.google.common.net.MediaType;
@@ -69,15 +67,14 @@ public class DataNonCDMIContentTypeApiLiveTest extends BaseCDMIApiLiveTest {
       Files.touch(tmpFileIn);
       byte[] bytes;
       DataObject dataObject;
-      Map<String, String> pContainerMetaDataIn = new HashMap<String, String>();
-      Map<String, String> pDataObjectMetaDataIn = new LinkedHashMap<String, String>();
+      Map<String, String> pContainerMetaDataIn = Maps.newHashMap();
+      Map<String, String> pDataObjectMetaDataIn = Maps.newLinkedHashMap();
       pDataObjectMetaDataIn.put("dataObjectkey1", "value1");
       pDataObjectMetaDataIn.put("dataObjectkey2", "value2");
       pDataObjectMetaDataIn.put("dataObjectkey3", "value3");
 
       Payload payloadIn;
       Payload payloadOut;
-      FileOutputStream fos;
 
       CreateContainerOptions pCreateContainerOptions = CreateContainerOptions.Builder.metadata(pContainerMetaDataIn);
       ContainerApi containerApi = cdmiContext.getApi().getApi();
@@ -100,7 +97,7 @@ public class DataNonCDMIContentTypeApiLiveTest extends BaseCDMIApiLiveTest {
          dataNonCDMIContentTypeApi.create(dataObjectNameIn, value);
          payloadOut = dataNonCDMIContentTypeApi.getValue(dataObjectNameIn);
          assertNotNull(payloadOut);
-         assertEquals(CharStreams.toString(new InputStreamReader(payloadOut.getInput(), "UTF-8")), value);
+         assertEquals(Strings2.toString(payloadOut), value);
 
          payloadIn = new StringPayload(value);
          payloadIn.setContentMetadata(BaseMutableContentMetadata.fromContentMetadata(payloadIn.getContentMetadata()
@@ -109,7 +106,7 @@ public class DataNonCDMIContentTypeApiLiveTest extends BaseCDMIApiLiveTest {
 
          payloadOut = dataNonCDMIContentTypeApi.getValue(dataObjectNameIn);
          assertNotNull(payloadOut);
-         assertEquals(CharStreams.toString(new InputStreamReader(payloadOut.getInput(), "UTF-8")), value);
+         assertEquals(Strings2.toString(payloadOut), value);
 
          dataObject = dataNonCDMIContentTypeApi.get(dataObjectNameIn, DataObjectQueryParams.Builder.field("parentURI"));
          assertNotNull(dataObject);
@@ -129,7 +126,7 @@ public class DataNonCDMIContentTypeApiLiveTest extends BaseCDMIApiLiveTest {
 
          // exercise create data object with none cdmi put with payload byte array.
          value = "Hello CDMI World non-cdmi byte array";
-         bytes = value.getBytes("UTF-8");
+         bytes = value.getBytes(Charsets.UTF_8);
          payloadIn = new ByteArrayPayload(bytes);
          payloadIn.setContentMetadata(BaseMutableContentMetadata.fromContentMetadata(payloadIn.getContentMetadata()
                   .toBuilder().contentType(MediaType.PLAIN_TEXT_UTF_8.toString()).build()));
@@ -149,7 +146,7 @@ public class DataNonCDMIContentTypeApiLiveTest extends BaseCDMIApiLiveTest {
          assertEquals(containerApi.get(containerName).getChildren().contains(dataObjectNameIn), true);
          payloadOut = dataNonCDMIContentTypeApi.getValue(dataObjectNameIn);
          assertNotNull(payloadOut);
-         assertEquals(CharStreams.toString(new InputStreamReader(payloadOut.getInput(), "UTF-8")), value);
+         assertEquals(Strings2.toString(payloadOut), value);
 
          dataNonCDMIContentTypeApi.delete(dataObjectNameIn);
          assertEquals(containerApi.get(containerName).getChildren().contains(dataObjectNameIn), false);
@@ -181,14 +178,10 @@ public class DataNonCDMIContentTypeApiLiveTest extends BaseCDMIApiLiveTest {
 
          payloadOut = dataNonCDMIContentTypeApi.getValue(dataObjectNameIn);
          assertNotNull(payloadOut);
-         // assertEquals(CharStreams.toString(new InputStreamReader(payloadOut.getInput(),
-         // "UTF-8")),value);
-         // byte[] _bytes = ByteStreams.toByteArray(payloadOut.getInput());
+         // assertEquals(Strings2.toString(payloadOut), value);
+         // byte[] _bytes = ByteStreams.toByteArray(payloadOut);
          tmpFileOut = new File(Files.createTempDir(), "temp.txt");
-         fos = new FileOutputStream(tmpFileOut);
-         ByteStreams.copy(payloadOut.getInput(), fos);
-         fos.flush();
-         fos.close();
+         Files.copy(payloadOut, tmpFileOut);
          assertEquals(Files.equal(tmpFileOut, tmpFileIn), true);
          tmpFileOut.delete();
 
@@ -236,10 +229,7 @@ public class DataNonCDMIContentTypeApiLiveTest extends BaseCDMIApiLiveTest {
          payloadOut = dataNonCDMIContentTypeApi.getValue(inFile.getName());
          assertNotNull(payloadOut);
          tmpFileOut = new File(Files.createTempDir(), "temp.jpg");
-         fos = new FileOutputStream(tmpFileOut);
-         ByteStreams.copy(payloadOut.getInput(), fos);
-         fos.flush();
-         fos.close();
+         Files.copy(payloadOut, tmpFileOut);
          assertEquals(Files.equal(tmpFileOut, inFile), true);
          tmpFileOut.delete();
 
@@ -288,10 +278,7 @@ public class DataNonCDMIContentTypeApiLiveTest extends BaseCDMIApiLiveTest {
          payloadOut = dataNonCDMIContentTypeApi.getValue(inFile.getName());
          assertNotNull(payloadOut);
          tmpFileOut = new File(Files.createTempDir(), "temp.jpg");
-         fos = new FileOutputStream(tmpFileOut);
-         ByteStreams.copy(payloadOut.getInput(), fos);
-         fos.flush();
-         fos.close();
+         Files.copy(payloadOut, tmpFileOut);
          assertEquals(Files.equal(tmpFileOut, inFile), true);
          tmpFileOut.delete();
 
@@ -308,14 +295,12 @@ public class DataNonCDMIContentTypeApiLiveTest extends BaseCDMIApiLiveTest {
 
          payloadOut = dataNonCDMIContentTypeApi.getValue(dataObjectNameIn, "bytes=0-10");
          assertNotNull(payloadOut);
-         assertEquals(CharStreams.toString(new InputStreamReader(payloadOut.getInput(), "UTF-8")),
-                  value.substring(0, 11));
+         assertEquals(Strings2.toString(payloadOut), value.substring(0, 11));
          assertEquals(payloadOut.getContentMetadata().getContentLength(), new Long(11));
 
          payloadOut = dataNonCDMIContentTypeApi.getValue(dataObjectNameIn, "bytes=11-20");
          assertNotNull(payloadOut);
-         assertEquals(CharStreams.toString(new InputStreamReader(payloadOut.getInput(), "UTF-8")),
-                  value.substring(11, 21));
+         assertEquals(Strings2.toString(payloadOut), value.substring(11, 21));
          assertEquals(payloadOut.getContentMetadata().getContentLength(), new Long(10));
 
          dataNonCDMIContentTypeApi.delete(dataObjectNameIn);

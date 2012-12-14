@@ -26,7 +26,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.jclouds.dmtf.ovf.environment.EnvironmentType;
-import org.omg.CORBA.Environment;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
@@ -56,7 +55,7 @@ public class Vm extends AbstractVAppType {
    private static class ConcreteBuilder extends Builder<ConcreteBuilder> {
    }
    
-   public static abstract class Builder<B extends Builder<B>> extends AbstractVAppType.Builder<B> {
+   public abstract static class Builder<B extends Builder<B>> extends AbstractVAppType.Builder<B> {
 
       private String vAppScopedLocalId;
       private EnvironmentType environment;

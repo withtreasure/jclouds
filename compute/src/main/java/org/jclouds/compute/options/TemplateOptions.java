@@ -26,9 +26,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
-import org.jclouds.compute.domain.NodeMetadata.Status;
 import org.jclouds.domain.LoginCredentials;
-import org.jclouds.io.Payload;
 import org.jclouds.scriptbuilder.domain.Statement;
 import org.jclouds.scriptbuilder.domain.Statements;
 
@@ -317,7 +315,7 @@ public class TemplateOptions extends RunScriptOptions implements Cloneable {
 
    }
 
-   private final static Set<Integer> DEFAULT_INBOUND_PORTS = ImmutableSet.of(22);
+   private static final Set<Integer> DEFAULT_INBOUND_PORTS = ImmutableSet.of(22);
    
    protected Set<Integer> inboundPorts = DEFAULT_INBOUND_PORTS;
 

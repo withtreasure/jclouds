@@ -43,7 +43,6 @@ import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
 import java.net.URI;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -169,7 +168,7 @@ import com.google.inject.util.Types;
 
 /**
  * Creates http methods based on annotations on a class or interface.
- * 
+ *
  * @author Adrian Cole
  */
 public class RestAnnotationProcessor<T> {
@@ -192,7 +191,7 @@ public class RestAnnotationProcessor<T> {
    static final LoadingCache<Method, LoadingCache<Integer, Set<Annotation>>> methodToIndexOfParamToPostParamAnnotations = createMethodToIndexOfParamToAnnotation(PayloadParam.class);
    static final LoadingCache<Method, LoadingCache<Integer, Set<Annotation>>> methodToIndexOfParamToPartParamAnnotations = createMethodToIndexOfParamToAnnotation(PartParam.class);
    static final LoadingCache<Method, LoadingCache<Integer, Set<Annotation>>> methodToIndexOfParamToParamParserAnnotations = createMethodToIndexOfParamToAnnotation(ParamParser.class);
-   
+
    final Cache<MethodKey, Method> delegationMap;
 
    static LoadingCache<Method, LoadingCache<Integer, Set<Annotation>>> createMethodToIndexOfParamToAnnotation(
@@ -322,7 +321,7 @@ public class RestAnnotationProcessor<T> {
 
    @SuppressWarnings("unchecked")
    @Inject
-   public RestAnnotationProcessor(Injector injector, LoadingCache<Class<?>, Boolean> seedAnnotationCache, Cache<MethodKey, Method> delegationMap, 
+   public RestAnnotationProcessor(Injector injector, LoadingCache<Class<?>, Boolean> seedAnnotationCache, Cache<MethodKey, Method> delegationMap,
             @ApiVersion String apiVersion, @BuildVersion String buildVersion, ParseSax.Factory parserFactory,
             HttpUtils utils, ContentMetadataCodec contentMetadataCodec, TypeLiteral<T> typeLiteral) throws ExecutionException {
       this.declaring = (Class<T>) typeLiteral.getRawType();
@@ -343,7 +342,7 @@ public class RestAnnotationProcessor<T> {
       this.buildVersion = buildVersion;
    }
 
-   
+
    public Method getDelegateOrNull(Method in) {
       return delegationMap.getIfPresent(new MethodKey(in));
    }
@@ -364,7 +363,7 @@ public class RestAnnotationProcessor<T> {
                && Objects.equal(this.name, that.name)
                && Objects.equal(this.parametersTypeHashCode, that.parametersTypeHashCode);
       }
-      
+
       private final String name;
       private final int parametersTypeHashCode;
       private final Class<?> declaringClass;
@@ -753,7 +752,7 @@ public class RestAnnotationProcessor<T> {
       return null;
    }
 
-   private final static TypeLiteral<Supplier<URI>> uriSupplierLiteral = new TypeLiteral<Supplier<URI>>() {
+   private static final TypeLiteral<Supplier<URI>> uriSupplierLiteral = new TypeLiteral<Supplier<URI>>() {
    };
 
    // TODO: change to LoadingCache<ClassMethodArgs, URI> and move this logic to the CacheLoader.
@@ -838,7 +837,7 @@ public class RestAnnotationProcessor<T> {
       Type returnVal = getReturnTypeForMethod(method);
       return getJsonParserKeyForMethodAnType(method, returnVal);
    }
-   
+
    @SuppressWarnings("unchecked")
    public static Key<? extends Function<HttpResponse, ?>> getJAXBParserKeyForMethod(Method method) {
        Type returnVal = getReturnTypeForMethod(method);
@@ -851,7 +850,7 @@ public class RestAnnotationProcessor<T> {
       if (method.getReturnType().getTypeParameters().length == 0) {
          returnVal = method.getReturnType();
       } else if (method.getReturnType().equals(ListenableFuture.class)) {
-         ParameterizedType futureType = ((ParameterizedType) method.getGenericReturnType());
+         ParameterizedType futureType = (ParameterizedType) method.getGenericReturnType();
          returnVal = futureType.getActualTypeArguments()[0];
          if (returnVal instanceof WildcardType)
             returnVal = WildcardType.class.cast(returnVal).getUpperBounds()[0];
@@ -1087,7 +1086,7 @@ public class RestAnnotationProcessor<T> {
    }
 
    private static List<String> getAcceptHeadersOrNull(Method method) {
-      List<String> accept = Collections.emptyList();
+      List<String> accept = ImmutableList.of();
       if (method.getDeclaringClass().isAnnotationPresent(Consumes.class)) {
          Consumes header = method.getDeclaringClass().getAnnotation(Consumes.class);
          accept = asList(header.value());
@@ -1334,4 +1333,10 @@ public class RestAnnotationProcessor<T> {
       return postParams;
    }
 
+   /**
+    * the class that is being processed
+    */
+   public Class<T> getDeclaring(){
+      return declaring;
+   }
 }

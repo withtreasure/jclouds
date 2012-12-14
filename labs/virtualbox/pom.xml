@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.jclouds</groupId>
     <artifactId>jclouds-project</artifactId>
-    <version>1.6.0-rc.230</version>
+    <version>1.6.0-SNAPSHOT</version>
     <relativePath>../../project/pom.xml</relativePath>
   </parent>
   <groupId>org.jclouds.labs</groupId>
@@ -41,7 +41,12 @@
     <test.virtualbox.credential>CHANGE_ME</test.virtualbox.credential>
     <test.virtualbox.template>osFamily=UBUNTU,osVersionMatches=12.04.1,os64Bit=true,osArchMatches=amd64,loginUser=toor:password,authenticateSudo=true</test.virtualbox.template>
     <jclouds.osgi.export>org.jclouds.virtualbox*;version="${project.version}"</jclouds.osgi.export>
-    <jclouds.osgi.import>org.jclouds*;version="${project.version}",*</jclouds.osgi.import>
+    <jclouds.osgi.import>
+      org.jclouds*;version="${project.version}",
+      org.eclipse.jetty*;version="[7.5,9)",
+      javax.servlet*;version="[2.5,3)",
+      *
+    </jclouds.osgi.import>
   </properties>
 
   <dependencies>
@@ -71,11 +76,6 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>2.4</version>
-    </dependency>
-    <dependency>
       <groupId>org.jclouds.driver</groupId>
       <artifactId>jclouds-sshj</artifactId>
       <version>${project.version}</version>
@@ -102,13 +102,12 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.0.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
-      <version>6.3.1</version>
+      <scope>test</scope>
       <exclusions>
         <exclusion>
           <artifactId>snakeyaml</artifactId>

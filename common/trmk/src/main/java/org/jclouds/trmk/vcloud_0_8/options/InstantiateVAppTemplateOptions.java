@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jclouds.javax.annotation.Nullable;
-import org.jclouds.ovf.NetworkSection;
 import org.jclouds.trmk.vcloud_0_8.domain.FenceMode;
 
 import com.google.common.collect.Maps;
@@ -421,8 +420,8 @@ public class InstantiateVAppTemplateOptions {
    @Override
    public String toString() {
       return "[cpuCount=" + cpuCount + ", memorySizeMegabytes=" + memorySizeMegabytes + ", networkConfig="
-            + networkConfig + ", customizeOnInstantiate=" + customizeOnInstantiate + ", deploy=" + (deploy)
-            + ", powerOn=" + (powerOn) + "]";
+            + networkConfig + ", customizeOnInstantiate=" + customizeOnInstantiate + ", deploy=" + deploy
+            + ", powerOn=" + powerOn + "]";
    }
 
    @Override

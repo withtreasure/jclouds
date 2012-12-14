@@ -24,9 +24,6 @@ import org.jclouds.rest.internal.BaseRestApiMetadata;
  */
 public abstract class TerremarkVCloudApiMetadata extends BaseRestApiMetadata {
 
-   /** The serialVersionUID */
-   private static final long serialVersionUID = 866164758867358381L;
-
    protected TerremarkVCloudApiMetadata(Builder builder) {
       super(builder);
    }
@@ -48,7 +45,7 @@ public abstract class TerremarkVCloudApiMetadata extends BaseRestApiMetadata {
       return properties;
    }
 
-   public static abstract class Builder extends BaseRestApiMetadata.Builder {
+   public abstract static class Builder extends BaseRestApiMetadata.Builder {
 
       protected Builder(Class<?> syncClient, Class<?> asyncClient) {
          super(syncClient, asyncClient);

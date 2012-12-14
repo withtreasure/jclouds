@@ -29,12 +29,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.jclouds.compute.ComputeServiceContext;
 import org.jclouds.compute.config.BaseComputeServiceContextModule;
 import org.jclouds.compute.domain.Image;
 import org.jclouds.compute.extensions.ImageExtension;
 import org.jclouds.concurrent.RetryOnTimeOutExceptionSupplier;
-import org.jclouds.ec2.compute.EC2ComputeService;
 import org.jclouds.ec2.compute.domain.RegionAndName;
 import org.jclouds.ec2.compute.loaders.RegionAndIdToImage;
 import org.jclouds.ec2.compute.suppliers.RegionAndNameToImageSupplier;
@@ -49,6 +47,7 @@ import com.google.common.base.Throwables;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.util.concurrent.Atomics;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Provides;
@@ -77,7 +76,7 @@ public class EC2ComputeServiceContextModule extends BaseComputeServiceContextMod
    protected boolean shouldEagerlyParseImages(Injector injector) {
       // If no owners to query, then will never lookup all images
       String[] amiOwners = injector.getInstance(Key.get(String[].class, Names.named(PROPERTY_EC2_AMI_OWNERS)));
-      return (amiOwners.length > 0);
+      return amiOwners.length > 0;
    }
 
    @Override
@@ -105,7 +104,7 @@ public class EC2ComputeServiceContextModule extends BaseComputeServiceContextMod
    protected Supplier<CacheLoader<RegionAndName, Image>> provideRegionAndNameToImageSupplierCacheLoader(
             final RegionAndIdToImage delegate) {
       return Suppliers.<CacheLoader<RegionAndName, Image>>ofInstance(new CacheLoader<RegionAndName, Image>() {
-         private final AtomicReference<AuthorizationException> authException = new AtomicReference<AuthorizationException>();
+         private final AtomicReference<AuthorizationException> authException = Atomics.newReference();
 
          @Override
          public Image load(final RegionAndName key) throws Exception {

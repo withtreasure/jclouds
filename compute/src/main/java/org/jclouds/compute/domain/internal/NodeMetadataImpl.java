@@ -42,9 +42,6 @@ import com.google.common.collect.ImmutableSet;
  */
 public class NodeMetadataImpl extends ComputeMetadataImpl implements NodeMetadata {
 
-   /** The serialVersionUID */
-   private static final long serialVersionUID = 7924307572338157887L;
-
    private final Status status;
    private final String backendStatus;
    private final int loginPort;
@@ -199,7 +196,7 @@ public class NodeMetadataImpl extends ComputeMetadataImpl implements NodeMetadat
          helper.add("privateAddresses", getPrivateAddresses());
       if (getPublicAddresses().size() > 0)
          helper.add("publicAddresses", getPublicAddresses());
-      helper.add("hardware", getHardware()).add("loginUser", ((credentials != null) ? credentials.identity : null));
+      helper.add("hardware", getHardware()).add("loginUser", credentials != null ? credentials.identity : null);
       return addComputeToStringSuffix(helper);
    }
 }

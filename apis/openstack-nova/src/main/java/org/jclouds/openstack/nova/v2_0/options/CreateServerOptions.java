@@ -32,7 +32,7 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.jclouds.encryption.internal.Base64;
+import org.jclouds.crypto.CryptoStreams;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.openstack.nova.v2_0.NovaApi;
 import org.jclouds.rest.MapBinder;
@@ -63,7 +63,7 @@ public class CreateServerOptions implements MapBinder {
 
       public File(String path, byte[] contents) {
          this.path = checkNotNull(path, "path");
-         this.contents = Base64.encodeBytes(checkNotNull(contents, "contents"));
+         this.contents = CryptoStreams.base64(checkNotNull(contents, "contents"));
          checkArgument(
                path.getBytes().length < 255,
                String.format("maximum length of path is 255 bytes.  Path specified %s is %d bytes", path,
@@ -184,7 +184,7 @@ public class CreateServerOptions implements MapBinder {
       if (keyName != null)
          server.key_name = keyName;
       if (userData != null)
-          server.user_data = Base64.encodeBytes(userData);
+          server.user_data = CryptoStreams.base64(userData);
       if (securityGroupNames.size() > 0) {
          server.securityGroupNames = Sets.newLinkedHashSet();
          for (String groupName : securityGroupNames) {
@@ -294,13 +294,12 @@ public class CreateServerOptions implements MapBinder {
    
    /**
     * 
+    * Security groups the user specified to run servers with.
+    * 
     * <h3>Note</h3>
     * 
     * This requires that {@link NovaApi#getSecurityGroupExtensionForZone(String)} to return
     * {@link Optional#isPresent present}
-    * 
-    * @return security groups the user specified to run servers with; zero length will create an
-    *         implicit group starting with {@code jclouds#}
     */
    public Set<String> getSecurityGroupNames() {
       return securityGroupNames;

@@ -31,11 +31,11 @@ import static org.jclouds.crypto.SshKeys.fingerprintPrivateKey;
 import static org.jclouds.crypto.SshKeys.sha1PrivateKey;
 
 import java.io.Closeable;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
-import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PreDestroy;
@@ -55,7 +55,6 @@ import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.UserAuthException;
 import net.schmizz.sshj.xfer.InMemorySourceFile;
 
-import org.apache.commons.io.input.ProxyInputStream;
 import org.jclouds.compute.domain.ExecChannel;
 import org.jclouds.compute.domain.ExecResponse;
 import org.jclouds.domain.LoginCredentials;
@@ -74,6 +73,7 @@ import com.google.common.base.Predicates;
 import com.google.common.base.Splitter;
 import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Closeables;
 import com.google.common.net.HostAndPort;
 import com.google.inject.Inject;
@@ -86,7 +86,7 @@ import com.google.inject.Inject;
 @SuppressWarnings("unchecked")
 public class SshjSshClient implements SshClient {
 
-   private final class CloseFtpChannelOnCloseInputStream extends ProxyInputStream {
+   private final class CloseFtpChannelOnCloseInputStream extends FilterInputStream {
 
       private final SFTPClient sftp;
 
@@ -412,7 +412,7 @@ public class SshjSshClient implements SshClient {
          public Session create() throws Exception {
             checkConnected();
             session = sshClientConnection.ssh.startSession();
-            session.allocatePTY("vt100", 80, 24, 0, 0, Collections.<PTYMode, Integer> emptyMap());
+            session.allocatePTY("vt100", 80, 24, 0, 0, ImmutableMap.<PTYMode, Integer> of());
             return session;
          }
 

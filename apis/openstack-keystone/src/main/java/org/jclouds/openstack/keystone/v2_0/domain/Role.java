@@ -49,7 +49,7 @@ public class Role {
       return new ConcreteBuilder().fromRole(this);
    }
 
-   public static abstract class Builder<T extends Builder<T>>  {
+   public abstract static class Builder<T extends Builder<T>>  {
       protected abstract T self();
       protected String id;
       protected String name;
@@ -195,7 +195,7 @@ public class Role {
    }
 
    protected ToStringHelper string() {
-      return Objects.toStringHelper(this)
+      return Objects.toStringHelper(this).omitNullValues()
             .add("id", id).add("name", name).add("description", description).add("serviceId", serviceId).add("tenantId", tenantId);
    }
 

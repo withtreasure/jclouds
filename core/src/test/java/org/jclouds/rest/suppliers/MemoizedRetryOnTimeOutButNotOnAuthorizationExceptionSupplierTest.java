@@ -27,7 +27,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -41,6 +40,7 @@ import org.testng.annotations.Test;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.util.concurrent.Atomics;
 
 /**
  * 
@@ -51,7 +51,7 @@ import com.google.common.base.Suppliers;
 public class MemoizedRetryOnTimeOutButNotOnAuthorizationExceptionSupplierTest {
    @Test
    public void testLoaderNormal() {
-      AtomicReference<AuthorizationException> authException = new AtomicReference<AuthorizationException>();
+      AtomicReference<AuthorizationException> authException = Atomics.newReference();
       assertEquals(new SetAndThrowAuthorizationExceptionSupplierBackedLoader<String>(Suppliers.ofInstance("foo"),
                authException).load("KEY"), "foo");
       assertEquals(authException.get(), null);
@@ -59,7 +59,7 @@ public class MemoizedRetryOnTimeOutButNotOnAuthorizationExceptionSupplierTest {
 
    @Test(expectedExceptions = AuthorizationException.class)
    public void testLoaderThrowsAuthorizationExceptionAndAlsoSetsExceptionType() {
-      AtomicReference<AuthorizationException> authException = new AtomicReference<AuthorizationException>();
+      AtomicReference<AuthorizationException> authException = Atomics.newReference();
       try {
          new SetAndThrowAuthorizationExceptionSupplierBackedLoader<String>(new Supplier<String>() {
 
@@ -75,7 +75,7 @@ public class MemoizedRetryOnTimeOutButNotOnAuthorizationExceptionSupplierTest {
 
    @Test(expectedExceptions = AuthorizationException.class)
    public void testLoaderThrowsAuthorizationExceptionAndAlsoSetsExceptionTypeWhenNested() {
-      AtomicReference<AuthorizationException> authException = new AtomicReference<AuthorizationException>();
+      AtomicReference<AuthorizationException> authException = Atomics.newReference();
       try {
          new SetAndThrowAuthorizationExceptionSupplierBackedLoader<String>(new Supplier<String>() {
 
@@ -91,7 +91,7 @@ public class MemoizedRetryOnTimeOutButNotOnAuthorizationExceptionSupplierTest {
 
    @Test(expectedExceptions = RuntimeException.class)
    public void testLoaderThrowsOriginalExceptionAndAlsoSetsExceptionTypeWhenNestedAndNotAuthorizationException() {
-      AtomicReference<AuthorizationException> authException = new AtomicReference<AuthorizationException>();
+      AtomicReference<AuthorizationException> authException = Atomics.newReference();
       try {
          new SetAndThrowAuthorizationExceptionSupplierBackedLoader<String>(new Supplier<String>() {
 
@@ -111,7 +111,6 @@ public class MemoizedRetryOnTimeOutButNotOnAuthorizationExceptionSupplierTest {
       final long EXPIRATION_TIME = 200;
 
       Supplier<Integer> slowSupplier = new CountingSupplier() {
-         private static final long serialVersionUID = 1L;
 
          @Override
          public Integer get() {
@@ -138,8 +137,7 @@ public class MemoizedRetryOnTimeOutButNotOnAuthorizationExceptionSupplierTest {
    // It should be deleted when we can switch back to using the google
    // Supplier.memoizeWithExpiration.
 
-   private static class CountingSupplier implements Supplier<Integer>, Serializable {
-      private static final long serialVersionUID = 0L;
+   private static class CountingSupplier implements Supplier<Integer> {
       transient int calls = 0;
 
       @Override
@@ -157,23 +155,6 @@ public class MemoizedRetryOnTimeOutButNotOnAuthorizationExceptionSupplierTest {
                new AtomicReference<AuthorizationException>(), countingSupplier, 75, TimeUnit.MILLISECONDS);
 
       checkExpiration(countingSupplier, memoizedSupplier);
-   }
-
-   @Test
-   public void testMemoizeWithExpirationSerialized() throws InterruptedException {
-      CountingSupplier countingSupplier = new CountingSupplier();
-
-      Supplier<Integer> memoizedSupplier = new MemoizedRetryOnTimeOutButNotOnAuthorizationExceptionSupplier(
-               new AtomicReference<AuthorizationException>(), countingSupplier, 75, TimeUnit.MILLISECONDS);
-      // Calls to the original memoized supplier shouldn't affect its copy.
-      memoizedSupplier.get();
-
-      Supplier<Integer> copy = reserialize(memoizedSupplier);
-      memoizedSupplier.get();
-
-      CountingSupplier countingCopy = (CountingSupplier) ((MemoizedRetryOnTimeOutButNotOnAuthorizationExceptionSupplier) copy)
-               .delegate();
-      checkExpiration(countingCopy, copy);
    }
 
    private void checkExpiration(CountingSupplier countingSupplier, Supplier<Integer> memoizedSupplier)
@@ -214,7 +195,7 @@ public class MemoizedRetryOnTimeOutButNotOnAuthorizationExceptionSupplierTest {
 
    private void supplierThreadSafe(Function<Supplier<Boolean>, Supplier<Boolean>> memoizer) throws Throwable {
       final AtomicInteger count = new AtomicInteger(0);
-      final AtomicReference<Throwable> thrown = new AtomicReference<Throwable>(null);
+      final AtomicReference<Throwable> thrown = Atomics.newReference(null);
       final int numThreads = 3;
       final Thread[] threads = new Thread[numThreads];
       final long timeout = TimeUnit.SECONDS.toNanos(60);
@@ -282,19 +263,4 @@ public class MemoizedRetryOnTimeOutButNotOnAuthorizationExceptionSupplierTest {
       assertEquals(1, count.get());
    }
 
-   // Taken from com.google.common.testing.SerializableTester
-   private static <T> T reserialize(T object) {
-      checkNotNull(object);
-      ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-      try {
-         ObjectOutputStream out = new ObjectOutputStream(bytes);
-         out.writeObject(object);
-         ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(bytes.toByteArray()));
-         return (T) in.readObject();
-      } catch (IOException e) {
-         throw new RuntimeException(e);
-      } catch (ClassNotFoundException e) {
-         throw new RuntimeException(e);
-      }
-   }
 }

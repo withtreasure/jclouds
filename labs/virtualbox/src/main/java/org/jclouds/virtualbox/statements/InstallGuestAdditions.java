@@ -38,10 +38,10 @@ import org.jclouds.scriptbuilder.domain.StatementList;
 import org.jclouds.virtualbox.domain.IsoImage;
 import org.jclouds.virtualbox.domain.StorageController;
 import org.jclouds.virtualbox.domain.VmSpec;
-import org.testng.collections.Lists;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 /**
  * Mounts the DVD with guest additions that was downloaded and attached as removable storage. If no

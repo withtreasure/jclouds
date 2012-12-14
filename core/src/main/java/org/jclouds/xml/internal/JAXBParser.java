@@ -30,7 +30,6 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import org.jclouds.Constants;
-import org.jclouds.http.functions.ParseXMLWithJAXB;
 import org.jclouds.xml.XMLParser;
 
 import com.google.inject.name.Named;
@@ -81,7 +80,7 @@ public class JAXBParser implements XMLParser {
          Unmarshaller unmarshaller = context.createUnmarshaller();
          return (T) unmarshaller.unmarshal(reader);
       } catch (Exception ex) {
-         throw new IOException("Could not unmarshall document into type: " + type.getSimpleName() + "\n" + xml, ex);
+         throw new IOException("Could not unmarshal document into type: " + type.getSimpleName() + "\n" + xml, ex);
       }
    }
 }

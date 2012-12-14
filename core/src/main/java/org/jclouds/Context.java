@@ -22,7 +22,6 @@ import java.io.Closeable;
 import java.net.URI;
 import java.util.Map;
 
-import org.jclouds.apis.ApiMetadata;
 import org.jclouds.domain.Credentials;
 import org.jclouds.domain.Location;
 import org.jclouds.internal.ContextImpl;
@@ -45,6 +44,14 @@ import com.google.inject.ImplementedBy;
  */
 @ImplementedBy(ContextImpl.class)
 public interface Context extends Location, Closeable {
+
+  /**
+   * Identifies the Context. This is a unique name optionally specified by the user and safe to index on.
+   * The purpose of this property is to provide means to distinct between multiple contexts, without having to check
+   * multiple properties or have explicit knowledge of how the context was created.
+   * @return
+   */
+   String getName();
 
    /**
     * will be removed in jclouds 1.6

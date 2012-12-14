@@ -26,6 +26,7 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -52,7 +53,17 @@ import com.google.inject.TypeLiteral;
  */
 @Test(groups = "unit", testName = "NovaComputeServiceExpectTest")
 public class NovaComputeServiceExpectTest extends BaseNovaComputeServiceExpectTest {
-
+   
+   @Override
+   protected Properties setupProperties() {
+      Properties overrides = super.setupProperties();
+      // only specify limited zones so that we don't have to configure requests for multiple zones.
+      // since we are doing tests with keystone responses from hpcloud and also trystack, we have
+      // to whitelist one zone from each
+      overrides.setProperty("jclouds.zones", "az-1.region-a.geo-1,RegionOne");
+      return overrides;
+   }
+   
    public void testListLocationsWhenResponseIs2xx() throws Exception {
 
       Map<HttpRequest, HttpResponse> requestResponseMap = ImmutableMap.<HttpRequest, HttpResponse> builder()
@@ -316,4 +327,55 @@ public class NovaComputeServiceExpectTest extends BaseNovaComputeServiceExpectTe
       // we don't have access to this private key
       assertEquals(node.getCredentials().getPrivateKey(), null);
    }
+
+
+   @Test
+   public void testCreateNodeWhileUserSpecifiesKeyPairAndUserSpecifiedGroups() throws Exception {
+      Builder<HttpRequest, HttpResponse> requestResponseMap = ImmutableMap.<HttpRequest, HttpResponse> builder()
+            .putAll(defaultTemplateTryStack);
+      requestResponseMap.put(list, notFound);
+
+      requestResponseMap.put(serverDetail, serverDetailResponse);
+
+      HttpRequest createServerWithSuppliedKeyPairAndGroup = HttpRequest
+            .builder()
+            .method("POST")
+            .endpoint("https://nova-api.trystack.org:9774/v1.1/3456/servers")
+            .addHeader("Accept", "application/json")
+            .addHeader("X-Auth-Token", authToken)
+            .payload(
+                  payloadFromStringWithContentType(
+                        "{\"server\":{\"name\":\"test-0\",\"imageRef\":\"14\",\"flavorRef\":\"1\",\"key_name\":\"fooPair\",\"security_groups\":[{\"name\":\"mygroup\"}]}}",
+                        "application/json")).build();
+
+      HttpResponse createdServer = HttpResponse.builder().statusCode(202).message("HTTP/1.1 202 Accepted")
+            .payload(payloadFromResourceWithContentType("/new_server.json", "application/json; charset=UTF-8")).build();
+
+      requestResponseMap.put(createServerWithSuppliedKeyPairAndGroup, createdServer);
+
+      ComputeService apiThatCreatesNode = requestsSendResponses(requestResponseMap.build(), new AbstractModule() {
+
+         @Override
+         protected void configure() {
+            // predicatable node names
+            final AtomicInteger suffix = new AtomicInteger();
+            bind(new TypeLiteral<Supplier<String>>() {
+            }).toInstance(new Supplier<String>() {
+
+               @Override
+               public String get() {
+                  return suffix.getAndIncrement() + "";
+               }
+
+            });
+         }
+
+      });
+
+      NodeMetadata node = Iterables.getOnlyElement(apiThatCreatesNode.createNodesInGroup("test", 1,
+            keyPairName("fooPair").securityGroupNames("mygroup").blockUntilRunning(false)));
+      // we don't have access to this private key
+      assertEquals(node.getCredentials().getPrivateKey(), null);
+   }
+
 }

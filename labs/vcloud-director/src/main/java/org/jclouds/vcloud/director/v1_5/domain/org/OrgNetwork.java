@@ -2,7 +2,7 @@
  * Licensed to jclouds, Inc. (jclouds) under one or more
  * contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
- *(Link.builder().regarding copyright ownership.  jclouds licenses this file
+ * regarding copyright ownership.  jclouds licenses this file
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -41,7 +41,7 @@ public class OrgNetwork extends Network {
       return new ConcreteBuilder().fromOrgNetwork(this);
    }
 
-   public static abstract class Builder<T extends Builder<T>> extends Network.Builder<T> {
+   public abstract static class Builder<T extends Builder<T>> extends Network.Builder<T> {
       private Reference networkPool;
       private IpAddresses allowedExternalIpAddresses;
 

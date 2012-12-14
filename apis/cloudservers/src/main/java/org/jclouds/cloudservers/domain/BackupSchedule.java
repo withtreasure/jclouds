@@ -18,8 +18,6 @@
  */
 package org.jclouds.cloudservers.domain;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.beans.ConstructorProperties;
 
 import org.jclouds.javax.annotation.Nullable;
@@ -43,7 +41,7 @@ public class BackupSchedule {
       return new ConcreteBuilder().fromBackupSchedule(this);
    }
 
-   public static abstract class Builder<T extends Builder<T>>  {
+   public abstract static class Builder<T extends Builder<T>>  {
       protected abstract T self();
 
       protected DailyBackup daily;

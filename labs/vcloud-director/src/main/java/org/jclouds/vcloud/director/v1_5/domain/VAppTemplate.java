@@ -21,7 +21,6 @@ package org.jclouds.vcloud.director.v1_5.domain;
 import static com.google.common.base.Objects.equal;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Collections;
 import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAttribute;
@@ -72,7 +71,7 @@ public class VAppTemplate extends ResourceEntity {
    private static class ConcreteBuilder extends Builder<ConcreteBuilder> {
    }
    
-   public static abstract class Builder<B extends Builder<B>> extends ResourceEntity.Builder<B> {
+   public abstract static class Builder<B extends Builder<B>> extends ResourceEntity.Builder<B> {
       private Owner owner;
       private Set<Vm> children = Sets.newLinkedHashSet();
       private Set<SectionType> sections = Sets.newLinkedHashSet();
@@ -179,7 +178,7 @@ public class VAppTemplate extends ResourceEntity {
    protected VAppTemplate(Builder<?> builder) {
       super(builder);
       this.owner = builder.owner;
-      this.children = builder.children.isEmpty() ? Collections.<Vm>emptySet() : ImmutableSet.copyOf(builder.children);
+      this.children = builder.children.isEmpty() ? ImmutableSet.<Vm>of() : ImmutableSet.copyOf(builder.children);
       this.sections = builder.sections.isEmpty() ? null : ImmutableSet.copyOf(builder.sections);
       this.vAppScopedLocalId = builder.vAppScopedLocalId;
       this.ovfDescriptorUploaded = builder.ovfDescriptorUploaded;
@@ -229,7 +228,7 @@ public class VAppTemplate extends ResourceEntity {
     * </ul>
     */
    public Set<SectionType> getSections() {
-      return sections != null ? ImmutableSet.copyOf(sections) : Collections.<SectionType>emptySet();
+      return sections != null ? ImmutableSet.copyOf(sections) : ImmutableSet.<SectionType>of();
    }
 
    /**

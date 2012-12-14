@@ -23,13 +23,14 @@ import static com.google.common.collect.Iterables.filter;
 
 import java.util.List;
 
-import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.AbiquoApi;
+import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
 import org.jclouds.abiquo.reference.annotations.EnterpriseEdition;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.rest.RestContext;
 
+import com.abiquo.server.core.enterprise.EnterprisesDto;
 import com.abiquo.server.core.infrastructure.DatacenterDto;
 import com.abiquo.server.core.infrastructure.storage.StoragePoolsDto;
 import com.abiquo.server.core.infrastructure.storage.TierDto;
@@ -121,6 +122,40 @@ public class Tier extends DomainWrapper<TierDto> {
       return Iterables.getFirst(filter(listStoragePools(), filter), null);
    }
 
+   /**
+    * Allow the tier to be used to all enterprises.
+    * 
+    * @SinceApiVersion 2.4
+    */
+   public void allowTierToAllEnterprises() {
+      context.getApi().getInfrastructureApi().allowTierToAllEnterprises(target);
+   }
+
+   /**
+    * Restrict the tier to all enterprises.
+    * 
+    * @param force
+    *           try to force all or nothing. It means that <code>true</code>
+    *           value will result to a all enterprises restricted ok or any
+    *           enterprise not restricted because some of them have any
+    *           problems. If the value is <code>false</code> could be
+    *           enterprises restricted although some of them have any problems.
+    * 
+    * @SinceApiVersion 2.4
+    */
+   public void restrictTierToAllEnterprises(boolean force) {
+      context.getApi().getInfrastructureApi().restrictTierToAllEnterprises(target, force);
+   }
+
+   /**
+    * Retrieve a list of allowed enterprises for a tier
+    * 
+    * @SinceApiVersion 2.4
+    */
+   public EnterprisesDto getEnterprisesByTier() {
+      return context.getApi().getInfrastructureApi().getEnterprisesByTier(target);
+   }
+
    // Parent access
 
    /**
@@ -168,10 +203,17 @@ public class Tier extends DomainWrapper<TierDto> {
       target.setName(name);
    }
 
+   public boolean isDefaultAllowed() {
+      return target.isDefaultAllowed();
+   }
+
+   public void setDefaultAllowed(final boolean defaultAllowed) {
+      target.setDefaultAllowed(defaultAllowed);
+   }
+
    @Override
    public String toString() {
       return "Tier [id=" + getId() + ", description=" + getDescription() + ", enabled=" + getEnabled() + ", name="
-            + getName() + "]";
+            + getName() + ", isDefaultAllowed=" + isDefaultAllowed() + "]";
    }
-
 }

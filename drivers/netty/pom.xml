@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.jclouds</groupId>
         <artifactId>jclouds-project</artifactId>
-        <version>1.6.0-rc.230</version>
+        <version>1.6.0-SNAPSHOT</version>
         <relativePath>../../project/pom.xml</relativePath>
     </parent>
     <groupId>org.jclouds.driver</groupId>
@@ -35,7 +35,11 @@
 
     <properties>
         <jclouds.osgi.export>org.jclouds.netty*;version="${project.version}"</jclouds.osgi.export>
-        <jclouds.osgi.import>org.jclouds*;version="${project.version}",*</jclouds.osgi.import>
+        <jclouds.osgi.import>
+          org.jclouds*;version="${project.version}",
+          org.jboss.netty*;version="[3.3,4)",
+          *
+        </jclouds.osgi.import>
     </properties>
 
     <dependencies>
@@ -54,7 +58,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty</artifactId>
-            <version>3.3.1.Final</version>
+            <version>3.5.9.Final</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

@@ -31,7 +31,6 @@ import static org.testng.Assert.assertNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -43,6 +42,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
 
@@ -68,12 +68,12 @@ import org.jclouds.io.Payloads;
 import org.jclouds.io.WriteTo;
 import org.jclouds.io.payloads.StreamingPayload;
 import org.jclouds.logging.Logger;
-import org.jclouds.util.Strings2;
 import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
@@ -120,7 +120,7 @@ public class BaseBlobIntegrationTest extends BaseBlobStoreIntegrationTest {
     * http://groups.google.com/group/jclouds/browse_thread/thread/4a7c8d58530b287f
     */
    @Test(groups = { "integration", "live" })
-   public void testPutFileParallel() throws InterruptedException, IOException {
+   public void testPutFileParallel() throws InterruptedException, IOException, TimeoutException {
 
       File payloadFile = File.createTempFile("testPutFileParallel", "png");
       Files.copy(InputSuppliers.of(getClass().getResource("/testimg.png").openStream()), payloadFile);
@@ -167,7 +167,7 @@ public class BaseBlobIntegrationTest extends BaseBlobStoreIntegrationTest {
    }
 
    @Test(groups = { "integration", "live" })
-   public void testBigFileGets() throws InterruptedException, IOException {
+   public void testBigFileGets() throws InterruptedException, IOException, TimeoutException {
       final String expectedContentDisposition = "attachment; filename=constit.txt";
       final String container = getContainerName();
       try {
@@ -482,10 +482,10 @@ public class BaseBlobIntegrationTest extends BaseBlobStoreIntegrationTest {
 
    @DataProvider(name = "putTests")
    public Object[][] createData1() throws IOException {
+      File file = new File("pom.xml");
+      String realObject = Files.toString(file, Charsets.UTF_8);
 
-      String realObject = Strings2.toStringAndClose(new FileInputStream("pom.xml"));
-
-      return new Object[][] { { "file", "text/xml", new File("pom.xml"), realObject },
+      return new Object[][] { { "file", "text/xml", file, realObject },
                { "string", "text/xml", realObject, realObject },
                { "bytes", "application/octet-stream", realObject.getBytes(), realObject } };
    }

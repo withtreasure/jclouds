@@ -20,8 +20,6 @@ package org.jclouds.ec2.domain;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.jclouds.ec2.EC2AsyncClient;
-
 import com.google.common.base.CaseFormat;
 
 /**
@@ -64,7 +62,7 @@ public enum InstanceState {
    STOPPED, UNRECOGNIZED;
 
    public String value() {
-      return (CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, name()));
+      return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, name());
    }
 
    @Override

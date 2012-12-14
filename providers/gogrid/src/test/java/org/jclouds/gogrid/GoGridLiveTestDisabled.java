@@ -25,7 +25,6 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
@@ -37,7 +36,16 @@ import java.util.concurrent.TimeUnit;
 import org.jclouds.compute.internal.BaseComputeServiceContextLiveTest;
 import org.jclouds.domain.Credentials;
 import org.jclouds.domain.LoginCredentials;
-import org.jclouds.gogrid.domain.*;
+import org.jclouds.gogrid.domain.Ip;
+import org.jclouds.gogrid.domain.IpPortPair;
+import org.jclouds.gogrid.domain.Job;
+import org.jclouds.gogrid.domain.LoadBalancer;
+import org.jclouds.gogrid.domain.LoadBalancerPersistenceType;
+import org.jclouds.gogrid.domain.LoadBalancerType;
+import org.jclouds.gogrid.domain.PowerCommand;
+import org.jclouds.gogrid.domain.Server;
+import org.jclouds.gogrid.domain.ServerImage;
+import org.jclouds.gogrid.domain.ServerImageType;
 import org.jclouds.gogrid.options.AddLoadBalancerOptions;
 import org.jclouds.gogrid.options.AddServerOptions;
 import org.jclouds.gogrid.options.GetImageListOptions;
@@ -56,6 +64,7 @@ import org.testng.annotations.Test;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.net.HostAndPort;
 
 /**
@@ -79,8 +88,8 @@ public class GoGridLiveTestDisabled extends BaseComputeServiceContextLiveTest {
    /**
     * Keeps track of the servers, created during the tests, to remove them after all tests complete
     */
-   private List<String> serversToDeleteAfterTheTests = new ArrayList<String>();
-   private List<String> loadBalancersToDeleteAfterTest = new ArrayList<String>();
+   private List<String> serversToDeleteAfterTheTests = Lists.newArrayList();
+   private List<String> loadBalancersToDeleteAfterTest = Lists.newArrayList();
 
    private RestContext<GoGridClient, GoGridAsyncClient> gocontext;
 

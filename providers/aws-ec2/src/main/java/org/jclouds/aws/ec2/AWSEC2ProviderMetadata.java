@@ -37,9 +37,6 @@ import org.jclouds.providers.internal.BaseProviderMetadata;
  * @author Adrian Cole
  */
 public class AWSEC2ProviderMetadata extends BaseProviderMetadata {
-   
-   /** The serialVersionUID */
-   private static final long serialVersionUID = 1L;
 
    public static Builder builder() {
       return new Builder();
@@ -89,7 +86,7 @@ public class AWSEC2ProviderMetadata extends BaseProviderMetadata {
          .console(URI.create("https://console.aws.amazon.com/ec2/home"))
          .defaultProperties(AWSEC2ProviderMetadata.defaultProperties())
          .linkedServices("aws-ec2","aws-elb", "aws-cloudwatch", "aws-s3", "aws-simpledb")
-         .iso3166Codes("US-VA", "US-CA", "US-OR", "BR-SP", "IE", "SG", "JP-13");
+         .iso3166Codes("US-VA", "US-CA", "US-OR", "BR-SP", "IE", "SG", "AU-NSW", "JP-13");
       }
 
       @Override

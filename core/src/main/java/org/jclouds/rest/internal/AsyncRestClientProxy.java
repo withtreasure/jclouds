@@ -19,10 +19,8 @@
 package org.jclouds.rest.internal;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Resource;
@@ -49,12 +47,15 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
+import com.google.common.base.Throwables;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.reflect.AbstractInvocationHandler;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.Binding;
+import com.google.inject.ConfigurationException;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -88,7 +89,7 @@ import com.google.inject.util.Types;
  * @author Adrian Cole
  */
 @Singleton
-public class AsyncRestClientProxy<T> implements InvocationHandler {
+public class AsyncRestClientProxy<T> extends AbstractInvocationHandler {
    public Class<T> getDeclaring() {
       return declaring;
    }
@@ -133,14 +134,9 @@ public class AsyncRestClientProxy<T> implements InvocationHandler {
 
    };
 
-   public Object invoke(Object o, Method method, Object[] args) throws Throwable {
-      if (method.getName().equals("equals")) {
-         return this.equals(o);
-      } else if (method.getName().equals("toString")) {
-         return this.toString();
-      } else if (method.getName().equals("hashCode")) {
-         return this.hashCode();
-      } else if (method.isAnnotationPresent(Provides.class)) {
+   @Override
+   protected Object handleInvocation(Object proxy, Method method, Object[] args) throws ExecutionException {
+      if (method.isAnnotationPresent(Provides.class)) {
          return lookupValueFromGuice(method);
       } else if (method.isAnnotationPresent(Delegate.class)) {
          return propagateContextToDelegate(method, args);
@@ -176,8 +172,10 @@ public class AsyncRestClientProxy<T> implements InvocationHandler {
          try {
             Annotation qualifier = Iterables.find(ImmutableList.copyOf(method.getAnnotations()), isQualifierPresent);
             return getInstanceOfTypeWithQualifier(genericReturnType, qualifier);
-         } catch (NoSuchElementException e) {
-            return getInstanceOfType(genericReturnType);
+         } catch (ProvisionException e) {
+            throw Throwables.propagate(e.getCause());
+         } catch (RuntimeException e) {
+            return instanceOfTypeOrPropagate(genericReturnType, e);
          }
       } catch (ProvisionException e) {
          AuthorizationException aex = Throwables2.getFirstThrowableOfType(e, AuthorizationException.class);
@@ -188,19 +186,23 @@ public class AsyncRestClientProxy<T> implements InvocationHandler {
    }
 
    // TODO: tidy
-   private Object getInstanceOfType(Type genericReturnType) {
-      // look for an existing binding
-      Binding<?> binding = injector.getExistingBinding(Key.get(genericReturnType));
-      if (binding != null)
-         return binding.getProvider().get();
+   private Object instanceOfTypeOrPropagate(Type genericReturnType, RuntimeException e) {
+      try {
+         // look for an existing binding
+         Binding<?> binding = injector.getExistingBinding(Key.get(genericReturnType));
+         if (binding != null)
+            return binding.getProvider().get();
 
-      // then, try looking via supplier
-      binding = injector.getExistingBinding(Key.get(Types.newParameterizedType(Supplier.class, genericReturnType)));
-      if (binding != null)
-         return Supplier.class.cast(binding.getProvider().get()).get();
+         // then, try looking via supplier
+         binding = injector.getExistingBinding(Key.get(Types.newParameterizedType(Supplier.class, genericReturnType)));
+         if (binding != null)
+            return Supplier.class.cast(binding.getProvider().get()).get();
 
-      // else try to create an instance
-      return injector.getInstance(Key.get(genericReturnType));
+         // else try to create an instance
+         return injector.getInstance(Key.get(genericReturnType));
+      } catch (ConfigurationException ce) {
+         throw e;
+      }
    }
 
    // TODO: tidy
@@ -271,23 +273,6 @@ public class AsyncRestClientProxy<T> implements InvocationHandler {
 
    public static interface Factory {
       public TransformingHttpCommand<?> create(HttpRequest request, Function<HttpResponse, ?> transformer);
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (obj == null || !(obj instanceof AsyncRestClientProxy<?>))
-         return false;
-      AsyncRestClientProxy<?> other = (AsyncRestClientProxy<?>) obj;
-      if (other == this)
-         return true;
-      if (other.declaring != this.declaring)
-         return false;
-      return super.equals(obj);
-   }
-
-   @Override
-   public int hashCode() {
-      return declaring.hashCode();
    }
 
    public String toString() {

@@ -32,9 +32,6 @@ import org.jclouds.providers.internal.BaseProviderMetadata;
 * @author Adrian Cole
 */
 public class AWSIAMProviderMetadata extends BaseProviderMetadata {
-   
-   /** The serialVersionUID */
-   private static final long serialVersionUID = 2394954723306943404L;
 
    public static Builder builder() {
       return new Builder();
@@ -67,7 +64,7 @@ public class AWSIAMProviderMetadata extends BaseProviderMetadata {
          .homepage(URI.create("http://aws.amazon.com/iam"))
          .console(URI.create("https://console.aws.amazon.com/iam/home"))
          .linkedServices("aws-ec2","aws-elb", "aws-cloudwatch", "aws-s3", "aws-simpledb")
-         .iso3166Codes("US-VA", "US-CA", "BR-SP", "US-OR", "IE", "SG", "JP-13")
+         .iso3166Codes("US-VA", "US-CA", "BR-SP", "US-OR", "IE", "SG", "AU-NSW", "JP-13")
          .apiMetadata(new IAMApiMetadata())
          .defaultProperties(AWSIAMProviderMetadata.defaultProperties());
       }

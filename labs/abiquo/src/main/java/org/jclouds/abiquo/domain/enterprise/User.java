@@ -22,7 +22,6 @@ package org.jclouds.abiquo.domain.enterprise;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -119,7 +118,7 @@ public class User extends DomainWrapper<UserDto> {
       target = context.getApi().getEnterpriseApi().updateUser(target);
    }
 
-   public List<VirtualDatacenter> listPermitedVirtualDatacenters() {
+   public List<VirtualDatacenter> listPermittedVirtualDatacenters() {
       List<Integer> ids = extractAvailableDatacenters();
 
       // null value means all virtual datacenters all allowed
@@ -132,12 +131,12 @@ public class User extends DomainWrapper<UserDto> {
       return Lists.newArrayList(listVirtualDatacenters.execute(ids));
    }
 
-   public List<VirtualDatacenter> listPermitedVirtualDatacenters(final Predicate<VirtualDatacenter> filter) {
-      return Lists.newLinkedList(filter(listPermitedVirtualDatacenters(), filter));
+   public List<VirtualDatacenter> listPermittedVirtualDatacenters(final Predicate<VirtualDatacenter> filter) {
+      return Lists.newLinkedList(filter(listPermittedVirtualDatacenters(), filter));
    }
 
-   public VirtualDatacenter findPermitedVirtualDatacenter(final Predicate<VirtualDatacenter> filter) {
-      return Iterables.getFirst(filter(listPermitedVirtualDatacenters(), filter), null);
+   public VirtualDatacenter findPermittedVirtualDatacenter(final Predicate<VirtualDatacenter> filter) {
+      return Iterables.getFirst(filter(listPermittedVirtualDatacenters(), filter), null);
    }
 
    /**
@@ -152,10 +151,10 @@ public class User extends DomainWrapper<UserDto> {
     * list is empty, user will get access to all virtual datacenters.
     * 
     * @param vdc
-    *           List of virtual datancers from the user's enterprise.
+    *           List of virtual datacenters from the user's enterprise.
     */
-   public void setPermitedVirtualDatacenters(final List<VirtualDatacenter> vdcs) {
-      List<Integer> ids = new ArrayList<Integer>();
+   public void setPermittedVirtualDatacenters(final List<VirtualDatacenter> vdcs) {
+      List<Integer> ids = Lists.newArrayList();
 
       for (VirtualDatacenter vdc : vdcs) {
          checkNotNull(vdc.getId(), ValidationErrors.MISSING_REQUIRED_FIELD + " id in " + VirtualDatacenter.class);

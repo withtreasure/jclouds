@@ -36,7 +36,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 /**
- * An Openstack Nova Volume
+ * An OpenStack Nova Volume
 */
 public class Volume {
 
@@ -70,7 +70,7 @@ public class Volume {
       return new ConcreteBuilder().fromVolume(this);
    }
 
-   public static abstract class Builder<T extends Builder<T>>  {
+   public abstract static class Builder<T extends Builder<T>>  {
       protected abstract T self();
 
       protected String id;

@@ -40,7 +40,6 @@ import org.jclouds.domain.LoginCredentials;
 import org.jclouds.javax.annotation.Nullable;
 import org.jclouds.logging.Logger;
 import org.jclouds.virtualbox.util.NetworkUtils;
-import org.testng.collections.Lists;
 import org.virtualbox_4_1.IMachine;
 import org.virtualbox_4_1.INetworkAdapter;
 import org.virtualbox_4_1.MachineState;
@@ -49,6 +48,7 @@ import org.virtualbox_4_1.NetworkAttachmentType;
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -117,8 +117,8 @@ public class IMachineToNodeMetadata implements Function<IMachine, NodeMetadata> 
                String hostIP = adapter.getNatDriver().getHostIP();
                if(!hostIP.isEmpty())
                   publicIpAddresses.add(hostIP);
-               for (String nameProtocolnumberAddressInboudportGuestTargetport : adapter.getNatDriver().getRedirects()) {
-                  Iterable<String> stuff = Splitter.on(',').split(nameProtocolnumberAddressInboudportGuestTargetport);
+               for (String nameProtocolnumberAddressInboundportGuestTargetport : adapter.getNatDriver().getRedirects()) {
+                  Iterable<String> stuff = Splitter.on(',').split(nameProtocolnumberAddressInboundportGuestTargetport);
                   String protocolNumber = Iterables.get(stuff, 1);
                   String hostAddress = Iterables.get(stuff, 2);
                   String inboundPort = Iterables.get(stuff, 3);

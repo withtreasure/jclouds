@@ -27,8 +27,6 @@ import static org.testng.Assert.fail;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -44,10 +42,13 @@ import org.jclouds.filesystem.predicates.validators.internal.FilesystemBlobKeyVa
 import org.jclouds.filesystem.predicates.validators.internal.FilesystemContainerNameValidatorImpl;
 import org.jclouds.filesystem.utils.TestUtils;
 import org.jclouds.io.payloads.FilePayload;
+import org.jclouds.io.payloads.InputStreamPayload;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.google.common.io.InputSupplier;
@@ -304,7 +305,7 @@ public class FilesystemStorageStrategyImplTest {
       storageStrategy.createContainer(CONTAINER_NAME + "2");
       storageStrategy.createContainer(CONTAINER_NAME + "3");
 
-      List<String> containers = new ArrayList<String>();
+      List<String> containers = Lists.newArrayList();
       resultList = storageStrategy.getAllContainerNames();
       Iterator<String> containersIterator = resultList.iterator();
       while (containersIterator.hasNext()) {
@@ -347,17 +348,36 @@ public class FilesystemStorageStrategyImplTest {
    }
 
    public void testWritePayloadOnFile() throws IOException {
-      String blobKey;
-      File sourceFile;
-      FilePayload filePayload;
-
-      blobKey = TestUtils.createRandomBlobKey("writePayload-", ".img");
-      sourceFile = TestUtils.getImageForBlobPayload();
-      filePayload = new FilePayload(sourceFile);
+      String blobKey = TestUtils.createRandomBlobKey("writePayload-", ".img");
+      File sourceFile = TestUtils.getImageForBlobPayload();
+      FilePayload filePayload = new FilePayload(sourceFile);
       Blob blob = storageStrategy.newBlob(blobKey);
       blob.setPayload(filePayload);
+
       // write files
       storageStrategy.putBlob(CONTAINER_NAME, blob);
+
+      // verify that the files is equal
+      File blobFullPath = new File(TARGET_CONTAINER_NAME, blobKey);
+      InputSupplier<FileInputStream> expectedInput =
+            Files.newInputStreamSupplier(sourceFile);
+      InputSupplier<FileInputStream> actualInput =
+            Files.newInputStreamSupplier(blobFullPath);
+      assertTrue(ByteStreams.equal(expectedInput, actualInput),
+            "Files are not equal");
+   }
+
+   public void testWritePayloadOnFileInputStream() throws IOException {
+      String blobKey = TestUtils.createRandomBlobKey("writePayload-", ".img");
+      File sourceFile = TestUtils.getImageForBlobPayload();
+      InputStreamPayload fileInputStreamPayload = new InputStreamPayload(
+            new FileInputStream(sourceFile));
+      Blob blob = storageStrategy.newBlob(blobKey);
+      blob.setPayload(fileInputStreamPayload);
+
+      // write files
+      storageStrategy.putBlob(CONTAINER_NAME, blob);
+
       // verify that the files is equal
       File blobFullPath = new File(TARGET_CONTAINER_NAME, blobKey);
       InputSupplier<FileInputStream> expectedInput =
@@ -445,7 +465,7 @@ public class FilesystemStorageStrategyImplTest {
                TestUtils.createRandomBlobKey("346" + FS + "g3sx2" + FS + "removeBlob-", ".jpg"),
                TestUtils.createRandomBlobKey("346" + FS + "g3sx2" + FS + "removeBlob-", ".jpg") });
 
-      Set<String> remainingBlobKeys = new HashSet<String>();
+      Set<String> remainingBlobKeys = Sets.newHashSet();
       for (String key : blobKeys) {
          remainingBlobKeys.add(key);
       }
@@ -487,7 +507,7 @@ public class FilesystemStorageStrategyImplTest {
                TestUtils.createRandomBlobKey("563" + FS + "g3sx2" + FS + "removeBlob-", ".jpg") });
       storageStrategy.getBlobKeysInsideContainer(CONTAINER_NAME);
 
-      List<String> retrievedBlobKeys = new ArrayList<String>();
+      List<String> retrievedBlobKeys = Lists.newArrayList();
       resultList = storageStrategy.getBlobKeysInsideContainer(CONTAINER_NAME);
       Iterator<String> containersIterator = resultList.iterator();
       while (containersIterator.hasNext()) {

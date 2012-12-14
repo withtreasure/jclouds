@@ -2,7 +2,6 @@ package org.jclouds.smartos;
 
 import java.net.URI;
 
-import org.jclouds.apis.ApiMetadata;
 import org.jclouds.apis.internal.BaseApiMetadata;
 import org.jclouds.compute.ComputeServiceContext;
 import org.jclouds.smartos.compute.config.SmartOSComputeServiceContextModule;
@@ -17,9 +16,6 @@ import com.google.inject.Module;
  * @author Nigel Magnay
  */
 public class SmartOSApiMetadata extends BaseApiMetadata {
-
-   /** The serialVersionUID */
-   private static final long serialVersionUID = 3606170564482119304L;
 
    public static Builder builder() {
       return new Builder();

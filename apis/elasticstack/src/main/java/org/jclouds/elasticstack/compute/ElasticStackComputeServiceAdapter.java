@@ -35,7 +35,6 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.jclouds.Constants;
-import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.ComputeServiceAdapter;
 import org.jclouds.compute.domain.Hardware;
 import org.jclouds.compute.domain.HardwareBuilder;
@@ -144,7 +143,7 @@ public class ElasticStackComputeServiceAdapter implements
                @Override
                public boolean apply(Image input) {
                   String toParse = input.getUserMetadata().get("size");
-                  return (toParse != null && new Float(toParse) <= size);
+                  return toParse != null && new Float(toParse) <= size;
                }
 
                @Override

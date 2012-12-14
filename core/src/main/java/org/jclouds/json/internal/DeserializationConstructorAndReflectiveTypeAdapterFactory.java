@@ -25,11 +25,11 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jclouds.json.internal.NamingStrategies.ConstructorFieldNamingStrategy;
 
+import com.google.common.collect.Maps;
 import com.google.gson.FieldNamingStrategy;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -68,8 +68,8 @@ import com.google.gson.stream.JsonWriter;
  *    new ExtractSerializedName(), new ExtractNamed());
  * 
  * deserializationStrategy = new AnnotationConstructorNamingStrategy(
- *    Collections.singleton(javax.inject.Inject.class),
- *    Collections.singleton(new ExtractNamed()));
+ *    ImmutableSet.of(javax.inject.Inject.class),
+ *    ImmutableSet.of(new ExtractNamed()));
  *    
  * factory = new DeserializationConstructorAndReflectiveTypeAdapterFactory(new ConstructorConstructor(),
  *      serializationStrategy, Excluder.DEFAULT, deserializationStrategy);
@@ -248,7 +248,7 @@ public final class DeserializationConstructorAndReflectiveTypeAdapterFactory imp
 
    @SuppressWarnings("unchecked")
    private Map<String, ParameterReader> getParameterReaders(Gson context, TypeToken<?> declaring, Constructor<?> constructor) {
-      Map<String, ParameterReader> result = new LinkedHashMap<String, ParameterReader>();
+      Map<String, ParameterReader> result = Maps.newLinkedHashMap();
 
       for (int index = 0; index < constructor.getGenericParameterTypes().length; index++) {
          Type parameterType = getTypeOfConstructorParameter(declaring, constructor, index);

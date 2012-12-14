@@ -22,7 +22,6 @@ import static com.google.common.base.Objects.equal;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -70,7 +69,7 @@ public class ProductSectionList extends Resource implements Set<ProductSection> 
    private static class ConcreteBuilder extends Builder<ConcreteBuilder> {
    }
    
-   public static abstract class Builder<B extends Builder<B>> extends Resource.Builder<B> {
+   public abstract static class Builder<B extends Builder<B>> extends Resource.Builder<B> {
 
       private Set<ProductSection> productSections = Sets.newLinkedHashSet();
 
@@ -118,7 +117,7 @@ public class ProductSectionList extends Resource implements Set<ProductSection> 
     * Gets the value of the productSection property.
     */
    public Set<ProductSection> getProductSections() {
-      return productSections != null ? ImmutableSet.copyOf(productSections) : Collections.<ProductSection>emptySet();
+      return productSections != null ? ImmutableSet.copyOf(productSections) : ImmutableSet.<ProductSection>of();
    }
 
    @Override

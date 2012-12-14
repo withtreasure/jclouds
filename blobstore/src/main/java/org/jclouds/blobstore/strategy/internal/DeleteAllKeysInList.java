@@ -18,6 +18,7 @@
  */
 package org.jclouds.blobstore.strategy.internal;
 
+import static com.google.common.base.Throwables.propagate;
 import static org.jclouds.blobstore.options.ListContainerOptions.Builder.recursive;
 import static org.jclouds.concurrent.FutureIterables.awaitCompletion;
 
@@ -25,6 +26,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 import javax.inject.Named;
@@ -42,9 +45,7 @@ import org.jclouds.blobstore.strategy.ClearListStrategy;
 import org.jclouds.http.handlers.BackoffLimitedRetryHandler;
 import org.jclouds.logging.Logger;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
-import com.google.common.util.concurrent.Futures;
 import com.google.inject.Inject;
 
 /**
@@ -62,12 +63,10 @@ public class DeleteAllKeysInList implements ClearListStrategy, ClearContainerStr
    private final ExecutorService userExecutor;
 
    protected final AsyncBlobStore connection;
-   /**
-    * maximum duration of an blob Request
-    */
+   /** Maximum duration in milliseconds of a request. */
    @Inject(optional = true)
    @Named(Constants.PROPERTY_REQUEST_TIMEOUT)
-   protected Long maxTime;
+   protected Long maxTime = Long.MAX_VALUE;
 
    @Inject
    DeleteAllKeysInList(@Named(Constants.PROPERTY_USER_THREADS) ExecutorService userExecutor,
@@ -91,22 +90,33 @@ public class DeleteAllKeysInList implements ClearListStrategy, ClearContainerStr
       if (options.isRecursive())
          message = message + " recursively";
       Map<StorageMetadata, Exception> exceptions = Maps.newHashMap();
-      PageSet<? extends StorageMetadata> listing;
       int maxErrors = 3; // TODO parameterize
-      for (int i = 0; i < maxErrors; ) {
+      for (int numErrors = 0; numErrors < maxErrors; ) {
          // fetch partial directory listing
+         PageSet<? extends StorageMetadata> listing;
+         Future<PageSet<? extends StorageMetadata>> listFuture =
+               connection.list(containerName, options);
          try {
-            listing = connection.list(containerName, options).get();
+            listing = listFuture.get(maxTime, TimeUnit.MILLISECONDS);
          } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
             break;
          } catch (ExecutionException ee) {
-            ++i;
-            if (i == maxErrors) {
-               throw Throwables.propagate(ee.getCause());
+            ++numErrors;
+            if (numErrors == maxErrors) {
+               throw propagate(ee.getCause());
             }
-            retryHandler.imposeBackoffExponentialDelay(i, message);
+            retryHandler.imposeBackoffExponentialDelay(numErrors, message);
             continue;
+         } catch (TimeoutException te) {
+            ++numErrors;
+            if (numErrors == maxErrors) {
+               throw propagate(te);
+            }
+            retryHandler.imposeBackoffExponentialDelay(numErrors, message);
+            continue;
+         } finally {
+            listFuture.cancel(true);
          }
 
          // recurse on subdirectories
@@ -153,10 +163,24 @@ public class DeleteAllKeysInList implements ClearListStrategy, ClearContainerStr
             }
          }
 
-         exceptions = awaitCompletion(responses, userExecutor, maxTime, logger, message);
+         try {
+            exceptions = awaitCompletion(responses, userExecutor, maxTime, logger, message);
+         } catch (TimeoutException te) {
+            ++numErrors;
+            if (numErrors == maxErrors) {
+               throw propagate(te);
+            }
+            retryHandler.imposeBackoffExponentialDelay(numErrors, message);
+            continue;
+         } finally {
+            for (Future<?> future : responses.values()) {
+               future.cancel(true);
+            }
+         }
+
          if (!exceptions.isEmpty()) {
-            ++i;
-            retryHandler.imposeBackoffExponentialDelay(i, message);
+            ++numErrors;
+            retryHandler.imposeBackoffExponentialDelay(numErrors, message);
             continue;
          }
 
@@ -165,12 +189,18 @@ public class DeleteAllKeysInList implements ClearListStrategy, ClearContainerStr
             break;
          }
          options = options.afterMarker(marker);
+
+         // Reset numErrors if we execute a successful iteration.  This ensures
+         // that we only try an unsuccessful operation maxErrors times but
+         // allow progress with directories containing many blobs in the face
+         // of some failures.
+         numErrors = 0;
       }
       if (!exceptions.isEmpty())
          throw new BlobRuntimeException(String.format("error %s: %s", message, exceptions));
    }
 
    private boolean parentIsFolder(final ListContainerOptions options, final StorageMetadata md) {
-      return (options.getDir() != null && md.getName().indexOf('/') == -1);
+      return options.getDir() != null && md.getName().indexOf('/') == -1;
    }
 }

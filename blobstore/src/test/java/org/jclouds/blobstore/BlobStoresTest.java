@@ -21,8 +21,6 @@ package org.jclouds.blobstore;
 import static org.easymock.EasyMock.createMock;
 import static org.testng.Assert.assertEquals;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.easymock.EasyMock;
@@ -38,6 +36,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 
 @Test(singleThreaded = true, testName = "BlobStoresTest")
 public class BlobStoresTest {
@@ -96,7 +95,7 @@ public class BlobStoresTest {
       try {
          blobStore = context.getBlobStore();
          blobStore.createContainerInLocation(null, containerName);
-         Set<String> expectedNames = new HashSet<String>();
+         Set<String> expectedNames = Sets.newHashSet();
          for (int i = 0; i < NUM_BLOBS; i++) {
             String blobName = "myname" + i;
             blobStore.putBlob(containerName, blobStore.blobBuilder(blobName).payload("payload" + i).build());
@@ -132,7 +131,7 @@ public class BlobStoresTest {
       BlobStore blobStore = createMock(BlobStore.class);
       ListContainerOptions options = ListContainerOptions.NONE;
       StorageMetadata v1 = createMock(StorageMetadata.class);
-      PageSet<StorageMetadata> pageSet = new PageSetImpl<StorageMetadata>(Collections.singletonList(v1), null);
+      PageSet<StorageMetadata> pageSet = new PageSetImpl<StorageMetadata>(ImmutableList.of(v1), null);
 
       EasyMock.<PageSet<? extends StorageMetadata>> expect(blobStore.list(containerName, options)).andReturn(pageSet)
                .once();
@@ -149,8 +148,8 @@ public class BlobStoresTest {
       ListContainerOptions options2 = ListContainerOptions.Builder.afterMarker("marker1");
       StorageMetadata v1 = createMock(StorageMetadata.class);
       StorageMetadata v2 = createMock(StorageMetadata.class);
-      PageSet<StorageMetadata> pageSet = new PageSetImpl<StorageMetadata>(Collections.singletonList(v1), "marker1");
-      PageSet<StorageMetadata> pageSet2 = new PageSetImpl<StorageMetadata>(Collections.singletonList(v2), null);
+      PageSet<StorageMetadata> pageSet = new PageSetImpl<StorageMetadata>(ImmutableList.of(v1), "marker1");
+      PageSet<StorageMetadata> pageSet2 = new PageSetImpl<StorageMetadata>(ImmutableList.of(v2), null);
 
       EasyMock.<PageSet<? extends StorageMetadata>> expect(blobStore.list(containerName, options)).andReturn(pageSet)
                .once();

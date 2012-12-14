@@ -24,13 +24,13 @@
   <parent>
     <groupId>org.jclouds</groupId>
     <artifactId>jclouds-project</artifactId>
-    <version>1.6.0-rc.230</version>
+    <version>1.6.0-SNAPSHOT</version>
     <relativePath>../../project/pom.xml</relativePath>
   </parent>
   <groupId>org.jclouds.api</groupId>
   <artifactId>openstack-nova-ec2</artifactId>
   <name>jclouds openstack-nova-ec2 api</name>
-  <description>EC2 interface to Openstack Nova</description>
+  <description>EC2 interface to OpenStack Nova</description>
   <packaging>bundle</packaging>
 
   <properties>

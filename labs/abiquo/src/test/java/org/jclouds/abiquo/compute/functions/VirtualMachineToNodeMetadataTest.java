@@ -33,7 +33,7 @@ import org.jclouds.abiquo.domain.cloud.VirtualAppliance;
 import org.jclouds.abiquo.domain.cloud.VirtualDatacenter;
 import org.jclouds.abiquo.domain.cloud.VirtualMachine;
 import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
-import org.jclouds.abiquo.domain.infrastructure.Datacenter;
+import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplateInVirtualDatacenter;
 import org.jclouds.abiquo.domain.network.ExternalIp;
 import org.jclouds.abiquo.domain.network.Ip;
 import org.jclouds.abiquo.domain.network.PrivateIp;
@@ -106,7 +106,7 @@ public class VirtualMachineToNodeMetadataTest {
             .build();
 
       function = new VirtualMachineToNodeMetadata(templateToImage(), templateToHardware(), stateToNodeState(),
-            datacenterToLocation());
+            virtualDatacenterToLocation());
    }
 
    public void testVirtualMachineToNodeMetadata() {
@@ -124,8 +124,6 @@ public class VirtualMachineToNodeMetadataTest {
       assertEquals(node.getLocation().getId(), "1");
       assertEquals(node.getLocation().getDescription(), "Mock Location");
       assertEquals(node.getImageId(), "1");
-      assertEquals(node.getHardware().getId(), "1");
-      assertEquals(node.getHardware().getHypervisor(), HypervisorType.VMX_04.name());
       assertEquals(node.getHardware().getId(), "1");
       assertEquals(node.getHardware().getRam(), vm.getRam());
       assertEquals(node.getHardware().getProcessors().get(0).getCores(), (double) vm.getCpu());
@@ -151,25 +149,26 @@ public class VirtualMachineToNodeMetadataTest {
       return templateToImage;
    }
 
-   private VirtualMachineTemplateToHardware templateToHardware() {
-      VirtualMachineTemplateToHardware virtualMachineTemplateToHardware = EasyMock
-            .createMock(VirtualMachineTemplateToHardware.class);
+   private VirtualMachineTemplateInVirtualDatacenterToHardware templateToHardware() {
+      VirtualMachineTemplateInVirtualDatacenterToHardware virtualMachineTemplateToHardware = EasyMock
+            .createMock(VirtualMachineTemplateInVirtualDatacenterToHardware.class);
 
-      expect(virtualMachineTemplateToHardware.apply(anyObject(VirtualMachineTemplate.class))).andReturn(hardware);
+      expect(virtualMachineTemplateToHardware.apply(anyObject(VirtualMachineTemplateInVirtualDatacenter.class)))
+            .andReturn(hardware);
 
       replay(virtualMachineTemplateToHardware);
 
       return virtualMachineTemplateToHardware;
    }
 
-   private DatacenterToLocation datacenterToLocation() {
-      DatacenterToLocation datacenterToLocation = EasyMock.createMock(DatacenterToLocation.class);
+   private VirtualDatacenterToLocation virtualDatacenterToLocation() {
+      VirtualDatacenterToLocation datacenterToLocation = EasyMock.createMock(VirtualDatacenterToLocation.class);
       Location location = EasyMock.createMock(Location.class);
 
       expect(location.getId()).andReturn("1");
       expect(location.getDescription()).andReturn("Mock Location");
 
-      expect(datacenterToLocation.apply(anyObject(Datacenter.class))).andReturn(location);
+      expect(datacenterToLocation.apply(anyObject(VirtualDatacenter.class))).andReturn(location);
 
       replay(location);
       replay(datacenterToLocation);

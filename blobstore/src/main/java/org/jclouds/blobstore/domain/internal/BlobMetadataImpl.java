@@ -20,12 +20,10 @@ package org.jclouds.blobstore.domain.internal;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.io.Serializable;
 import java.net.URI;
 import java.util.Date;
 import java.util.Map;
 
-import org.jclouds.blobstore.domain.Blob;
 import org.jclouds.blobstore.domain.BlobMetadata;
 import org.jclouds.blobstore.domain.StorageType;
 import org.jclouds.domain.Location;
@@ -37,9 +35,8 @@ import org.jclouds.javax.annotation.Nullable;
  * 
  * @author Adrian Cole
  */
-public class BlobMetadataImpl extends StorageMetadataImpl implements Serializable, BlobMetadata {
-   /** The serialVersionUID */
-   private static final long serialVersionUID = -5932618957134612231L;
+public class BlobMetadataImpl extends StorageMetadataImpl implements BlobMetadata {
+
    private final URI publicUri;
    private final String container;
    private final ContentMetadata contentMetadata;

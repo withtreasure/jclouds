@@ -58,7 +58,6 @@ import org.jclouds.cloudstack.options.DeployVirtualMachineOptions;
 import org.jclouds.cloudstack.options.ListFirewallRulesOptions;
 import org.jclouds.cloudstack.strategy.BlockUntilJobCompletesAndReturnResult;
 import org.jclouds.collect.Memoized;
-import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.ComputeServiceAdapter;
 import org.jclouds.compute.reference.ComputeServiceConstants;
 import org.jclouds.domain.Credentials;
@@ -126,6 +125,7 @@ public class CloudStackComputeServiceAdapter implements
    @Override
    public NodeAndInitialCredentials<VirtualMachine> createNodeWithGroupEncodedIntoName(String group, String name,
                                                                                        org.jclouds.compute.domain.Template template) {
+
       checkNotNull(template, "template was null");
       checkNotNull(template.getOptions(), "template options was null");
       checkArgument(template.getOptions().getClass().isAssignableFrom(CloudStackTemplateOptions.class),
@@ -145,6 +145,12 @@ public class CloudStackComputeServiceAdapter implements
 
       checkState(optionsConverters.containsKey(zone.getNetworkType()), "no options converter configured for network type %s", zone.getNetworkType());
       DeployVirtualMachineOptions options = displayName(name).name(name);
+      if (templateOptions.getAccount() != null) {
+          options.accountInDomain(templateOptions.getAccount(), templateOptions.getDomainId());
+      } else if (templateOptions.getDomainId() != null) {
+          options.domainId(templateOptions.getDomainId());
+      }
+      
       OptionsConverter optionsConverter = optionsConverters.get(zone.getNetworkType());
       options = optionsConverter.apply(templateOptions, networks, zoneId, options);
 
@@ -169,7 +175,7 @@ public class CloudStackComputeServiceAdapter implements
       String templateId = template.getImage().getId();
       String serviceOfferingId = template.getHardware().getId();
 
-      logger.info("serviceOfferingId %s, templateId %s, zoneId %s, options %s%n", serviceOfferingId, templateId,
+      logger.debug("serviceOfferingId %s, templateId %s, zoneId %s, options %s%n", serviceOfferingId, templateId,
          zoneId, options);
       AsyncCreateResponse job = client.getVirtualMachineClient().deployVirtualMachineInZone(zoneId, serviceOfferingId,
          templateId, options);

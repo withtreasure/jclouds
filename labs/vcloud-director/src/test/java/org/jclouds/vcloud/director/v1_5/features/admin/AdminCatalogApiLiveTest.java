@@ -24,11 +24,10 @@ import static org.jclouds.vcloud.director.v1_5.VCloudDirectorLiveTestConstants.O
 import static org.jclouds.vcloud.director.v1_5.VCloudDirectorLiveTestConstants.OBJ_FIELD_EQ;
 import static org.jclouds.vcloud.director.v1_5.VCloudDirectorLiveTestConstants.OBJ_FIELD_UPDATABLE;
 import static org.jclouds.vcloud.director.v1_5.domain.Checks.checkControlAccessParams;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
-
-import java.util.Collections;
 
 import org.jclouds.vcloud.director.v1_5.domain.AdminCatalog;
 import org.jclouds.vcloud.director.v1_5.domain.Checks;
@@ -44,6 +43,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
 /**
@@ -127,7 +127,7 @@ public class AdminCatalogApiLiveTest extends BaseVCloudDirectorApiLiveTest {
          owner = catalogApi.getOwner(catalog.getId());
          Checks.checkOwner(owner);
          assertTrue(
-                  equal(owner.toBuilder().links(Collections.<Link> emptySet()).build(),
+                  equal(owner.toBuilder().links(ImmutableSet.<Link> of()).build(),
                            newOwner.toBuilder().user(newOwner.getUser()).build()),
                   String.format(OBJ_FIELD_UPDATABLE, CATALOG, "owner"));
       } finally {
@@ -177,7 +177,7 @@ public class AdminCatalogApiLiveTest extends BaseVCloudDirectorApiLiveTest {
    @Test(description = "POST /admin/catalog/{id}/action/publish", dependsOnMethods = { "testEditCatalog" })
    public void testPublishCatalog() {
       assertNotNull(catalog, String.format(NOT_NULL_OBJ_FMT, "Catalog"));
-      assertTrue(!catalog.isPublished(),
+      assertFalse(catalog.isPublished(),
                String.format(OBJ_FIELD_EQ, CATALOG, "isPublished", false, catalog.isPublished()));
 
       PublishCatalogParams params = PublishCatalogParams.builder().isPublished(true).build();

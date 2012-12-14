@@ -46,9 +46,9 @@ import org.jclouds.virtualbox.predicates.RetryIfSocketNotYetOpen;
 import org.virtualbox_4_1.SessionState;
 import org.virtualbox_4_1.VirtualBoxManager;
 
-import com.beust.jcommander.internal.Lists;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
+import com.google.common.collect.Lists;
 import com.google.common.net.HostAndPort;
 
 @Singleton

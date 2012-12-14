@@ -19,7 +19,6 @@
 package org.jclouds.atmos;
 
 import org.jclouds.atmos.domain.AtmosError;
-import org.jclouds.atmos.handlers.ParseAtmosErrorFromXmlContent;
 import org.jclouds.http.HttpCommand;
 import org.jclouds.http.HttpResponse;
 import org.jclouds.http.HttpResponseException;
@@ -33,8 +32,6 @@ import org.jclouds.http.HttpResponseException;
  * 
  */
 public class AtmosResponseException extends HttpResponseException {
-
-   private static final long serialVersionUID = 1L;
 
    private AtmosError error;
 

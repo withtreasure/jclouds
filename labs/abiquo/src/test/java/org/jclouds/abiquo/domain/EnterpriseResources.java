@@ -21,7 +21,6 @@ package org.jclouds.abiquo.domain;
 
 import static org.jclouds.abiquo.domain.DomainUtils.link;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import com.abiquo.model.rest.RESTLink;
@@ -30,6 +29,7 @@ import com.abiquo.server.core.enterprise.DatacenterLimitsDto;
 import com.abiquo.server.core.enterprise.EnterpriseDto;
 import com.abiquo.server.core.enterprise.EnterprisePropertiesDto;
 import com.abiquo.server.core.enterprise.UserDto;
+import com.google.common.collect.Maps;
 
 /**
  * Enterprise domain utilities.
@@ -71,7 +71,7 @@ public class EnterpriseResources {
    public static EnterprisePropertiesDto enterprisePropertiesPut() {
       EnterprisePropertiesDto enterpriseProp = new EnterprisePropertiesDto();
       enterpriseProp.setId(1);
-      Map<String, String> props = new HashMap<String, String>();
+      Map<String, String> props = Maps.newHashMap();
       props.put("key", "value");
       enterpriseProp.setProperties(props);
       enterpriseProp.addLink(new RESTLink("edit", "http://localhost/api/admin/enterprises/1/properties"));
@@ -81,7 +81,7 @@ public class EnterpriseResources {
    }
 
    public static String enterprisePostPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<enterprise>");
       buffer.append("<cpuHard>0</cpuHard>");
       buffer.append("<cpuSoft>0</cpuSoft>");
@@ -104,7 +104,7 @@ public class EnterpriseResources {
    }
 
    public static String enterprisePutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<enterprise>");
       buffer.append(link("/admin/enterprises/1", "edit"));
       buffer.append(link("/admin/enterprises/1/limits", "limits"));
@@ -139,7 +139,7 @@ public class EnterpriseResources {
    }
 
    public static String enterprisePropertiesPutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<enterpriseProperties>");
       buffer.append(link("/admin/enterprises/1/properties", "edit"));
       buffer.append(link("/admin/enterprises/1", "enterprise"));
@@ -192,7 +192,7 @@ public class EnterpriseResources {
    }
 
    public static String datacenterLimitsPostPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<limit>");
       buffer.append("<cpuHard>0</cpuHard>");
       buffer.append("<cpuSoft>0</cpuSoft>");
@@ -213,7 +213,7 @@ public class EnterpriseResources {
    }
 
    public static String templateListPostPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<templateDefinitionList>");
       buffer.append("<name>myList</name>");
       buffer.append("<url>http://virtualapp-repository.com/vapp1.ovf</url>");
@@ -222,7 +222,7 @@ public class EnterpriseResources {
    }
 
    public static String templateListPutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<templateDefinitionList>");
       buffer.append(link("/admin/enterprises/1/appslib/templateDefinitionLists/1", "edit"));
       buffer.append(link("/admin/enterprises/1/appslib/templateDefinitionLists/1/actions/repositoryStatus",
@@ -235,7 +235,7 @@ public class EnterpriseResources {
    }
 
    public static String datacenterLimitsPutPayload(final EnterpriseDto enterprise) {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<limit>");
       buffer.append(link("/admin/enterprises/" + enterprise.getId() + "/limits/1", "edit"));
       buffer.append("<cpuHard>0</cpuHard>");
@@ -258,7 +258,7 @@ public class EnterpriseResources {
    }
 
    public static String userPostPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<user>");
       buffer.append(link("/admin/roles/1", "role"));
       buffer.append("<active>true</active>");
@@ -290,7 +290,7 @@ public class EnterpriseResources {
    }
 
    public static String userPutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<user>");
       buffer.append(link("/admin/roles/1", "role"));
       buffer.append(link("/admin/enterprises/1/users/1", "edit"));

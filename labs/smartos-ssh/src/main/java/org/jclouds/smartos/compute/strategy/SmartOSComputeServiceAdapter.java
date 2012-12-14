@@ -20,7 +20,6 @@ package org.jclouds.smartos.compute.strategy;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
@@ -28,7 +27,6 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.ComputeServiceAdapter;
 import org.jclouds.compute.domain.Template;
 import org.jclouds.domain.LoginCredentials;
@@ -40,6 +38,7 @@ import org.jclouds.smartos.compute.domain.VmSpecification;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
@@ -57,7 +56,7 @@ public class SmartOSComputeServiceAdapter implements ComputeServiceAdapter<VM, V
    public SmartOSComputeServiceAdapter(SmartOSHostController host) {
       this.host = checkNotNull(host, "host");
 
-      Collection<VmSpecification> specifications = new ArrayList<VmSpecification>();
+      Collection<VmSpecification> specifications = Lists.newArrayList();
 
        specifications.add(VmSpecification.builder().alias("Standard Joyent VM, 1Gb RAM / 2Gb SWAP").ram(1024).maxSwap(2048)
                .nic(VmNIC.builder().simpleDHCPNic().build()).build());

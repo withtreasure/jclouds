@@ -38,7 +38,7 @@ import com.google.common.collect.Multimap;
 
 /**
  * We use the annotation {@link org.jclouds.openstack.services.Extension} to
- * bind a class that iimplements an extension API to an {@link Extension}.
+ * bind a class that implements an extension API to an {@link Extension}.
  * 
  * @author Adrian Cole
  * 
@@ -62,11 +62,11 @@ public class PresentWhenExtensionAnnotationNamespaceEqualsAnyNamespaceInExtensio
             org.jclouds.openstack.v2_0.services.Extension.class));
       if (ext.isPresent()) {
          URI namespace = URI.create(ext.get().namespace());
-         if (input.getArgs() == null || input.getArgs().length == 0) {
+         if (input.getArgs().length == 0) {
 	        if (Iterables.any(extensions.getUnchecked(""),
 	              ExtensionPredicates.namespaceOrAliasEquals(namespace, aliases.get(namespace))))
 	           return Optional.of(input.getReturnVal());
-	     } else if (input.getArgs() != null && input.getArgs().length == 1) {
+	     } else if (input.getArgs().length == 1) {
 	        if (Iterables.any(extensions.getUnchecked(checkNotNull(input.getArgs()[0], "arg[0] in %s", input).toString()),
 	              ExtensionPredicates.namespaceOrAliasEquals(namespace, aliases.get(namespace))))
 	           return Optional.of(input.getReturnVal());

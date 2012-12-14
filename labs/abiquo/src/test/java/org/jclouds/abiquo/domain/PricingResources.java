@@ -59,7 +59,7 @@ public class PricingResources {
    }
 
    public static String currencyPostPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<currency>");
       buffer.append("<symbol>DUMMY</symbol>");
       buffer.append("<digits>3</digits>");
@@ -69,7 +69,7 @@ public class PricingResources {
    }
 
    public static String currencyPutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<currency>");
       buffer.append(link("/config/currencies/1", "edit"));
       buffer.append("<symbol>DUMMY</symbol>");
@@ -97,7 +97,7 @@ public class PricingResources {
    }
 
    public static String costcodePostPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<costCode>");
       buffer.append("<name>cost code</name>");
       buffer.append("<description>description</description>");
@@ -106,7 +106,7 @@ public class PricingResources {
    }
 
    public static String costcodePutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<costCode>");
       buffer.append(link("/config/costcodes/1", "edit"));
       buffer.append("<description>description</description>");
@@ -131,6 +131,7 @@ public class PricingResources {
       pricingtemplate.setPublicIp(new BigDecimal(0));
       pricingtemplate.setVcpu(new BigDecimal(0));
       pricingtemplate.setMemoryGB(new BigDecimal(0));
+      pricingtemplate.setLayer(new BigDecimal(0));
       pricingtemplate.setDefaultTemplate(true);
       pricingtemplate.addLink(new RESTLink("currency", "http://localhost/api/config/currencies/1"));
       return pricingtemplate;
@@ -151,6 +152,7 @@ public class PricingResources {
       pricingtemplate.setPublicIp(new BigDecimal(0));
       pricingtemplate.setVcpu(new BigDecimal(0));
       pricingtemplate.setMemoryGB(new BigDecimal(0));
+      pricingtemplate.setLayer(new BigDecimal(0));
       pricingtemplate.setDefaultTemplate(true);
       pricingtemplate.addLink(new RESTLink("currency", "http://localhost/api/config/currencies/1"));
       pricingtemplate.setId(1);
@@ -159,7 +161,7 @@ public class PricingResources {
    }
 
    public static String pricingtemplatePostPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<pricingTemplate>");
       buffer.append("<name>pricing template</name>");
       buffer.append("<description>pt_description</description>");
@@ -172,9 +174,11 @@ public class PricingResources {
       buffer.append("<showMinimumCharge>false</showMinimumCharge>");
       buffer.append("<minimumCharge>2</minimumCharge>");
       buffer.append("<memoryGB>0</memoryGB>");
+      buffer.append("<layer>0</layer>");
       buffer.append("<publicIp>0</publicIp>");
       buffer.append("<vcpu>0</vcpu>");
       buffer.append("<memoryMB>0</memoryMB>");
+      buffer.append("<layer>0</layer>");
       buffer.append("<defaultTemplate>true</defaultTemplate>");
       buffer.append("<link href='http://localhost/api/config/currencies/1' rel='currency'/>");
       buffer.append("</pricingTemplate>");
@@ -182,7 +186,7 @@ public class PricingResources {
    }
 
    public static String pricingtemplatePutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<pricingTemplate>");
       buffer.append("<name>pricing template</name>");
       buffer.append("<description>pt_description</description>");
@@ -198,6 +202,7 @@ public class PricingResources {
       buffer.append("<publicIp>0</publicIp>");
       buffer.append("<vcpu>0</vcpu>");
       buffer.append("<memoryMB>0</memoryMB>");
+      buffer.append("<layer>0</layer>");
       buffer.append("<defaultTemplate>true</defaultTemplate>");
       buffer.append("<link href='http://localhost/api/config/currencies/1' rel='currency'/>");
       buffer.append("<id>1</id>");
@@ -217,7 +222,7 @@ public class PricingResources {
    }
 
    public static String costcodecurrencyPutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<costCodeCurrencies>");
       buffer.append("<costCodeCurrency>");
       buffer.append("<price>300</price>");
@@ -240,7 +245,7 @@ public class PricingResources {
    }
 
    public static String pricingCostCodePutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<pricingCostCode>");
       buffer.append("<link href='http://localhost/api/config/costcodes/1' rel='costcode'/>");
       buffer.append("<link href='http://localhost/api/config/pricingtemplates/1' rel='pricingtemplate'/>");
@@ -262,7 +267,7 @@ public class PricingResources {
    }
 
    public static String pricingTierPutPayload() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("<pricingTier>");
       buffer.append("<link href='http://localhost/api/admin/datacenters/1/storage/tiers/2' rel='tier'/>");
       buffer.append("<link href='http://localhost/api/config/pricingtemplates/1' rel='pricingtemplate'/>");

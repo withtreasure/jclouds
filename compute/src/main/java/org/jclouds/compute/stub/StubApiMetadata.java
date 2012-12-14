@@ -20,7 +20,6 @@ package org.jclouds.compute.stub;
 
 import java.net.URI;
 
-import org.jclouds.apis.ApiMetadata;
 import org.jclouds.apis.internal.BaseApiMetadata;
 import org.jclouds.compute.ComputeServiceContext;
 import org.jclouds.compute.stub.config.StubComputeServiceContextModule;
@@ -32,9 +31,6 @@ import org.jclouds.compute.stub.config.StubComputeServiceContextModule;
  */
 public class StubApiMetadata extends BaseApiMetadata {
    
-   /** The serialVersionUID */
-   private static final long serialVersionUID = -4880642520937391337L;
-
    public static Builder builder() {
       return new Builder();
    }

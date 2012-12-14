@@ -24,7 +24,7 @@
     <parent>
         <artifactId>jclouds-project</artifactId>
         <groupId>org.jclouds</groupId>
-        <version>1.6.0-rc.230</version>
+        <version>1.6.0-SNAPSHOT</version>
         <relativePath>../project/pom.xml</relativePath>
     </parent>
     <groupId>org.jclouds.labs</groupId>
@@ -43,10 +43,8 @@
        <module>openstack-swift</module>
        <module>jenkins</module>
        <module>cdmi</module>
-       <module>openstack-glance</module>
        <module>joyent-cloudapi</module>
        <module>joyentcloud</module>
-       <module>openstack-quantum</module>
        <module>greenqloud-compute</module>
        <module>greenqloud-storage</module>
        <module>iam</module>
@@ -61,5 +59,8 @@
        <module>fgcp-au</module>
        <module>fgcp-de</module>
        <module>abiquo</module>
-    </modules>
+       <module>oauth</module>
+       <module>openstack-quantum</module>
+       <module>openstack-glance</module>
+  </modules>
 </project>

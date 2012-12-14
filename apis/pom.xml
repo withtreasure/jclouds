@@ -24,7 +24,7 @@
     <parent>
         <artifactId>jclouds-project</artifactId>
         <groupId>org.jclouds</groupId>
-        <version>1.6.0-rc.230</version>
+        <version>1.6.0-SNAPSHOT</version>
         <relativePath>../project/pom.xml</relativePath>
     </parent>
     <groupId>org.jclouds.api</groupId>
@@ -48,6 +48,7 @@
        <module>atmos</module>
        <module>nova</module>
        <module>openstack-keystone</module>
+       <module>openstack-cinder</module>
        <module>openstack-nova</module>
        <module>openstack-nova-ec2</module>
        <module>cloudwatch</module>

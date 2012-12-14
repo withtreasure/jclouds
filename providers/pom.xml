@@ -24,7 +24,7 @@
     <parent>
         <artifactId>jclouds-project</artifactId>
         <groupId>org.jclouds</groupId>
-        <version>1.6.0-rc.230</version>
+        <version>1.6.0-SNAPSHOT</version>
         <relativePath>../project/pom.xml</relativePath>
     </parent>
     <groupId>org.jclouds.provider</groupId>
@@ -73,6 +73,8 @@
         <module>trystack-nova</module>
         <module>rackspace-cloudservers-us</module>
         <module>rackspace-cloudservers-uk</module>
+        <module>rackspace-cloudblockstorage-us</module>
+        <module>rackspace-cloudblockstorage-uk</module>
         <module>aws-sqs</module>
         <module>glesys</module>
     </modules>

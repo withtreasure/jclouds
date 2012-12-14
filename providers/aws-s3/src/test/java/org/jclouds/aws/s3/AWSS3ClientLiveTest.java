@@ -27,17 +27,20 @@ import static org.jclouds.io.Payloads.newByteArrayPayload;
 import static org.jclouds.s3.options.ListBucketOptions.Builder.withPrefix;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Set;
+import java.util.UUID;
 import java.util.zip.GZIPInputStream;
 
 import org.jclouds.aws.AWSResponseException;
 import org.jclouds.aws.domain.Region;
+import org.jclouds.aws.s3.domain.DeleteResult;
 import org.jclouds.blobstore.AsyncBlobStore;
 import org.jclouds.blobstore.BlobStore;
 import org.jclouds.blobstore.KeyNotFoundException;
@@ -57,7 +60,7 @@ import org.jclouds.s3.domain.S3Object;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
 import com.google.common.io.InputSupplier;
 
 import org.testng.ITestContext;
@@ -111,7 +114,7 @@ public class AWSS3ClientLiveTest extends S3ClientLiveTest {
          String key = "constitution.txt";
          String uploadId = getApi().initiateMultipartUpload(containerName,
                   ObjectMetadataBuilder.create().key(key).contentMD5(oneHundredOneConstitutionsMD5).build());
-         byte[] buffer = toByteArray(oneHundredOneConstitutions.getInput());
+         byte[] buffer = toByteArray(oneHundredOneConstitutions);
          assertEquals(oneHundredOneConstitutionsLength, (long) buffer.length);
 
          Payload part1 = newByteArrayPayload(buffer);
@@ -152,17 +155,14 @@ public class AWSS3ClientLiveTest extends S3ClientLiveTest {
    
    public void testMultipartChunkedFileStream() throws IOException, InterruptedException {
       
-      FileOutputStream fous = new FileOutputStream(new File("target/const.txt"));
-      ByteStreams.copy(oneHundredOneConstitutions.getInput(), fous);
-      fous.flush();
-      fous.close();
+      File file = new File("target/const.txt");
+      Files.copy(oneHundredOneConstitutions, file);
       String containerName = getContainerName();
       
       try {
          BlobStore blobStore = view.getBlobStore();
          blobStore.createContainerInLocation(null, containerName);
-         Blob blob = blobStore.blobBuilder("const.txt")
-            .payload(new File("target/const.txt")).build();
+         Blob blob = blobStore.blobBuilder("const.txt").payload(file).build();
          blobStore.putBlob(containerName, blob, PutOptions.Builder.multipart());
 
       } finally {
@@ -257,6 +257,34 @@ public class AWSS3ClientLiveTest extends S3ClientLiveTest {
          fail("Should had failed because in non-US regions, mixed-case bucket names are invalid.");
       } catch (AWSResponseException e) {
          assertEquals("InvalidBucketName", e.getError().getCode());
+      }
+   }
+   
+   public void testDeleteMultipleObjects() throws InterruptedException {
+      String container = getContainerName();
+      try {
+         ImmutableSet.Builder<String> builder = ImmutableSet.builder();
+         for (int i = 0; i < 5; i++) {
+            String key = UUID.randomUUID().toString();
+            
+            Blob blob = view.getBlobStore().blobBuilder(key).payload("").build();
+            view.getBlobStore().putBlob(container, blob);
+            
+            builder.add(key);
+         }
+
+         Set<String> keys = builder.build();
+         DeleteResult result = getApi().deleteObjects(container, keys);
+
+         assertTrue(result.getDeleted().containsAll(keys));
+         assertEquals(result.getErrors().size(), 0);
+
+         for (String key : keys) {
+            assertConsistencyAwareBlobDoesntExist(container, key);
+         }
+         
+      }  finally {
+         returnContainer(container);
       }
    }
 

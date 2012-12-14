@@ -24,7 +24,6 @@ import static org.jclouds.dmtf.DMTFConstants.CIM_RASD_NS;
 import static org.jclouds.dmtf.DMTFConstants.OVF_NS;
 
 import java.math.BigInteger;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -409,7 +408,7 @@ public class ResourceAllocationSettingData {
          return Integer.toString(code);
       }
 
-      protected final static Map<Integer, ResourceType> RESOURCE_TYPE_BY_ID = Maps.uniqueIndex(
+      protected static final Map<Integer, ResourceType> RESOURCE_TYPE_BY_ID = Maps.uniqueIndex(
             ImmutableSet.copyOf(ResourceType.values()), new Function<ResourceType, Integer>() {
                @Override
                public Integer apply(ResourceType input) {
@@ -463,7 +462,7 @@ public class ResourceAllocationSettingData {
          return Integer.toString(code);
       }
 
-      protected final static Map<Integer, ConsumerVisibility> MAPPING_BEHAVIOR_BY_ID = Maps.uniqueIndex(
+      protected static final Map<Integer, ConsumerVisibility> MAPPING_BEHAVIOR_BY_ID = Maps.uniqueIndex(
             ImmutableSet.copyOf(ConsumerVisibility.values()), new Function<ConsumerVisibility, Integer>() {
                @Override
                public Integer apply(ConsumerVisibility input) {
@@ -502,7 +501,7 @@ public class ResourceAllocationSettingData {
          return Integer.toString(code);
       }
 
-      protected final static Map<Integer, MappingBehavior> MAPPING_BEHAVIOR_BY_ID = Maps.uniqueIndex(
+      protected static final Map<Integer, MappingBehavior> MAPPING_BEHAVIOR_BY_ID = Maps.uniqueIndex(
             ImmutableSet.copyOf(MappingBehavior.values()), new Function<MappingBehavior, Integer>() {
                @Override
                public Integer apply(MappingBehavior input) {
@@ -584,8 +583,8 @@ public class ResourceAllocationSettingData {
       this.virtualQuantity = builder.virtualQuantity;
       this.virtualQuantityUnits = builder.virtualQuantityUnits;
       this.weight = builder.weight;
-      this.connections = builder.connections != null ? ImmutableSet.copyOf(builder.connections) : Collections.<CimString>emptySet();
-      this.hostResources = builder.hostResources != null ? ImmutableSet.copyOf(builder.hostResources) : Collections.<CimString>emptySet();
+      this.connections = builder.connections != null ? ImmutableSet.copyOf(builder.connections) : ImmutableSet.<CimString>of();
+      this.hostResources = builder.hostResources != null ? ImmutableSet.copyOf(builder.hostResources) : ImmutableSet.<CimString>of();
    }
 
    protected ResourceAllocationSettingData() {

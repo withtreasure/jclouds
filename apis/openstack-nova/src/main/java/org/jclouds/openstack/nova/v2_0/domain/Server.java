@@ -27,7 +27,6 @@ import java.util.Map;
 import javax.inject.Named;
 
 import org.jclouds.javax.annotation.Nullable;
-import org.jclouds.openstack.nova.v2_0.extensions.KeyPairApi;
 import org.jclouds.openstack.v2_0.domain.Link;
 import org.jclouds.openstack.v2_0.domain.Resource;
 
@@ -83,7 +82,7 @@ public class Server extends Resource {
       return new ConcreteBuilder().fromServer(this);
    }
 
-   public static abstract class Builder<T extends Builder<T>> extends Resource.Builder<T> {
+   public abstract static class Builder<T extends Builder<T>> extends Resource.Builder<T> {
       protected String uuid;
       protected String tenantId;
       protected String userId;

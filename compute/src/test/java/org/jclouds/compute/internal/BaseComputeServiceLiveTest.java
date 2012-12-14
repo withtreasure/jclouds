@@ -43,9 +43,9 @@ import static org.jclouds.compute.predicates.NodePredicates.runningInGroup;
 import static org.jclouds.compute.util.ComputeServiceUtils.getCores;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.fail;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -102,6 +102,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.net.HostAndPort;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -293,7 +294,7 @@ public abstract class BaseComputeServiceLiveTest extends BaseComputeServiceConte
       ExecResponse response = null;
       try {
          response = future.get(1, TimeUnit.MILLISECONDS);
-         assert false : node.getId() + ": " + response;
+         fail(node.getId() + ": " + response);
       } catch (TimeoutException e) {
          assert !future.isDone();
          response = client.runScriptOnNode(node.getId(), Statements.exec("/tmp/init-sleeper status"),
@@ -305,7 +306,7 @@ public abstract class BaseComputeServiceLiveTest extends BaseComputeServiceConte
          assert response.getOutput().trim().equals("") : node.getId() + ": " + response;
          try {
             future.get();
-            assert false : future;
+            fail(future.toString());
          } catch (CancellationException e1) {
 
          }
@@ -419,8 +420,8 @@ public abstract class BaseComputeServiceLiveTest extends BaseComputeServiceConte
    @Test(enabled = true, dependsOnMethods = "testCompareSizes")
    public void testConcurrentUseOfComputeServiceToCreateNodes() throws Exception {
       final long timeoutMs = 20 * 60 * 1000;
-      List<String> groups = new ArrayList<String>();
-      List<ListenableFuture<NodeMetadata>> futures = new ArrayList<ListenableFuture<NodeMetadata>>();
+      List<String> groups = Lists.newArrayList();
+      List<ListenableFuture<NodeMetadata>> futures = Lists.newArrayList();
       ListeningExecutorService executor = MoreExecutors.listeningDecorator(context.utils().userExecutor());
 
       try {

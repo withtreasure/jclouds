@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.jclouds</groupId>
         <artifactId>jclouds-project</artifactId>
-        <version>1.6.0-rc.230</version>
+        <version>1.6.0-SNAPSHOT</version>
         <relativePath>../../project/pom.xml</relativePath>
     </parent>
     
@@ -15,8 +15,8 @@
     <packaging>bundle</packaging>
     
     <properties>
-        <abiquomodel.version>2.2.0</abiquomodel.version>
-        <abiquoam.version>2.1.2</abiquoam.version>
+        <abiquomodel.version>2.3.0-SNAPSHOT</abiquomodel.version>
+        <abiquoam.version>2.2.0-SNAPSHOT</abiquoam.version>
         <test.abiquo.endpoint>http://localhost/api</test.abiquo.endpoint>
         <test.abiquo.identity>FIXME</test.abiquo.identity>
         <test.abiquo.credential>FIXME</test.abiquo.credential>
@@ -127,13 +127,11 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-            <version>1.0.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.0.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

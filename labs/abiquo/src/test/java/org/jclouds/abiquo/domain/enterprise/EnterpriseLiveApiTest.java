@@ -27,6 +27,7 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.Response.Status;
@@ -36,7 +37,9 @@ import org.jclouds.abiquo.domain.cloud.VirtualMachine;
 import org.jclouds.abiquo.domain.enterprise.Enterprise.Builder;
 import org.jclouds.abiquo.domain.exception.AbiquoException;
 import org.jclouds.abiquo.domain.infrastructure.Datacenter;
+import org.jclouds.abiquo.domain.infrastructure.Tier;
 import org.jclouds.abiquo.internal.BaseAbiquoApiLiveApiTest;
+import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -146,6 +149,28 @@ public class EnterpriseLiveApiTest extends BaseAbiquoApiLiveApiTest {
       assertEquals(limitsDto.getCollection().size(), 1);
       assertEquals(limitsDto.getCollection().get(0).getCpuCountHardLimit(), 5);
       assertEquals(limitsDto.getCollection().get(0).getCpuCountSoftLimit(), 4);
+   }
+
+   public void testSetAllowedTiers() {
+      List<Tier> tiers = env.datacenter.listTiers();
+      tiers.remove(0);
+      limits.setAllowedTiers(tiers);
+      limits.update();
+
+      DatacentersLimitsDto limitsDto = env.enterpriseApi.getLimits(enterprise.unwrap(), env.datacenter.unwrap());
+      assertNotNull(limitsDto);
+      assertEquals(limitsDto.getCollection().size(), 1);
+      assertEquals(limitsDto.getCollection().get(0).searchLinks(ParentLinkName.TIER).size(), tiers.size());
+   }
+
+   public void testSetEmptyAllowedTiers() {
+      limits.setAllowedTiers(new ArrayList<Tier>());
+      limits.update();
+
+      DatacentersLimitsDto limitsDto = env.enterpriseApi.getLimits(enterprise.unwrap(), env.datacenter.unwrap());
+      assertNotNull(limitsDto);
+      assertEquals(limitsDto.getCollection().size(), 1);
+      assertEquals(limitsDto.getCollection().get(0).searchLinks(ParentLinkName.TIER).size(), 0);
    }
 
    public void testListAllowedDatacenters() {

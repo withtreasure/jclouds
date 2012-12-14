@@ -211,6 +211,17 @@ public interface EnterpriseAsyncApi {
          @QueryParam("datacenter") @ParamParser(ParseDatacenterId.class) final DatacenterDto datacenter);
 
    /**
+    * @see EnterpriseApi#getLimit(EnterpriseDto, Integer)
+    */
+   @GET
+   @Consumes(DatacenterLimitsDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   ListenableFuture<DatacenterLimitsDto> getLimit(
+         @EndpointLink("limits") @BinderParam(BindToPath.class) EnterpriseDto enterprise,
+         @BinderParam(AppendToPath.class) Integer limitId);
+
+   /**
     * @see EnterpriseApi#updateLimits(DatacenterLimitsDto)
     */
    @PUT
@@ -413,4 +424,5 @@ public interface EnterpriseAsyncApi {
    ListenableFuture<TemplatesStateDto> listTemplateListStatus(
          @EndpointLink("repositoryStatus") @BinderParam(BindToPath.class) TemplateDefinitionListDto templateList,
          @QueryParam("datacenterId") @ParamParser(ParseDatacenterId.class) DatacenterDto datacenter);
+
 }

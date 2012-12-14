@@ -31,6 +31,7 @@ import org.jclouds.hpcloud.compute.config.HPCloudComputeServiceContextModule;
 import org.jclouds.openstack.keystone.v2_0.config.KeystoneAuthenticationModule;
 import org.jclouds.openstack.keystone.v2_0.config.KeystoneAuthenticationModule.ZoneModule;
 import org.jclouds.openstack.nova.v2_0.NovaApiMetadata;
+import org.jclouds.openstack.nova.v2_0.config.NovaParserModule;
 import org.jclouds.openstack.nova.v2_0.config.NovaRestClientModule;
 import org.jclouds.providers.ProviderMetadata;
 import org.jclouds.providers.internal.BaseProviderMetadata;
@@ -44,9 +45,6 @@ import com.google.inject.Module;
  * @author Adrian Cole
  */
 public class HPCloudComputeProviderMetadata extends BaseProviderMetadata {
-
-   /** The serialVersionUID */
-   private static final long serialVersionUID = -300987074165012648L;
 
    public static Builder builder() {
       return new Builder();
@@ -88,6 +86,7 @@ public class HPCloudComputeProviderMetadata extends BaseProviderMetadata {
                   .defaultModules(ImmutableSet.<Class<? extends Module>>builder()
                                               .add(KeystoneAuthenticationModule.class)
                                               .add(ZoneModule.class)
+                                              .add(NovaParserModule.class)
                                               .add(NovaRestClientModule.class)
                                               .add(HPCloudComputeServiceContextModule.class).build())
                   .build())

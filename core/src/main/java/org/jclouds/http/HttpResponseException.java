@@ -32,7 +32,6 @@ import org.jclouds.util.Strings2;
  */
 public class HttpResponseException extends RuntimeException {
 
-   private static final long serialVersionUID = 1L;
    protected final HttpCommand command;
    protected final HttpResponse response;
    private String content;
@@ -58,7 +57,7 @@ public class HttpResponseException extends RuntimeException {
 
    public HttpResponseException(HttpCommand command, HttpResponse response, String content, Throwable cause) {
       this(String.format("command: %1$s failed with response: %2$s; content: [%3$s]", command.getCurrentRequest()
-            .getRequestLine(), response.getStatusLine()), command, response, content, cause);
+            .getRequestLine(), response.getStatusLine(), content), command, response, content, cause);
    }
 
    public HttpResponseException(String message, HttpCommand command, @Nullable HttpResponse response) {

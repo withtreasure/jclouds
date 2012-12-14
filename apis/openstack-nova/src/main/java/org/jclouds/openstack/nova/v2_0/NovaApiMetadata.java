@@ -33,6 +33,7 @@ import org.jclouds.openstack.keystone.v2_0.config.CredentialTypes;
 import org.jclouds.openstack.keystone.v2_0.config.KeystoneAuthenticationModule;
 import org.jclouds.openstack.keystone.v2_0.config.KeystoneAuthenticationModule.ZoneModule;
 import org.jclouds.openstack.nova.v2_0.compute.config.NovaComputeServiceContextModule;
+import org.jclouds.openstack.nova.v2_0.config.NovaParserModule;
 import org.jclouds.openstack.nova.v2_0.config.NovaRestClientModule;
 import org.jclouds.openstack.v2_0.ServiceType;
 import org.jclouds.rest.RestContext;
@@ -48,12 +49,8 @@ import com.google.inject.Module;
  * @author Adrian Cole
  */
 public class NovaApiMetadata extends BaseRestApiMetadata {
-   
-   /** The serialVersionUID */
-   private static final long serialVersionUID = 6725672099385580694L;
 
    public static final TypeToken<RestContext<NovaApi, NovaAsyncApi>> CONTEXT_TOKEN = new TypeToken<RestContext<NovaApi, NovaAsyncApi>>() {
-      private static final long serialVersionUID = -5070937833892503232L;
    };
 
    @Override
@@ -101,6 +98,7 @@ public class NovaApiMetadata extends BaseRestApiMetadata {
          .defaultModules(ImmutableSet.<Class<? extends Module>>builder()
                                      .add(KeystoneAuthenticationModule.class)
                                      .add(ZoneModule.class)
+                                     .add(NovaParserModule.class)
                                      .add(NovaRestClientModule.class)
                                      .add(NovaComputeServiceContextModule.class).build());
       }

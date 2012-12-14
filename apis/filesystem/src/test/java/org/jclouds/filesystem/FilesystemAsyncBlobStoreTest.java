@@ -31,12 +31,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
 import org.jclouds.ContextBuilder;
 import org.jclouds.blobstore.BlobRequestSigner;
 import org.jclouds.blobstore.BlobStore;
@@ -52,19 +50,21 @@ import org.jclouds.blobstore.options.GetOptions;
 import org.jclouds.blobstore.options.ListContainerOptions;
 import org.jclouds.crypto.CryptoStreams;
 import org.jclouds.filesystem.reference.FilesystemConstants;
+import org.jclouds.filesystem.util.Utils;
 import org.jclouds.filesystem.utils.TestUtils;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.io.InputSuppliers;
 import org.jclouds.io.Payload;
 import org.jclouds.io.payloads.PhantomPayload;
 import org.jclouds.io.payloads.StringPayload;
+import org.jclouds.util.Strings2;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.CharStreams;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import com.google.common.io.InputSupplier;
@@ -91,7 +91,6 @@ public class FilesystemAsyncBlobStoreTest {
 
     private BlobStoreContext context = null;
     private BlobStore blobStore = null;
-    private Set<File> resourcesToBeDeleted = new HashSet<File>();
 
     @BeforeMethod
     protected void setUp() throws Exception {
@@ -101,25 +100,13 @@ public class FilesystemAsyncBlobStoreTest {
         context = ContextBuilder.newBuilder(PROVIDER).overrides(prop).build(BlobStoreContext.class);
         // create a container in the default location
         blobStore = context.getBlobStore();
-
-        resourcesToBeDeleted.add(new File(TestUtils.TARGET_BASE_DIR));
+        new File(TestUtils.TARGET_BASE_DIR).mkdir();
     }
 
     @AfterMethod
-    protected void tearDown() {
+    protected void tearDown() throws IOException {
         context.close();
-        context = null;
-        // freeing filesystem resources used for tests
-        Iterator<File> resourceToDelete = resourcesToBeDeleted.iterator();
-        while (resourceToDelete.hasNext()) {
-            File fileToDelete = resourceToDelete.next();
-            try {
-                FileUtils.forceDelete(fileToDelete);
-            } catch (IOException ex) {
-                System.err.println("Error deleting folder [" + fileToDelete.getName() + "].");
-            }
-            resourceToDelete.remove();
-        }
+        Utils.deleteRecursively(new File(TestUtils.TARGET_BASE_DIR));
     }
 
     /**
@@ -149,7 +136,7 @@ public class FilesystemAsyncBlobStoreTest {
      */
     public void testList_Root() throws IOException {
         PageSet<? extends StorageMetadata> containersRetrieved;
-        Set<String> containersCreated = new HashSet<String>();
+        Set<String> containersCreated = Sets.newHashSet();
 
         // Testing list with no containers
         containersRetrieved = blobStore.list();
@@ -157,7 +144,7 @@ public class FilesystemAsyncBlobStoreTest {
 
         // Testing list with some containers
         String[] containerNames = new String[]{"34343", "aaaa", "bbbbb"};
-        containersCreated = new HashSet<String>();
+        containersCreated = Sets.newHashSet();
         for (String containerName : containerNames) {
             blobStore.createContainerInLocation(null, containerName);
             containersCreated.add(containerName);
@@ -515,9 +502,6 @@ public class FilesystemAsyncBlobStoreTest {
         result = blobStore.containerExists(CONTAINER_NAME2);
         assertTrue(result, "Container doesn't exist");
         TestUtils.directoryExists(TestUtils.TARGET_BASE_DIR + CONTAINER_NAME2, true);
-
-        // clean the environment
-        FileUtils.forceDelete(new File(TARGET_CONTAINER_NAME2));
     }
 
     /**
@@ -650,7 +634,7 @@ public class FilesystemAsyncBlobStoreTest {
         assertNotNull(metadata.getUserMetadata(), "No blob UserMetadata");
         assertEquals(metadata.getUserMetadata().size(), 0, "Wrong blob UserMetadata");
         // metadata.getLastModified()
-        File file = new File(TARGET_CONTAINER_NAME + File.separator + BLOB_KEY);
+        File file = new File(TARGET_CONTAINER_NAME, BLOB_KEY);
         assertEquals(metadata.getContentMetadata().getContentLength(), Long.valueOf(file.length()), "Wrong blob size");
     }
 
@@ -742,7 +726,7 @@ public class FilesystemAsyncBlobStoreTest {
         Blob blobRangeStartAt = blobStore.getBlob(CONTAINER_NAME, blob.getMetadata().getName(), getOptionsRangeStartAt);
         payload = blobRangeStartAt.getPayload();
         try {
-            assertEquals(input.substring(1), CharStreams.toString(CharStreams.newReaderSupplier(payload, Charsets.UTF_8)));
+            assertEquals(input.substring(1), Strings2.toString(payload));
         } finally {
             Closeables.closeQuietly(payload);
         }
@@ -752,7 +736,7 @@ public class FilesystemAsyncBlobStoreTest {
         Blob blobRangeTail = blobStore.getBlob(CONTAINER_NAME, blob.getMetadata().getName(), getOptionsRangeTail);
         payload = blobRangeTail.getPayload();
         try {
-            assertEquals(input.substring(5), CharStreams.toString(CharStreams.newReaderSupplier(payload, Charsets.UTF_8)));
+            assertEquals(input.substring(5), Strings2.toString(payload));
         } finally {
             Closeables.closeQuietly(payload);
         }
@@ -762,7 +746,7 @@ public class FilesystemAsyncBlobStoreTest {
         Blob blobFragment = blobStore.getBlob(CONTAINER_NAME, blob.getMetadata().getName(), getOptionsFragment);
         payload = blobFragment.getPayload();
         try {
-            assertEquals(input.substring(4, 7), CharStreams.toString(CharStreams.newReaderSupplier(payload, Charsets.UTF_8)));
+            assertEquals(input.substring(4, 7), Strings2.toString(payload));
         } finally {
             Closeables.closeQuietly(payload);
         }
@@ -855,7 +839,7 @@ public class FilesystemAsyncBlobStoreTest {
         }
 
         // copies values
-        Set<String> expectedBlobKeysCopy = new HashSet<String>();
+        Set<String> expectedBlobKeysCopy = Sets.newHashSet();
         for (String value : expectedBlobKeys) {
             expectedBlobKeysCopy.add(value);
         }

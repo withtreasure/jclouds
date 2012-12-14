@@ -24,14 +24,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 import javax.crypto.Mac;
 
-import org.jclouds.encryption.internal.Base64;
+import org.jclouds.encoding.internal.FlexBase64;
 import org.jclouds.io.InputSuppliers;
 
 import com.google.common.annotations.Beta;
@@ -76,11 +76,44 @@ public class CryptoStreams {
    }
 
    public static String base64(byte[] in) {
-      return Base64.encodeBytes(in, Base64.DONT_BREAK_LINES);
+      return new String(FlexBase64.encodeBytes(in, 0, in.length, false), Charsets.US_ASCII);
    }
-
+   
+   /**
+    * encodes value substituting {@code '-' and '_'} for {@code '+' and '/'},
+    * and without adding trailing {@code '='} padding.
+    * 
+    * <h3>Note</h3>
+    * This utility will be replaced with Guava 14+ BaseEncoding.base64Url()
+    * 
+    * @see <a
+    *      href="http://en.wikipedia.org/wiki/Base64#URL_applications">url-safe
+    *      encoding</a>
+    */
+   @Beta
+   public static String base64Url(byte[] in) {
+      return FlexBase64.encodeURLString(in, 0, in.length);
+   }
+   
+   /**
+    * decodes base 64 encoded string, regardless of whether padding {@code '='} padding is present.
+    * 
+    * Note this seamlessly handles the URL-safe case where {@code '-' and '_'} are substituted for {@code '+' and '/'}.
+    * 
+    * @see <a
+    *      href="http://en.wikipedia.org/wiki/Base64#URL_applications">url-safe
+    *      encoding</a>
+    */
    public static byte[] base64(String in) {
-      return Base64.decode(in);
+      try {
+         ByteBuffer buffer = FlexBase64.decode(in);
+         byte [] returnVal = new  byte [buffer.limit()];
+         System.arraycopy(buffer.array(), buffer.arrayOffset(), returnVal, 0, buffer.limit());
+         return returnVal;
+      } catch (IOException e) {
+         // unlikely as this is not reading from a stream
+         throw Throwables.propagate(e);
+      }
    }
 
    /**
@@ -296,7 +329,7 @@ public class CryptoStreams {
             });
    }
 
-   private final static char[] HEX_CHAR_TABLE = {
+   private static final char[] HEX_CHAR_TABLE = {
       '0', '1', '2', '3', '4', '5', '6', '7',
       '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
    };
@@ -342,16 +375,12 @@ public class CryptoStreams {
          int currentPos = 0;
 
          public boolean processBytes(byte[] buf, int off, int len) {
-            try {
-               if (currentPos == 0 && new String(Arrays.copyOfRange(buf, off, 2), "ASCII").equals("0x")) {
-                  off += 2;
-               }
-               byte[] decoded = hex(new String(Arrays.copyOfRange(buf, off, len), "ASCII"));
-               out.write(decoded, 0, decoded.length);
-               currentPos += len;
-            } catch (UnsupportedEncodingException e) {
-               throw new IllegalStateException("ASCII must be supported");
+            if (currentPos == 0 && new String(Arrays.copyOfRange(buf, off, 2), Charsets.US_ASCII).equals("0x")) {
+               off += 2;
             }
+            byte[] decoded = hex(new String(Arrays.copyOfRange(buf, off, len), Charsets.US_ASCII));
+            out.write(decoded, 0, decoded.length);
+            currentPos += len;
             return true;
          }
 

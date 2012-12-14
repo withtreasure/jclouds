@@ -22,7 +22,6 @@ import static com.google.common.base.Objects.equal;
 import static com.google.common.base.Objects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.io.Serializable;
 import java.util.List;
 
 import org.jclouds.compute.options.TemplateOptions;
@@ -34,7 +33,6 @@ import com.google.common.annotations.Beta;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.google.common.base.Splitter;
-import com.google.common.cache.CacheBuilderSpec;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -120,9 +118,7 @@ import com.google.common.collect.ImmutableMap;
  * @since 1.5
  */
 @Beta
-public class TemplateBuilderSpec implements Serializable {
-
-   private static final long serialVersionUID = -379469670373111569L;
+public class TemplateBuilderSpec {
 
    /** Parses a single value. */
    protected static interface ValueParser {

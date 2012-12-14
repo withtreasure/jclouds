@@ -33,11 +33,9 @@
     <modules>
         <module>getpath</module>
         <module>googleappengine</module>
-        <module>perftest</module>
         <module>speedtest-azurequeue</module>
         <module>speedtest-sqs</module>
         <module>simpledb</module>
-        <module>tweetstore</module>
     </modules>
     <dependencies>
         <dependency>
@@ -50,7 +48,6 @@
         <dependency>
            <groupId>log4j</groupId>
            <artifactId>log4j</artifactId>
-           <version>1.2.16</version>
            <scope>test</scope>
         </dependency>
         <dependency>

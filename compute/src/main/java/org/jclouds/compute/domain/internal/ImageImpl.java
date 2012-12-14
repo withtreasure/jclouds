@@ -39,9 +39,6 @@ import com.google.common.base.Objects.ToStringHelper;
  */
 public class ImageImpl extends ComputeMetadataImpl implements Image {
 
-   /** The serialVersionUID */
-   private static final long serialVersionUID = 7856744554191025307L;
-
    private final OperatingSystem operatingSystem;
    private final Status status;
    private final String backendStatus;
@@ -126,7 +123,7 @@ public class ImageImpl extends ComputeMetadataImpl implements Image {
       ToStringHelper helper = computeToStringPrefix();
       helper.add("os", getOperatingSystem()).add("description", getDescription()).add("version", getVersion())
                .add("status", formatStatus(this))
-               .add("loginUser", ((defaultCredentials != null) ? defaultCredentials.identity : null));
+               .add("loginUser", defaultCredentials != null ? defaultCredentials.identity : null);
       return addComputeToStringSuffix(helper);
    }
 

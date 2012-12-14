@@ -41,7 +41,7 @@ public class Server {
       RUNNING, LOCKED, STOPPED, UNRECOGNIZED;
 
       public String value() {
-         return (CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name()));
+         return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name());
       }
 
       @Override
@@ -66,7 +66,7 @@ public class Server {
       return new ConcreteBuilder().fromServer(this);
    }
 
-   public static abstract class Builder<T extends Builder<T>> {
+   public abstract static class Builder<T extends Builder<T>> {
       protected abstract T self();
 
       protected String id;

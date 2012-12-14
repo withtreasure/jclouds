@@ -21,8 +21,6 @@ package org.jclouds.cloudstack.strategy;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.util.concurrent.ExecutionException;
-
 import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -70,7 +68,6 @@ public class BlockUntilJobCompletesAndReturnResult {
       if (jobWithResult.getError() != null)
          throw new UncheckedExecutionException(String.format("job %s failed with exception %s", job.getJobId(),
                jobWithResult.getError().toString())) {
-            private static final long serialVersionUID = 4371112085613620239L;
          };
       return jobWithResult.getResult();
    }

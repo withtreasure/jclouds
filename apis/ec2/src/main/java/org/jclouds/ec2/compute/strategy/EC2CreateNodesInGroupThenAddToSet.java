@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.all;
 import static com.google.common.collect.Iterables.transform;
 import static org.jclouds.compute.config.ComputeServiceProperties.TIMEOUT_NODE_RUNNING;
+import static org.jclouds.compute.functions.DefaultCredentialsFromImageOrOverridingCredentials.overrideDefaultCredentialsWithOptionsIfPresent;
 import static org.jclouds.ec2.compute.util.EC2ComputeUtils.getZoneFromLocationOrNull;
 
 import java.util.Map;
@@ -39,7 +40,6 @@ import org.jclouds.compute.config.CustomizationResponse;
 import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.Template;
 import org.jclouds.compute.domain.TemplateBuilder;
-import static org.jclouds.compute.functions.DefaultCredentialsFromImageOrOverridingCredentials.*;
 import org.jclouds.compute.options.TemplateOptions;
 import org.jclouds.compute.reference.ComputeServiceConstants;
 import org.jclouds.compute.strategy.CreateNodesInGroupThenAddToSet;
@@ -63,6 +63,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
+import com.google.common.util.concurrent.Atomics;
 
 /**
  * creates futures that correlate to
@@ -200,7 +201,7 @@ public class EC2CreateNodesInGroupThenAddToSet implements CreateNodesInGroupThen
 
          // block until instance is running
          logger.debug(">> awaiting status running instance(%s)", coordinates);
-         AtomicReference<NodeMetadata> node = new AtomicReference<NodeMetadata>(runningInstanceToNodeMetadata.apply(startedInstance));
+         AtomicReference<NodeMetadata> node = Atomics.newReference(runningInstanceToNodeMetadata.apply(startedInstance));
          nodeRunning.apply(node);
          logger.trace("<< running instance(%s)", coordinates);
          logger.debug(">> associating elastic IP %s to instance %s", ip, coordinates);

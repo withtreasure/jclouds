@@ -2,7 +2,7 @@
  * Licensed to jclouds, Inc. (jclouds) under one or more
  * contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
- *(Link.builder().regarding copyright ownership.  jclouds licenses this file
+ * regarding copyright ownership.  jclouds licenses this file
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -64,7 +64,7 @@ public abstract class Network extends Entity {
          return stringValue;
       }
 
-      protected final static Map<String, FenceMode> FENCE_MODE_BY_ID = Maps.uniqueIndex(
+      protected static final Map<String, FenceMode> FENCE_MODE_BY_ID = Maps.uniqueIndex(
             ImmutableSet.copyOf(FenceMode.values()), new Function<FenceMode, String>() {
                @Override
                public String apply(FenceMode input) {

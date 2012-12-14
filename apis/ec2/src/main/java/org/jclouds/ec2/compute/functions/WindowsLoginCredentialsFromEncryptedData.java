@@ -18,7 +18,6 @@
  */
 package org.jclouds.ec2.compute.functions;
 
-import java.nio.charset.Charset;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.spec.KeySpec;
@@ -27,12 +26,13 @@ import javax.crypto.Cipher;
 import javax.inject.Inject;
 
 import org.jclouds.crypto.Crypto;
+import org.jclouds.crypto.CryptoStreams;
 import org.jclouds.crypto.Pems;
 import org.jclouds.domain.LoginCredentials;
 import org.jclouds.ec2.compute.domain.PasswordDataAndPrivateKey;
-import org.jclouds.encryption.internal.Base64;
 import org.jclouds.javax.annotation.Nullable;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import com.google.inject.Singleton;
@@ -64,9 +64,9 @@ public class WindowsLoginCredentialsFromEncryptedData implements Function<Passwo
 
          Cipher cipher = crypto.cipher("RSA/NONE/PKCS1Padding");
          cipher.init(Cipher.DECRYPT_MODE, privKey);
-         byte[] cipherText = Base64.decode(dataAndKey.getPasswordData().getPasswordData());
+         byte[] cipherText = CryptoStreams.base64(dataAndKey.getPasswordData().getPasswordData());
          byte[] plainText = cipher.doFinal(cipherText);
-         String password = new String(plainText, Charset.forName("ASCII"));
+         String password = new String(plainText, Charsets.US_ASCII);
 
          return LoginCredentials.builder()
                                 .user("Administrator")

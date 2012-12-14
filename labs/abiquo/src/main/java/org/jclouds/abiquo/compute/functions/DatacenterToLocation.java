@@ -32,6 +32,8 @@ import com.google.common.collect.ImmutableSet;
 
 /**
  * Converts a {@link Datacenter} to a {@link Location} one.
+ * <p>
+ * Physical datacenters will be considered regions.
  * 
  * @author Ignasi Barrera
  */
@@ -44,8 +46,7 @@ public class DatacenterToLocation implements Function<Datacenter, Location> {
       builder.id(datacenter.getId().toString());
       builder.description(datacenter.getName() + " [" + datacenter.getLocation() + "]");
       builder.metadata(ImmutableMap.<String, Object> of());
-      builder.scope(LocationScope.ZONE);
-      // TODO: Convert to ISO3166 code?
+      builder.scope(LocationScope.REGION);
       builder.iso3166Codes(ImmutableSet.<String> of());
 
       builder.parent(new LocationBuilder().scope(LocationScope.PROVIDER).id("abiquo").description("abiquo").build());

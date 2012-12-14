@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.and;
 import static com.google.common.base.Predicates.not;
 import static com.google.common.base.Predicates.notNull;
+import static com.google.common.base.Throwables.propagate;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.collect.Sets.filter;
@@ -41,6 +42,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -103,6 +105,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.util.concurrent.Atomics;
 import com.google.common.util.concurrent.ListenableFuture;
 
 /**
@@ -212,8 +215,12 @@ public class BaseComputeService implements ComputeService {
 
       Map<?, Future<Void>> responses = runNodesAndAddToSetStrategy.execute(group, count, template, goodNodes, badNodes,
             customizationResponses);
-      Map<?, Exception> executionExceptions = awaitCompletion(responses, executor, null, logger, "createNodesInGroup("
-            + group + ")");
+      Map<?, Exception> executionExceptions;
+      try {
+         executionExceptions = awaitCompletion(responses, executor, null, logger, "createNodesInGroup(" + group + ")");
+      } catch (TimeoutException te) {
+         throw propagate(te);
+      }
       Function<NodeMetadata, NodeMetadata> fn = persistNodeCredentials.always(template.getOptions().getRunScript());
       badNodes = Maps2.transformKeys(badNodes, fn);
       goodNodes = ImmutableSet.copyOf(Iterables.transform(goodNodes, fn));
@@ -288,7 +295,7 @@ public class BaseComputeService implements ComputeService {
    protected NodeMetadata doDestroyNode(final String id) {
       checkNotNull(id, "id");
       logger.debug(">> destroying node(%s)", id);
-      final AtomicReference<NodeMetadata> node = new AtomicReference<NodeMetadata>();
+      final AtomicReference<NodeMetadata> node = Atomics.newReference();
       RetryablePredicate<String> tester = new RetryablePredicate<String>(new Predicate<String>() {
 
          @Override
@@ -413,7 +420,7 @@ public class BaseComputeService implements ComputeService {
    public void rebootNode(String id) {
       checkNotNull(id, "id");
       logger.debug(">> rebooting node(%s)", id);
-      AtomicReference<NodeMetadata> node = new AtomicReference<NodeMetadata>(rebootNodeStrategy.rebootNode(id));
+      AtomicReference<NodeMetadata> node = Atomics.newReference(rebootNodeStrategy.rebootNode(id));
       boolean successful = nodeRunning.apply(node);
       logger.debug("<< rebooted node(%s) success(%s)", id, successful);
    }
@@ -444,7 +451,7 @@ public class BaseComputeService implements ComputeService {
    public void resumeNode(String id) {
       checkNotNull(id, "id");
       logger.debug(">> resuming node(%s)", id);
-      AtomicReference<NodeMetadata> node = new AtomicReference<NodeMetadata>(resumeNodeStrategy.resumeNode(id));
+      AtomicReference<NodeMetadata> node = Atomics.newReference(resumeNodeStrategy.resumeNode(id));
       boolean successful = nodeRunning.apply(node);
       logger.debug("<< resumed node(%s) success(%s)", id, successful);
    }
@@ -475,7 +482,7 @@ public class BaseComputeService implements ComputeService {
    public void suspendNode(String id) {
       checkNotNull(id, "id");
       logger.debug(">> suspending node(%s)", id);
-      AtomicReference<NodeMetadata> node = new AtomicReference<NodeMetadata>(suspendNodeStrategy.suspendNode(id));
+      AtomicReference<NodeMetadata> node = Atomics.newReference(suspendNodeStrategy.suspendNode(id));
       boolean successful = nodeSuspended.apply(node);
       logger.debug("<< suspended node(%s) success(%s)", id, successful);
    }
@@ -548,7 +555,11 @@ public class BaseComputeService implements ComputeService {
             responses.put(runner.getNode(), executor.submit(new RunScriptOnNodeAndAddToGoodMapOrPutExceptionIntoBadMap(
                   runner, goodNodes, badNodes)));
          }
-         exceptions = awaitCompletion(responses, executor, null, logger, "runScriptOnNodesMatching(" + filter + ")");
+         try {
+            exceptions = awaitCompletion(responses, executor, null, logger, "runScriptOnNodesMatching(" + filter + ")");
+         } catch (TimeoutException te) {
+            throw propagate(te);
+         }
       }
 
       Function<NodeMetadata, NodeMetadata> fn = persistNodeCredentials.ifAdminAccess(runScript);

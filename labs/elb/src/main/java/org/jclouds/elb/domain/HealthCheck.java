@@ -18,7 +18,8 @@
  */
 package org.jclouds.elb.domain;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
@@ -45,7 +46,7 @@ public class HealthCheck {
       return new ConcreteBuilder().fromListener(this);
    }
 
-   public static abstract class Builder<T extends Builder<T>> {
+   public abstract static class Builder<T extends Builder<T>> {
       protected abstract T self();
 
       protected int healthyThreshold = -1;

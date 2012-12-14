@@ -19,6 +19,7 @@
 
 package org.jclouds.abiquo.domain.enterprise;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 
 import java.util.List;
@@ -34,12 +35,15 @@ import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
 import org.jclouds.abiquo.domain.exception.AbiquoException;
 import org.jclouds.abiquo.domain.infrastructure.Datacenter;
 import org.jclouds.abiquo.domain.infrastructure.Machine;
+import org.jclouds.abiquo.domain.infrastructure.Tier;
 import org.jclouds.abiquo.domain.network.ExternalIp;
 import org.jclouds.abiquo.domain.network.ExternalNetwork;
 import org.jclouds.abiquo.domain.network.Network;
 import org.jclouds.abiquo.domain.network.UnmanagedIp;
 import org.jclouds.abiquo.domain.network.UnmanagedNetwork;
+import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.abiquo.reference.annotations.EnterpriseEdition;
+import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.abiquo.rest.internal.ExtendedUtils;
 import org.jclouds.abiquo.strategy.enterprise.ListVirtualMachineTemplates;
 import org.jclouds.http.HttpResponse;
@@ -65,6 +69,7 @@ import com.abiquo.server.core.infrastructure.DatacentersDto;
 import com.abiquo.server.core.infrastructure.MachinesDto;
 import com.abiquo.server.core.infrastructure.network.VLANNetworksDto;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.inject.TypeLiteral;
@@ -117,7 +122,7 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
    }
 
    /**
-    * Update emterprise information in the server with the data from this
+    * Update enterprise information in the server with the data from this
     * enterprise.
     * 
     * @see API: <a href=
@@ -293,6 +298,18 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     */
    public Limits findLimits(final Predicate<Limits> filter) {
       return Iterables.getFirst(filter(listLimits(), filter), null);
+   }
+
+   /**
+    * Retrieve a single limit.
+    * 
+    * @param id
+    *           Unique ID of the limit in this enterprise.
+    * @return Limit with the given id or <code>null</code> if it does not exist.
+    */
+   public Limits getLimit(final Integer id) {
+      DatacenterLimitsDto limit = context.getApi().getEnterpriseApi().getLimit(target, id);
+      return wrap(context, Limits.class, limit);
    }
 
    /**
@@ -498,7 +515,7 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
       DatacenterLimitsDto limitForDatacenter = getLimits(datacenter);
 
       ExtendedUtils utils = (ExtendedUtils) context.getUtils();
-      // The "rel" for the unmanaged networks is the same than teh one used for
+      // The "rel" for the unmanaged networks is the same than the one used for
       // external networks
       HttpResponse response = utils.getAbiquoHttpClient().get(limitForDatacenter.searchLink("externalnetworks"));
 
@@ -657,11 +674,26 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     *      </a>
     */
    public Limits allowDatacenter(final Datacenter datacenter) {
+      return allowDatacenter(datacenter, ImmutableList.<Tier> of());
+   }
+
+   public Limits allowDatacenter(final Datacenter datacenter, final List<Tier> tiers) {
       DatacenterLimitsDto dto;
+
+      checkNotNull(datacenter, ValidationErrors.NULL_RESOURCE + Datacenter.class);
+      checkNotNull(tiers, ValidationErrors.NULL_RESOURCE + List.class + " of " + Tier.class);
 
       try {
          // Create new limits
          Limits limits = Limits.builder(context).build();
+         checkNotNull(datacenter.unwrap().getEditLink(), ValidationErrors.MISSING_REQUIRED_LINK + "edit");
+         limits.unwrap().addLink(new RESTLink(ParentLinkName.DATACENTER, datacenter.unwrap().getEditLink().getHref()));
+
+         for (Tier tier : tiers) {
+            checkNotNull(tier.unwrap().getEditLink(), ValidationErrors.MISSING_REQUIRED_LINK + "edit");
+            RESTLink link = new RESTLink(ParentLinkName.TIER, tier.unwrap().getEditLink().getHref());
+            limits.unwrap().addLink(link);
+         }
 
          // Save new limits
          dto = context.getApi().getEnterpriseApi().createLimits(target, datacenter.unwrap(), limits.unwrap());
@@ -680,7 +712,7 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
    }
 
    /**
-    * Prohibe the given datacenter to be used by this enterprise. Deletes a
+    * Prohibit the given datacenter to be used by this enterprise. Deletes a
     * {@link Limits} object.
     * 
     * @param datacenter

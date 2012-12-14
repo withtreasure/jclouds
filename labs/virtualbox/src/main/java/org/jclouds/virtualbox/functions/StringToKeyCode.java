@@ -18,7 +18,6 @@
  */
 package org.jclouds.virtualbox.functions;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -26,6 +25,7 @@ import org.jclouds.virtualbox.settings.KeyboardScancodes;
 
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 
 public class StringToKeyCode implements Function<String, List<Integer>> {
 
@@ -36,14 +36,14 @@ public class StringToKeyCode implements Function<String, List<Integer>> {
    
    private List<Integer> stringToKeycode(String s) {
       if (containsSpecialCharacter(s)) {
-         return transforSpecialCharIntoKeycodes(s);
+         return transformSpecialCharIntoKeycodes(s);
       } else {
          return transformStandardCharacterIntoKeycodes(s);
       }
    }
    
    private List<Integer> transformStandardCharacterIntoKeycodes(String s) {
-      List<Integer> values = new ArrayList<Integer>();
+      List<Integer> values = Lists.newArrayList();
       for (String digit : Splitter.fixedLength(1).split(s)) {
          Collection<Integer> hex = KeyboardScancodes.NORMAL_KEYBOARD_BUTTON_MAP_LIST.get(digit);
          if (hex != null)
@@ -53,8 +53,8 @@ public class StringToKeyCode implements Function<String, List<Integer>> {
       return values;
    }
 
-   private List<Integer> transforSpecialCharIntoKeycodes(String s) {
-      List<Integer> values = new ArrayList<Integer>();
+   private List<Integer> transformSpecialCharIntoKeycodes(String s) {
+      List<Integer> values = Lists.newArrayList();
       for (String special : s.split("<")) {
          Collection<Integer> value = KeyboardScancodes.SPECIAL_KEYBOARD_BUTTON_MAP_LIST.get("<" + special);
          if (value != null)

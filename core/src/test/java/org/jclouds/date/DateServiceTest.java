@@ -20,7 +20,6 @@ package org.jclouds.date;
 
 import static org.testng.Assert.assertEquals;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -28,6 +27,7 @@ import org.jclouds.PerformanceTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -180,7 +180,12 @@ public class DateServiceTest extends PerformanceTest {
       Date date = dateService.fromSeconds(seconds);
       assertEquals(dateService.iso8601SecondsDateFormat(date), "2009-09-26T23:37:05Z");
    }
-
+   
+   @Test
+   void testUTCIsGMT() {
+      assertEquals(dateService.iso8601SecondsDateParse("2012-11-26T17:32:31UTC+0000").getTime(), dateService.iso8601SecondsDateParse("2012-11-26T17:32:31UTC+0000").getTime());
+   }
+   
    @Test
    void testTz() {
       assertEquals(dateService.iso8601SecondsDateParse("2011-05-26T02:14:13-04:00").getTime(), 1306390453000l);
@@ -205,7 +210,7 @@ public class DateServiceTest extends PerformanceTest {
 
    @Test
    void testFormatIso8601DateCorrectnessInParallel() throws Throwable {
-      List<Runnable> tasks = new ArrayList<Runnable>(testData.length);
+      List<Runnable> tasks = Lists.newArrayListWithCapacity(testData.length);
       for (final TestData myData : testData) {
          tasks.add(new Runnable() {
             public void run() {
@@ -219,7 +224,7 @@ public class DateServiceTest extends PerformanceTest {
 
    @Test
    void testFormatIso8601DatePerformanceInParallel() throws Throwable {
-      List<Runnable> tasks = new ArrayList<Runnable>(testData.length);
+      List<Runnable> tasks = Lists.newArrayListWithCapacity(testData.length);
       for (final TestData myData : testData) {
          tasks.add(new Runnable() {
             public void run() {
@@ -238,7 +243,7 @@ public class DateServiceTest extends PerformanceTest {
 
    @Test
    void testParseIso8601DateCorrectnessInParallel() throws Throwable {
-      List<Runnable> tasks = new ArrayList<Runnable>(testData.length);
+      List<Runnable> tasks = Lists.newArrayListWithCapacity(testData.length);
       for (final TestData myData : testData) {
          tasks.add(new Runnable() {
             public void run() {
@@ -252,7 +257,7 @@ public class DateServiceTest extends PerformanceTest {
 
    @Test
    void testParseIso8601DatePerformanceInParallel() throws Throwable {
-      List<Runnable> tasks = new ArrayList<Runnable>(testData.length);
+      List<Runnable> tasks = Lists.newArrayListWithCapacity(testData.length);
       for (final TestData myData : testData) {
          tasks.add(new Runnable() {
             public void run() {

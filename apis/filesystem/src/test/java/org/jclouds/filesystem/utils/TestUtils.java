@@ -23,11 +23,16 @@ import static org.testng.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.commons.io.FileUtils;
+import org.jclouds.filesystem.util.Utils;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Sets;
+import com.google.common.io.Files;
 
 /**
  * Utility class for test
@@ -37,19 +42,16 @@ import org.apache.commons.io.FileUtils;
 public class TestUtils {
 
     private static final String TARGET_RESOURCE_DIR = "." + File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator;
+
     /** All the files available for the tests */
-    private static String[] imageResource = new String[]{
-        TARGET_RESOURCE_DIR + "image1.jpg",
-        TARGET_RESOURCE_DIR + "image2.jpg",
-        TARGET_RESOURCE_DIR + "image3.jpg",
-        TARGET_RESOURCE_DIR + "image4.jpg"
-    };
-    private static int imageResourceIndex = 0;
+    private static final Iterator<File> IMAGE_RESOURCES =
+            Iterators.cycle(ImmutableList.of(
+                    new File(TARGET_RESOURCE_DIR + "image1.jpg"),
+                    new File(TARGET_RESOURCE_DIR + "image2.jpg"),
+                    new File(TARGET_RESOURCE_DIR + "image3.jpg"),
+                    new File(TARGET_RESOURCE_DIR + "image4.jpg")));
 
     public static final String TARGET_BASE_DIR = "." + File.separator + "target" + File.separator + "basedir" + File.separator;
-
-    public static final Object[][] NO_INVOCATIONS = new Object[0][0];
-    public static final Object[][] SINGLE_NO_ARG_INVOCATION = new Object[][] { new Object[0] };
 
     public static boolean isWindowsOs() {
         return System.getProperty("os.name", "").toLowerCase().contains("windows");
@@ -83,7 +85,7 @@ public class TestUtils {
      * @throws IOException
      */
    public static Set<String> createBlobsInContainer(String containerName, String... blobNames) throws IOException {
-        Set<String> blobNamesCreatedInContainer = new HashSet<String>();
+        Set<String> blobNamesCreatedInContainer = Sets.newHashSet();
         for (String blobName : blobNames) {
             createBlobAsFile(containerName, blobName, getImageForBlobPayload());
             blobNamesCreatedInContainer.add(blobName);
@@ -97,7 +99,10 @@ public class TestUtils {
      * @throws IOException
      */
     public static void createContainerAsDirectory(String containerName) throws IOException {
-        FileUtils.forceMkdir(new File(TARGET_BASE_DIR + containerName));
+        File file = new File(TARGET_BASE_DIR, containerName);
+        if (!file.mkdirs()) {
+            throw new IOException("Could not mkdir: " + file);
+        };
     }
 
     /**
@@ -166,8 +171,8 @@ public class TestUtils {
         File parentDirectory = new File(directoryName);
         File[] children = parentDirectory.listFiles();
         if (null != children) {
-            for(File child:children) {
-                FileUtils.forceDelete(child);
+            for (File child : children) {
+                Utils.deleteRecursively(child);
             }
         }
     }
@@ -185,7 +190,9 @@ public class TestUtils {
             filePath = containerName  + blobKey;
         else
             filePath = containerName + File.separator + blobKey;
-        FileUtils.copyFile(source, new File(TARGET_BASE_DIR + filePath));
+        File file = new File(TARGET_BASE_DIR + filePath);
+        Files.createParentDirs(file);
+        Files.copy(source, file);
     }
 
 
@@ -194,8 +201,6 @@ public class TestUtils {
      * @return
      */
     public static File getImageForBlobPayload() {
-        String fileName = imageResource[imageResourceIndex++];
-        if (imageResourceIndex >= imageResource.length) imageResourceIndex = 0;
-        return new File(fileName);
+        return IMAGE_RESOURCES.next();
     }
 }

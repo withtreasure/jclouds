@@ -18,13 +18,11 @@
  */
 package org.jclouds.openstack.swift.functions;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Multimap;
-import org.jclouds.http.HttpResponse;
-import org.jclouds.openstack.swift.reference.SwiftHeaders;
-
-import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.jclouds.openstack.swift.reference.SwiftHeaders.ACCOUNT_TEMPORARY_URL_KEY;
+
+import org.jclouds.http.HttpResponse;
+
+import com.google.common.base.Function;
 
 /**
  * @author Andrei Savu
@@ -33,11 +31,6 @@ public class ParseTemporaryUrlKeyFromHeaders implements Function<HttpResponse, S
 
    @Override
    public String apply(HttpResponse httpResponse) {
-      Multimap<String, String> headers = httpResponse.getHeaders();
-      if (headers.containsKey(ACCOUNT_TEMPORARY_URL_KEY)) {
-         return getOnlyElement(headers.get(ACCOUNT_TEMPORARY_URL_KEY));
-      } else {
-         return null;
-      }
+      return httpResponse.getFirstHeaderOrNull(ACCOUNT_TEMPORARY_URL_KEY);
    }
 }
