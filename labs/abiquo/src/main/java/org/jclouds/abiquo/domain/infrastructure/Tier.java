@@ -26,6 +26,7 @@ import java.util.List;
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
+import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
 import org.jclouds.abiquo.reference.annotations.EnterpriseEdition;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.rest.RestContext;
@@ -154,6 +155,15 @@ public class Tier extends DomainWrapper<TierDto> {
     */
    public EnterprisesDto getEnterprisesByTier() {
       return context.getApi().getInfrastructureApi().getEnterprisesByTier(target);
+   }
+
+   /**
+    * Retrieve a list of allowed enterprises for a tier
+    * 
+    * @SinceApiVersion 2.4
+    */
+   public EnterprisesDto getEnterprisesByTier(EnterpriseOptions options) {
+      return context.getApi().getInfrastructureApi().getEnterprisesByTier(target, options);
    }
 
    // Parent access

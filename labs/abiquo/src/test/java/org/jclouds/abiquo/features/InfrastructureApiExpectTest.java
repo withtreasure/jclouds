@@ -27,6 +27,7 @@ import java.net.URI;
 import javax.ws.rs.core.Response.Status;
 
 import org.jclouds.abiquo.AbiquoApi;
+import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.http.HttpResponse;
 import org.testng.annotations.Test;
@@ -105,6 +106,29 @@ public class InfrastructureApiExpectTest extends BaseAbiquoRestApiExpectTest<Inf
 
       assertEquals(enterprises.getCollection().size(), 1);
       assertEquals(enterprises.getCollection().get(0).getId(), Integer.valueOf(1));
+   }
 
+   public void testGetEnterprisesByTierWithOptions() {
+      InfrastructureApi api = requestSendsResponse(
+            HttpRequest.builder().method("GET")
+                  .endpoint(URI.create("http://localhost/api/admin/datacenters/1/storage/tiers/1/enterprises"))
+                  .addHeader("Authorization", basicAuth).addHeader("Accept", normalize(EnterprisesDto.MEDIA_TYPE))
+                  .addQueryParam("has", "abi").addQueryParam("by", "name").addQueryParam("asc", "true").build(),
+            HttpResponse
+                  .builder()
+                  .statusCode(200)
+                  .payload(
+                        payloadFromResourceWithContentType("/payloads/enterprisesbytier.xml",
+                              normalize(EnterprisesDto.MEDIA_TYPE))).build());
+
+      TierDto tier = new TierDto();
+      RESTLink link = new RESTLink("enterprises",
+            "http://localhost/api/admin/datacenters/1/storage/tiers/1/enterprises");
+      tier.addLink(link);
+      EnterpriseOptions options = EnterpriseOptions.builder().has("abi").orderBy("name").ascendant(true).build();
+      EnterprisesDto enterprises = api.getEnterprisesByTier(tier, options);
+
+      assertEquals(enterprises.getCollection().size(), 1);
+      assertEquals(enterprises.getCollection().get(0).getId(), Integer.valueOf(1));
    }
 }

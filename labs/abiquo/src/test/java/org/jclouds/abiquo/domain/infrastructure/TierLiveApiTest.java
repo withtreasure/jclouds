@@ -25,8 +25,10 @@ import static org.testng.Assert.assertNull;
 
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.jclouds.abiquo.domain.DomainWrapper;
 import org.jclouds.abiquo.domain.enterprise.Enterprise;
+import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
 import org.jclouds.abiquo.internal.BaseAbiquoApiLiveApiTest;
 import org.jclouds.abiquo.predicates.infrastructure.DatacenterPredicates;
 import org.jclouds.abiquo.predicates.infrastructure.TierPredicates;
@@ -35,6 +37,7 @@ import org.testng.annotations.Test;
 
 import com.abiquo.server.core.enterprise.DatacentersLimitsDto;
 import com.abiquo.server.core.enterprise.EnterpriseDto;
+import com.abiquo.server.core.enterprise.EnterprisesDto;
 import com.google.common.collect.Iterables;
 
 /**
@@ -109,5 +112,26 @@ public class TierLiveApiTest extends BaseAbiquoApiLiveApiTest {
 
       Tier tier = env.datacenter.getTier(env.datacenter.listTiers().get(0).getId());
       assertEquals(tier.getEnterprisesByTier().getCollection().size(), enterpriseAllowed);
+   }
+
+   public void testGetEnterprisesByTierwithOptions() {
+      String entName = StringUtils.EMPTY;
+
+      List<EnterpriseDto> ents = env.enterpriseApi.listEnterprises().getCollection();
+      for (EnterpriseDto ent : ents) {
+         Enterprise e = DomainWrapper.wrap(env.context.getApiContext(), Enterprise.class, ent);
+         if (e.findAllowedDatacenter(DatacenterPredicates.id(env.datacenter.getId())) != null) {
+            entName = e.getName();
+            break;
+         }
+      }
+
+      EnterpriseOptions options = EnterpriseOptions.builder().has(entName).limit(1).build();
+      Tier tier = env.datacenter.getTier(env.datacenter.listTiers().get(0).getId());
+
+      EnterprisesDto entsDto = tier.getEnterprisesByTier(options);
+
+      assertEquals(entsDto.getCollection().size(), 1);
+      assertEquals(entsDto.getCollection().get(0).getName(), entName);
    }
 }

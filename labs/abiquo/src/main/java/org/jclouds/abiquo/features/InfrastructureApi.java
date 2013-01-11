@@ -21,6 +21,7 @@ package org.jclouds.abiquo.features;
 
 import java.util.concurrent.TimeUnit;
 
+import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.DatacenterOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.IpmiOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.MachineOptions;
@@ -976,9 +977,22 @@ public interface InfrastructureApi {
     * 
     * @param tier
     *           The tier for searching its allowed enterprises
+    * @return The list of the enterprises with the tier allowed
     */
    @EnterpriseEdition
    EnterprisesDto getEnterprisesByTier(TierDto tier);
+
+   /**
+    * Retrieve list of allowed enterprises for a tier
+    * 
+    * @param tier
+    *           The tier for searching its allowed enterprises
+    * @param options
+    *           Optional query params
+    * @return The list of the enterprises with the tier allowed
+    */
+   @EnterpriseEdition
+   EnterprisesDto getEnterprisesByTier(TierDto tier, EnterpriseOptions options);
 
    /*********************** Storage Pool ***********************/
 

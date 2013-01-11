@@ -38,6 +38,7 @@ import org.jclouds.abiquo.binders.infrastructure.AppendRemoteServiceTypeToPath;
 import org.jclouds.abiquo.binders.infrastructure.BindSupportedDevicesLinkToPath;
 import org.jclouds.abiquo.binders.infrastructure.ucs.BindLogicServerParameters;
 import org.jclouds.abiquo.binders.infrastructure.ucs.BindOrganizationParameters;
+import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.DatacenterOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.IpmiOptions;
 import org.jclouds.abiquo.domain.infrastructure.options.MachineOptions;
@@ -867,6 +868,16 @@ public interface InfrastructureAsyncApi {
    @JAXBResponseParser
    ListenableFuture<EnterprisesDto> getEnterprisesByTier(
          @EndpointLink("enterprises") @BinderParam(BindToPath.class) TierDto tier);
+
+   /**
+    * @see InfrastructureApi#getEnterprisesByTier(TierDto, EnterpriseOptions)
+    */
+   @EnterpriseEdition
+   @GET
+   @Consumes(EnterprisesDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<EnterprisesDto> getEnterprisesByTier(
+         @EndpointLink("enterprises") @BinderParam(BindToPath.class) TierDto tier, EnterpriseOptions options);
 
    /*********************** Storage Pool ***********************/
 
