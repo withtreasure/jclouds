@@ -19,6 +19,7 @@
 
 package org.jclouds.abiquo.domain.infrastructure;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 
 import java.util.List;
@@ -163,6 +164,7 @@ public class Tier extends DomainWrapper<TierDto> {
     * @SinceApiVersion 2.4
     */
    public EnterprisesDto getEnterprisesByTier(EnterpriseOptions options) {
+      checkNotNull(options, "options");
       return context.getApi().getInfrastructureApi().getEnterprisesByTier(target, options);
    }
 
