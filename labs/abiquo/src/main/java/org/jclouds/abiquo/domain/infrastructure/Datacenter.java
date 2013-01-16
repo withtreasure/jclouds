@@ -488,7 +488,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     * @return the defult {@link NetworkServiceType}
     */
    public NetworkServiceType defaultNetworkServiceType() {
-      return find(listNetworkServiceType(), NetworkServiceTypePredicates.theDefaultOne());
+      return find(listNetworkServiceType(), NetworkServiceTypePredicates.isDefault());
    }
 
    /**

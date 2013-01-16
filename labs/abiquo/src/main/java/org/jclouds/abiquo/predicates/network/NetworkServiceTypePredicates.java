@@ -28,7 +28,7 @@ import com.google.common.base.Predicate;
  * @author Jaume Devesa
  */
 public class NetworkServiceTypePredicates {
-   public static Predicate<NetworkServiceType> theDefaultOne() {
+   public static Predicate<NetworkServiceType> isDefault() {
       return new Predicate<NetworkServiceType>() {
          @Override
          public boolean apply(final NetworkServiceType ni) {
