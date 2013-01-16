@@ -23,14 +23,17 @@ import static com.google.common.collect.Iterables.filter;
 
 import java.util.List;
 
-import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.AbiquoApi;
+import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
+import org.jclouds.abiquo.domain.cloud.TemplateDefinition;
 import org.jclouds.abiquo.domain.infrastructure.Datacenter;
 import org.jclouds.rest.RestContext;
 
 import com.abiquo.am.model.TemplatesStateDto;
+import com.abiquo.server.core.appslibrary.TemplateDefinitionDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListDto;
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 
@@ -120,6 +123,22 @@ public class TemplateDefinitionList extends DomainWrapper<TemplateDefinitionList
       TemplatesStateDto states = context.getApi().getEnterpriseApi()
             .listTemplateListStatus(target, datacenter.unwrap());
       return wrap(context, TemplateState.class, states.getCollection());
+   }
+
+   /**
+    * Access the content of the list
+    * 
+    * @return all the template definitions in the list
+    */
+   public List<TemplateDefinition> listDefinitions() {
+
+      return Lists.transform(target.getTemplateDefinitions().getCollection(),
+            new Function<TemplateDefinitionDto, TemplateDefinition>() {
+               @Override
+               public TemplateDefinition apply(TemplateDefinitionDto input) {
+                  return wrap(context, TemplateDefinition.class, input);
+               }
+            });
    }
 
    /**

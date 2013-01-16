@@ -49,8 +49,10 @@ import com.abiquo.model.enumerator.DiskFormatType;
 import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.server.core.appslibrary.ConversionDto;
 import com.abiquo.server.core.appslibrary.ConversionsDto;
+import com.abiquo.server.core.appslibrary.DatacenterRepositoryDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplatePersistentDto;
+import com.abiquo.server.core.appslibrary.VirtualMachineTemplateRequestDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplatesDto;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -135,6 +137,20 @@ public interface VirtualMachineTemplateAsyncApi {
          @PathParam("enterprise") Integer enterpriseId,
          @PathParam("datacenterrepository") Integer datacenterRepositoryId,
          @BinderParam(BindToXMLPayload.class) VirtualMachineTemplatePersistentDto persistentOptions);
+
+   /**
+    * @see VirtualMachineTemplateApi#createVirtualMachineTemplate(Integer,Integer,
+    *      VirtualMachineTemplateRequestDto)
+    */
+   @POST
+   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
+   @Produces(VirtualMachineTemplateRequestDto.BASE_MEDIA_TYPE)
+   @Path("/{enterprise}/datacenterrepositories/{datacenterrepository}/virtualmachinetemplates")
+   @JAXBResponseParser
+   ListenableFuture<AcceptedRequestDto<String>> createVirtualMachineTemplate(
+         @PathParam("enterprise") Integer enterpriseId,
+         @PathParam("datacenterrepository") Integer datacenterRepositoryId,
+         @BinderParam(BindToXMLPayload.class) VirtualMachineTemplateRequestDto templateRequest);
 
    /*********************** Conversions ***********************/
 

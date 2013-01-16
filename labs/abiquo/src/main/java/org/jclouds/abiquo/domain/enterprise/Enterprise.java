@@ -332,9 +332,8 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     * 
     * @see API: <a href=
     *      "http://community.abiquo.com/display/ABI20/UserResource#UserResource-Retrievealistofusers"
-    *      >
-    *      http://community.abiquo.com/display/ABI20/UserResource#UserResource-
-    *      Retrievealistofusers </a>
+    *      > http://community.abiquo.com/display/ABI20/UserResource#UserResource
+    *      - Retrievealistofusers </a>
     * @return List of users of this enterprise.
     */
    public List<User> listUsers() {
@@ -349,9 +348,8 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     *           Filter to be applied to the list.
     * @see API: <a href=
     *      "http://community.abiquo.com/display/ABI20/UserResource#UserResource-Retrievealistofusers"
-    *      >
-    *      http://community.abiquo.com/display/ABI20/UserResource#UserResource-
-    *      Retrievealistofusers </a>
+    *      > http://community.abiquo.com/display/ABI20/UserResource#UserResource
+    *      - Retrievealistofusers </a>
     * @return Filtered list of users of this enterprise.
     */
    public List<User> listUsers(final Predicate<User> filter) {
@@ -366,9 +364,8 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     *           Filter to be applied to the list.
     * @see API: <a href=
     *      "http://community.abiquo.com/display/ABI20/UserResource#UserResource-Retrievealistofusers"
-    *      >
-    *      http://community.abiquo.com/display/ABI20/UserResource#UserResource-
-    *      Retrievealistofusers </a>
+    *      > http://community.abiquo.com/display/ABI20/UserResource#UserResource
+    *      - Retrievealistofusers </a>
     * @return First user matching the filter or <code>null</code> if there is
     *         none.
     */
@@ -427,22 +424,65 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
       return Iterables.getFirst(filter(listRoles(), filter), null);
    }
 
+   /**
+    * Retrieve the list of virtual machine templates in the repository of the
+    * given datacenter.
+    * 
+    * @param datacenter
+    *           Context of the repository
+    * @return list of virtual machine templates in the repository of the given
+    *         datacenter.
+    */
    public List<VirtualMachineTemplate> listTemplatesInRepository(final Datacenter datacenter) {
       VirtualMachineTemplatesDto dto = context.getApi().getVirtualMachineTemplateApi()
             .listVirtualMachineTemplates(target.getId(), datacenter.getId());
       return wrap(context, VirtualMachineTemplate.class, dto.getCollection());
    }
 
+   /**
+    * Retrieve a filtered list of virtual machine templates in the repository of
+    * this datacenter.
+    * 
+    * @param datacenter
+    *           Context of the repository
+    * @param filter
+    *           Filter to be applied to the list.
+    * @return Filtered list of virtual machine templates in the repository of
+    *         the given datacenter.
+    */
    public List<VirtualMachineTemplate> listTemplatesInRepository(final Datacenter datacenter,
          final Predicate<VirtualMachineTemplate> filter) {
       return Lists.newLinkedList(filter(listTemplatesInRepository(datacenter), filter));
    }
 
+   /**
+    * Retrieve the first virtual machine template within the list of virtual
+    * machine templates in the repository of the given datacenter.
+    * 
+    * @param datacenter
+    *           Context of the repository
+    * @param filter
+    *           Filter to be applied to the list.
+    * @return First virtual machine template matching the filter or
+    *         <code>null</code> if there is none.
+    */
    public VirtualMachineTemplate findTemplateInRepository(final Datacenter datacenter,
          final Predicate<VirtualMachineTemplate> filter) {
       return Iterables.getFirst(filter(listTemplatesInRepository(datacenter), filter), null);
    }
 
+   /**
+    * Retrieve a single virtual machine template in of this enterprise from the
+    * given datacenter.
+    * 
+    * @param datacenter
+    *           Context of the repository
+    * @param id
+    *           Unique ID of the template in the datacenter repository for the
+    *           given enterprise.
+    * @return Virtual machine template with the given id in the given enterprise
+    *         or <code>null</code> if it does not exist.
+    */
    public VirtualMachineTemplate getTemplateInRepository(final Datacenter datacenter, final Integer id) {
       VirtualMachineTemplateDto template = context.getApi().getVirtualMachineTemplateApi()
             .getVirtualMachineTemplate(target.getId(), datacenter.getId(), id);

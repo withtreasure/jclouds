@@ -28,6 +28,8 @@ import java.net.URI;
 
 import javax.ws.rs.core.Response.Status;
 
+import java.net.URI;
+
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.http.HttpResponse;
@@ -35,20 +37,21 @@ import org.testng.annotations.Test;
 
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.server.core.enterprise.DatacenterLimitsDto;
-import com.abiquo.server.core.enterprise.EnterpriseDto;
+import com.abiquo.model.enumerator.DiskControllerType;
+import com.abiquo.model.enumerator.EthernetDriverType;
+import com.abiquo.model.enumerator.OSType;
+import com.abiquo.model.rest.RESTLink;
+import com.abiquo.server.core.appslibrary.TemplateDefinitionDto;
+import com.abiquo.server.core.appslibrary.TemplateDefinitionsDto;
 
 /**
  * Expect tests for the {@link EnterpriseApi} class.
  * 
  * @author Sergi Castro
+ * @author Susana Acedo
  */
 @Test(groups = "unit", testName = "EnterpriseApiExpectTest")
 public class EnterpriseApiExpectTest extends BaseAbiquoRestApiExpectTest<EnterpriseApi> {
-
-   @Override
-   protected EnterpriseApi clientFrom(AbiquoApi api) {
-      return api.getEnterpriseApi();
-   }
 
    public void testGetLimit() throws SecurityException, NoSuchMethodException, IOException {
       EnterpriseApi api = requestSendsResponse(
@@ -91,4 +94,168 @@ public class EnterpriseApiExpectTest extends BaseAbiquoRestApiExpectTest<Enterpr
       DatacenterLimitsDto limit = api.getLimit(enterprise, 1);
       assertNull(limit);
    }
+
+   public void testListTemplateDefinitionsWhenResponseIs2xx() {
+      EnterpriseApi api = requestSendsResponse(
+            HttpRequest.builder().method("GET")
+                  .endpoint(URI.create("http://localhost/api/admin/enterprises/1/appslib/templateDefinitions"))
+                  .addHeader("Authorization", basicAuth)
+                  .addHeader("Accept", normalize(TemplateDefinitionsDto.MEDIA_TYPE)).build(),
+            HttpResponse
+                  .builder()
+                  .statusCode(200)
+                  .payload(
+                        payloadFromResourceWithContentType("/payloads/all-templatedefinitions.xml",
+                              normalize(TemplateDefinitionsDto.MEDIA_TYPE))).build());
+
+      EnterpriseDto enterprise = new EnterpriseDto();
+      RESTLink link = new RESTLink("appslib/templateDefinitions",
+            "http://localhost/api/admin/enterprises/1/appslib/templateDefinitions");
+      enterprise.addLink(link);
+
+      TemplateDefinitionsDto tmpdefinitions = api.listTemplateDefinitions(enterprise);
+      assertEquals(tmpdefinitions.getCollection().size(), 1);
+      assertEquals(tmpdefinitions.getCollection().get(0).getId(), Integer.valueOf(1));
+      assertEquals(tmpdefinitions.getCollection().get(0).getName(), "Centos 5.6 x86_64");
+      assertNotNull(tmpdefinitions.getCollection().get(0).getEditLink());
+   }
+
+   public void testGetTemplateDefinitionWhenResponseIs2xx() {
+      EnterpriseApi api = requestSendsResponse(
+            HttpRequest.builder().method("GET")
+                  .endpoint(URI.create("http://localhost/api/admin/enterprises/1/appslib/templateDefinitions/1"))
+                  .addHeader("Authorization", basicAuth)
+                  .addHeader("Accept", normalize(TemplateDefinitionDto.MEDIA_TYPE)).build(),
+            HttpResponse
+                  .builder()
+                  .statusCode(200)
+                  .payload(
+                        payloadFromResourceWithContentType("/payloads/template_definition_response.xml",
+                              normalize(TemplateDefinitionDto.MEDIA_TYPE))) //
+                  .build());
+
+      EnterpriseDto enterprise = new EnterpriseDto();
+      RESTLink link = new RESTLink("appslib/templateDefinitions",
+            "http://localhost/api/admin/enterprises/1/appslib/templateDefinitions");
+      enterprise.addLink(link);
+
+      TemplateDefinitionDto tmpdefinition = api.getTemplateDefinition(enterprise, 1);
+      assertEquals(tmpdefinition.getId(), Integer.valueOf(1));
+      assertEquals(tmpdefinition.getName(), "Centos 5.6 x86_64");
+   }
+
+   public void testGetTemplateDefinitionWhenResponseIs404() {
+      EnterpriseApi api = requestSendsResponse(
+            HttpRequest.builder().method("GET")
+                  .endpoint(URI.create("http://localhost/api/admin/enterprises/1/appslib/templateDefinitions/1"))
+                  .addHeader("Authorization", basicAuth)
+                  .addHeader("Accept", normalize(TemplateDefinitionDto.MEDIA_TYPE)).build(), HttpResponse.builder()
+                  .statusCode(404).build());
+
+      EnterpriseDto enterprise = new EnterpriseDto();
+      RESTLink link = new RESTLink("appslib/templateDefinitions",
+            "http://localhost/api/admin/enterprises/1/appslib/templateDefinitions");
+      enterprise.addLink(link);
+
+      TemplateDefinitionDto tmpdefinition = api.getTemplateDefinition(enterprise, 1);
+      assertNull(tmpdefinition);
+   }
+
+   public void testCreateTemplateDefinition() {
+      EnterpriseApi api = requestSendsResponse(
+            HttpRequest
+                  .builder()
+                  .method("POST")
+                  .endpoint(URI.create("http://localhost/api/admin/enterprises/1/appslib/templateDefinitions"))
+                  .addHeader("Authorization", basicAuth)
+                  .addHeader("Accept", normalize(TemplateDefinitionDto.MEDIA_TYPE))
+                  .payload(
+                        payloadFromResourceWithContentType("/payloads/template_definition_request.xml",
+                              normalize(TemplateDefinitionDto.MEDIA_TYPE))) //
+                  .build(),
+            HttpResponse
+                  .builder()
+                  .statusCode(201)
+                  .payload(
+                        payloadFromResourceWithContentType("/payloads/template_definition_response.xml",
+                              normalize(TemplateDefinitionDto.MEDIA_TYPE))) //
+                  .build());
+
+      EnterpriseDto enterprise = new EnterpriseDto();
+      RESTLink link = new RESTLink("appslib/templateDefinitions",
+            "http://localhost/api/admin/enterprises/1/appslib/templateDefinitions");
+      enterprise.addLink(link);
+
+      TemplateDefinitionDto dto = new TemplateDefinitionDto();
+      RESTLink categorylink = new RESTLink("category", "http://localhost:80/api/config/categories/6");
+      categorylink.setTitle("OS");
+      dto.addLink(categorylink);
+      dto.setName("Centos 5.6 x86_64");
+      dto.setUrl("http://abiquo-repository.abiquo.com/centos5/centos5.ovf");
+      dto.setDescription("Centos 5.  Log in as 'root' with password 'abiquo'.");
+      dto.setProductName("Centos 5.6 x86_64");
+      dto.setDiskFormatType("QCOW2_SPARSE");
+      dto.setDiskFileSize(614);
+      dto.setOsType(OSType.CENTOS_64);
+      dto.setEthernetDriverType(EthernetDriverType.E1000);
+      dto.setDiskControllerType(DiskControllerType.IDE);
+      dto.setIconUrl("http://abiquo-repository.abiquo.com/centos5/centos.png");
+
+      TemplateDefinitionDto tmpdefinition = api.createTemplateDefinition(enterprise, dto);
+      assertEquals(tmpdefinition.getName(), "Centos 5.6 x86_64");
+      assertNotNull(tmpdefinition.searchLink("edit"));
+   }
+
+   public void testUpdateTemplateDefinition() {
+      EnterpriseApi api = requestSendsResponse(
+            HttpRequest
+                  .builder()
+                  .method("PUT")
+                  .endpoint(URI.create("http://localhost/api/admin/enterprises/1/appslib/templateDefinitions/1"))
+                  .addHeader("Authorization", basicAuth)
+                  .addHeader("Accept", normalize(TemplateDefinitionDto.MEDIA_TYPE))
+                  .payload(
+                        payloadFromResourceWithContentType("/payloads/template_definition_update_request.xml",
+                              normalize(TemplateDefinitionDto.MEDIA_TYPE))) //
+                  .build(),
+            HttpResponse
+                  .builder()
+                  .statusCode(200)
+                  .payload(
+                        payloadFromResourceWithContentType("/payloads/template_definition_update_response.xml",
+                              normalize(TemplateDefinitionDto.MEDIA_TYPE))) //
+                  .build());
+
+      EnterpriseDto enterprise = new EnterpriseDto();
+      RESTLink link = new RESTLink("appslib/templateDefinitions",
+            "http://localhost/api/admin/enterprises/1/appslib/templateDefinitions");
+      enterprise.addLink(link);
+
+      TemplateDefinitionDto dto = new TemplateDefinitionDto();
+      RESTLink tmplink = new RESTLink("edit", "http://localhost/api/admin/enterprises/1/appslib/templateDefinitions/1");
+      dto.addLink(tmplink);
+      RESTLink categorylink = new RESTLink("category", "http://localhost:80/api/config/categories/6");
+      categorylink.setTitle("OS");
+      dto.addLink(categorylink);
+      dto.setName("Centos 5.6 x86_64 updated");
+      dto.setUrl("http://abiquo-repository.abiquo.com/centos5/centos5.ovf");
+      dto.setDescription("Centos 5.  Log in as 'root' with password 'abiquo'.");
+      dto.setProductName("Centos 5.6 x86_64");
+      dto.setDiskFormatType("QCOW2_SPARSE");
+      dto.setDiskFileSize(614);
+      dto.setOsType(OSType.CENTOS_64);
+      dto.setEthernetDriverType(EthernetDriverType.E1000);
+      dto.setDiskControllerType(DiskControllerType.IDE);
+      dto.setIconUrl("http://abiquo-repository.abiquo.com/centos5/centos.png");
+
+      TemplateDefinitionDto tmpdefinition = api.updateTemplateDefinition(dto);
+      assertEquals(tmpdefinition.getName(), "Centos 5.6 x86_64 updated");
+      assertNotNull(tmpdefinition.searchLink("edit"));
+   }
+
+   @Override
+   protected EnterpriseApi clientFrom(AbiquoApi api) {
+      return api.getEnterpriseApi();
+   }
+
 }

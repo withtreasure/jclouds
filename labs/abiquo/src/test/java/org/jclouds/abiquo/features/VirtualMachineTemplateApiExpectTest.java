@@ -23,22 +23,85 @@ import static org.testng.Assert.assertNotNull;
 
 import java.net.URI;
 
+import javax.ws.rs.core.Response.Status;
+
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.domain.cloud.options.VirtualMachineTemplateOptions;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.http.HttpResponse;
 import org.testng.annotations.Test;
 
+import com.abiquo.model.rest.RESTLink;
+import com.abiquo.model.transport.AcceptedRequestDto;
+import com.abiquo.server.core.appslibrary.VirtualMachineTemplateRequestDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplatesDto;
 
 /**
  * Expect tests for the {@link VirtualMachineTemplateApi}.
  * 
  * @author Ignasi Barrera
- * 
  */
 @Test(groups = "unit", testName = "VirtualMachineTemplateApiExpectTest")
 public class VirtualMachineTemplateApiExpectTest extends BaseAbiquoRestApiExpectTest<VirtualMachineTemplateApi> {
+
+   public void testCreateVirtualMachineTemplate_download() {
+      VirtualMachineTemplateApi api = requestSendsResponse(
+            HttpRequest
+                  .builder()
+                  .method("POST")
+                  .endpoint(
+                        URI.create("http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates"))
+                  .addHeader("Authorization", basicAuth)
+                  .addHeader("Accept", normalize(AcceptedRequestDto.MEDIA_TYPE))
+                  .payload(
+                        payloadFromResourceWithContentType("/payloads/virtualmachinetemplate-download-request.xml",
+                              normalize(VirtualMachineTemplateRequestDto.MEDIA_TYPE))).build(),
+            HttpResponse
+                  .builder()
+                  .statusCode(Status.CREATED.getStatusCode())
+                  .payload(
+                        payloadFromResourceWithContentType("/payloads/virtualmachinetemplate-create-response.xml",
+                              normalize(AcceptedRequestDto.MEDIA_TYPE))).build());
+
+      VirtualMachineTemplateRequestDto templateRequest = new VirtualMachineTemplateRequestDto();
+      templateRequest.addLink(new RESTLink("templatedefinition",
+            "http://localhost/api/admin/enterprises/1/appslib/templateDefinitions/1"));
+
+      assertAcceptedRequest(api.createVirtualMachineTemplate(1, 1, templateRequest));
+   }
+
+   public void testCreateVirtualMachineTemplate_promote() {
+      VirtualMachineTemplateApi api = requestSendsResponse(
+            HttpRequest
+                  .builder()
+                  .method("POST")
+                  .endpoint(
+                        URI.create("http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates"))
+                  .addHeader("Authorization", basicAuth)
+                  .addHeader("Accept", normalize(AcceptedRequestDto.MEDIA_TYPE))
+                  .payload(
+                        payloadFromResourceWithContentType("/payloads/virtualmachinetemplate-promote-request.xml",
+                              normalize(VirtualMachineTemplateRequestDto.MEDIA_TYPE))).build(),
+            HttpResponse
+                  .builder()
+                  .statusCode(Status.CREATED.getStatusCode())
+                  .payload(
+                        payloadFromResourceWithContentType("/payloads/virtualmachinetemplate-create-response.xml",
+                              normalize(AcceptedRequestDto.MEDIA_TYPE))).build());
+
+      VirtualMachineTemplateRequestDto templateRequest = new VirtualMachineTemplateRequestDto();
+      templateRequest.setPromotedName("mypromoted");
+      templateRequest.addLink(new RESTLink("virtualmachinetemplate",
+            "http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates/1"));
+
+      assertAcceptedRequest(api.createVirtualMachineTemplate(1, 1, templateRequest));
+   }
+
+   private void assertAcceptedRequest(final AcceptedRequestDto<String> accepted) {
+      assertNotNull(accepted.searchLink("status"));
+      assertEquals(accepted.getStatusLink().getHref(),
+            "http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates/2/tasks");
+   }
 
    public void testListVirtualMachineTemplatesWithPaginationOptions() {
       VirtualMachineTemplateApi api = requestSendsResponse(
