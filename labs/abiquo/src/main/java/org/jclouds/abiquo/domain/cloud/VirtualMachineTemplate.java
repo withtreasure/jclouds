@@ -163,7 +163,7 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
     * @return the task to track the progress for the new virtual machine
     *         template creation process
     */
-   public AsyncTask promoteToMaster(final String promotedName) {
+   public VirtualMachineTemplateTask promoteToMaster(final String promotedName) {
 
       RESTLink vmtLink = new RESTLink(ParentLinkName.VIRTUAL_MACHINE_TEMPLATE, target.getEditLink().getHref());
       Integer repositoryId = target.getIdFromLink(ParentLinkName.DATACENTER_REPOSITORY);
@@ -179,7 +179,7 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
       AcceptedRequestDto<String> response = context.getApi().getVirtualMachineTemplateApi()
             .createVirtualMachineTemplate(enterpriseId, repositoryId, request);
 
-      return getTask(response);
+      return getTask(response).asVirtualMachineTemplateTask();
    }
 
    // Children access

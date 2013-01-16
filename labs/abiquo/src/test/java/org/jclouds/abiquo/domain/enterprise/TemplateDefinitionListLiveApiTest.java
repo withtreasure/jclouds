@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jclouds.abiquo.domain.cloud.TemplateDefinition;
 import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
-import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.VirtualMachineTemplateTask;
 import org.jclouds.abiquo.internal.BaseAbiquoApiLiveApiTest;
 import org.jclouds.abiquo.predicates.cloud.VirtualMachineTemplatePredicates;
 import org.jclouds.abiquo.predicates.enterprise.TemplateDefinitionListPredicates;
@@ -84,6 +84,8 @@ public class TemplateDefinitionListLiveApiTest extends BaseAbiquoApiLiveApiTest 
       assertNull(env.enterprise.getTemplateDefinitionList(idTemplateList));
    }
 
+   @Test(enabled = false)
+   // Disabled until we have the TemplateDefinitionList.refresh() method
    public void testDownload() {
       TemplateDefinition templateDef = templateBySize().min(list.listDefinitions());
 
@@ -92,13 +94,11 @@ public class TemplateDefinitionListLiveApiTest extends BaseAbiquoApiLiveApiTest 
 
       assertEquals(templates.size(), 0); // template not present in datacenter
 
-      AsyncTask task = templateDef.downloadToRepository(env.datacenter);
+      VirtualMachineTemplateTask task = templateDef.downloadToRepository(env.datacenter);
       env.context.getMonitoringService().getAsyncTaskMonitor().awaitCompletion(30l, TimeUnit.MINUTES, task);
       assertEquals(task.getState(), TaskState.FINISHED_SUCCESSFULLY);
 
-      // TODO wait for ''new-tasks'' branch
-      Integer vmtId = Integer.valueOf(task.getOwnerId());
-      VirtualMachineTemplate vmt = env.enterprise.getTemplateInRepository(env.datacenter, vmtId);
+      VirtualMachineTemplate vmt = task.getResult();
       assertVirtualMachineCreation(vmt, templateDef);
 
       templates = env.enterprise.listTemplatesInRepository(env.datacenter,

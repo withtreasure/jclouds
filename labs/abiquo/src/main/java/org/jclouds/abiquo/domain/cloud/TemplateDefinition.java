@@ -25,7 +25,7 @@ import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
 import org.jclouds.abiquo.domain.enterprise.Enterprise;
 import org.jclouds.abiquo.domain.infrastructure.Datacenter;
-import org.jclouds.abiquo.domain.task.AsyncTask;
+import org.jclouds.abiquo.domain.task.VirtualMachineTemplateTask;
 import org.jclouds.abiquo.reference.ValidationErrors;
 import org.jclouds.abiquo.reference.rest.ParentLinkName;
 import org.jclouds.rest.RestContext;
@@ -79,7 +79,7 @@ public class TemplateDefinition extends DomainWrapper<TemplateDefinitionDto> {
     * @return the task to track the progress for the new virtual machine
     *         template creation process
     */
-   public AsyncTask downloadToRepository(final Datacenter datacenter) {
+   public VirtualMachineTemplateTask downloadToRepository(final Datacenter datacenter) {
       checkNotNull(datacenter, "datacenter");
       RESTLink tDefLink = new RESTLink(ParentLinkName.TEMPLATE_DEFINITION, target.getEditLink().getHref());
       checkNotNull(tDefLink, "template definition edit link");
@@ -92,7 +92,7 @@ public class TemplateDefinition extends DomainWrapper<TemplateDefinitionDto> {
       AcceptedRequestDto<String> response = context.getApi().getVirtualMachineTemplateApi()
             .createVirtualMachineTemplate(enterpriseId, datacenter.getId(), request);
 
-      return getTask(response);
+      return getTask(response).asVirtualMachineTemplateTask();
    }
 
    // Parent access

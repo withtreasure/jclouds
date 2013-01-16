@@ -28,21 +28,19 @@ import java.net.URI;
 
 import javax.ws.rs.core.Response.Status;
 
-import java.net.URI;
-
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.http.HttpResponse;
 import org.testng.annotations.Test;
 
-import com.abiquo.model.rest.RESTLink;
-import com.abiquo.server.core.enterprise.DatacenterLimitsDto;
 import com.abiquo.model.enumerator.DiskControllerType;
 import com.abiquo.model.enumerator.EthernetDriverType;
 import com.abiquo.model.enumerator.OSType;
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionsDto;
+import com.abiquo.server.core.enterprise.DatacenterLimitsDto;
+import com.abiquo.server.core.enterprise.EnterpriseDto;
 
 /**
  * Expect tests for the {@link EnterpriseApi} class.
