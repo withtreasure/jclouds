@@ -77,6 +77,7 @@ public class TemplateResources {
       template.setLoginPassword("mypass");
       template.setState(VMTemplateState.DONE);
 
+      template.setCostCode(0);
       return template;
    }
 
