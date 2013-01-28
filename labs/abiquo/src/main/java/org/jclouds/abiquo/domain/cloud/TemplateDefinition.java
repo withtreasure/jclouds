@@ -102,13 +102,15 @@ public class TemplateDefinition extends DomainWrapper<TemplateDefinitionDto> {
    }
 
    // Builder
-   public static Builder builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context) {
-      return new Builder(context);
+   public static Builder builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context, final Enterprise enterprise) {
+      return new Builder(context, enterprise);
    }
 
    public static class Builder {
 
-      private RestContext<AbiquoApi, AbiquoAsyncApi> context;
+      private final RestContext<AbiquoApi, AbiquoAsyncApi> context;
+
+      private final Enterprise enterprise;
 
       private String url;
 
@@ -142,9 +144,10 @@ public class TemplateDefinition extends DomainWrapper<TemplateDefinitionDto> {
 
       private DiskControllerType diskControllerType;
 
-      public Builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context) {
+      public Builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context, final Enterprise enterpirse) {
          super();
          this.context = context;
+         this.enterprise = enterpirse;
       }
 
       public Builder url(final String url) {
@@ -251,13 +254,16 @@ public class TemplateDefinition extends DomainWrapper<TemplateDefinitionDto> {
          templateDefinition.setDiskControllerType(diskControllerType);
          templateDefinition.setOsType(osType);
          templateDefinition.setEthernetDriverType(ethernetDriverType);
+         templateDefinition.enterprise = enterprise;
+
          return templateDefinition;
       }
 
       public static Builder fromTemplateDefinition(final TemplateDefinition in) {
-         Builder builder = TemplateDefinition.builder(in.context).name(in.getName()).description(in.getDescription())
-               .url(in.getUrl()).loginUser(in.getLoginUser()).loginPassword(in.getLoginPassword())
-               .productName(in.getProductName()).productVendor(in.getProductVendor()).productUrl(in.getProductUrl())
+         Builder builder = TemplateDefinition.builder(in.context, in.enterprise).name(in.getName())
+               .description(in.getDescription()).url(in.getUrl()).loginUser(in.getLoginUser())
+               .loginPassword(in.getLoginPassword()).productName(in.getProductName())
+               .productVendor(in.getProductVendor()).productUrl(in.getProductUrl())
                .productVersion(in.getProductVersion()).diskControllerType(in.getDiskControllerType())
                .osType(in.getOsType()).diskFormatType(in.getDiskFormatType().name())
                .ethernetDriverType(in.getEthernetDriverType()).diskFileSize(in.getDiskFileSize())
