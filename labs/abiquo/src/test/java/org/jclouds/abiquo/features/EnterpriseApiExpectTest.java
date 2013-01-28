@@ -38,6 +38,7 @@ import com.abiquo.model.enumerator.EthernetDriverType;
 import com.abiquo.model.enumerator.OSType;
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionDto;
+import com.abiquo.server.core.appslibrary.TemplateDefinitionListDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionsDto;
 import com.abiquo.server.core.enterprise.DatacenterLimitsDto;
 import com.abiquo.server.core.enterprise.EnterpriseDto;
@@ -116,6 +117,29 @@ public class EnterpriseApiExpectTest extends BaseAbiquoRestApiExpectTest<Enterpr
       assertEquals(tmpdefinitions.getCollection().get(0).getId(), Integer.valueOf(1));
       assertEquals(tmpdefinitions.getCollection().get(0).getName(), "Centos 5.6 x86_64");
       assertNotNull(tmpdefinitions.getCollection().get(0).getEditLink());
+   }
+
+   public void testRefreshTemplateDefinitionsWhenResponseIs2xx() {
+      EnterpriseApi api = requestSendsResponse(
+            HttpRequest.builder().method("PUT")
+               .endpoint(URI.create("http://localhost/api/admin/enterprises/1/appslib/templateDefinitions/1"))
+               .addHeader("Authorization", basicAuth)
+               .addHeader("Accept", normalize(TemplateDefinitionListDto.MEDIA_TYPE)).build(),
+            HttpResponse
+            .builder()
+            .statusCode(200)
+            .payload(
+                  payloadFromResourceWithContentType("/payloads/templatedefinitionlist.xml",
+                        normalize(TemplateDefinitionListDto.MEDIA_TYPE))).build());
+
+      TemplateDefinitionListDto list = new TemplateDefinitionListDto();
+      list.addEditLink(new RESTLink("edit", "http://localhost/api/admin/enterprises/1/appslib/templateDefinitions/1"));
+
+      TemplateDefinitionListDto tmpdefinitionlist = api.refreshTemplateDefinitionList(list);
+      assertEquals(tmpdefinitionlist.getTemplateDefinitions().getCollection().size(), 1);
+      assertEquals(tmpdefinitionlist.getTemplateDefinitions().getCollection().get(0).getId(), Integer.valueOf(1));
+      assertEquals(tmpdefinitionlist.getTemplateDefinitions().getCollection().get(0).getName(), "Centos 5.6 x86_64");
+      assertNotNull(tmpdefinitionlist.getTemplateDefinitions().getCollection().get(0).getEditLink());
    }
 
    public void testGetTemplateDefinitionWhenResponseIs2xx() {

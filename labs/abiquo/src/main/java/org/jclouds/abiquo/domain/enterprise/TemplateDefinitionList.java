@@ -23,6 +23,7 @@ import static com.google.common.collect.Iterables.filter;
 
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
@@ -77,7 +78,7 @@ public class TemplateDefinitionList extends DomainWrapper<TemplateDefinitionList
 
    /**
     * Create a template definition list. All the contained Template Definitions
-    * will also be created.
+    * will also be created. If the template definition list have the ''url'' attribute set, then also refresh the list (fetch ovfinde.xml url)
     * 
     * @see API: <a href=
     *      "http://community.abiquo.com/display/ABI20/TemplateDefinitionListResource#TemplateDefinitionListResource-Createatemplatedefinitionlist"
@@ -87,6 +88,9 @@ public class TemplateDefinitionList extends DomainWrapper<TemplateDefinitionList
     */
    public void save() {
       target = context.getApi().getEnterpriseApi().createTemplateDefinitionList(enterprise.unwrap(), target);
+      if (!StringUtils.isEmpty(target.getUrl())) {
+         refresh();
+      }
    }
 
    /**
@@ -101,6 +105,20 @@ public class TemplateDefinitionList extends DomainWrapper<TemplateDefinitionList
     */
    public void update() {
       target = context.getApi().getEnterpriseApi().updateTemplateDefinitionList(target);
+   }
+
+   /**
+    * Update a template definition list with the data from this template
+    * definition list.
+    * 
+    * @see API: <a href=
+    *      "http://community.abiquo.com/display/ABI20/TemplateDefinitionListResource#TemplateDefinitionListResource-Refreshatemplatedefinitionlistfromtheurl"
+    *      > http://community.abiquo.com/display/ABI20/
+    *      TemplateDefinitionListResource#
+    *      TemplateDefinitionListResource-Refreshatemplatedefinitionlistfromtheurl</a>
+    */
+   public void refresh() {
+      target = context.getApi().getEnterpriseApi().refreshTemplateDefinitionList(target);
    }
 
    // Children access
@@ -134,11 +152,11 @@ public class TemplateDefinitionList extends DomainWrapper<TemplateDefinitionList
 
       return Lists.transform(target.getTemplateDefinitions().getCollection(),
             new Function<TemplateDefinitionDto, TemplateDefinition>() {
-               @Override
-               public TemplateDefinition apply(TemplateDefinitionDto input) {
-                  return wrap(context, TemplateDefinition.class, input);
-               }
-            });
+         @Override
+         public TemplateDefinition apply(TemplateDefinitionDto input) {
+            return wrap(context, TemplateDefinition.class, input);
+         }
+      });
    }
 
    /**

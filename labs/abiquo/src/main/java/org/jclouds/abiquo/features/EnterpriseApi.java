@@ -387,6 +387,15 @@ public interface EnterpriseApi {
    TemplateDefinitionListDto updateTemplateDefinitionList(TemplateDefinitionListDto templateList);
 
    /**
+    * Refresh an existing template definition list using the source ''ovfindex.xml'' url.
+    *
+    * @param template
+    *           The template to be update, require ''url'' set.
+    * @return The updated template list after fetching new template definitions form the ovfindex source.
+    */
+   TemplateDefinitionListDto refreshTemplateDefinitionList(TemplateDefinitionListDto templateList);
+
+   /**
     * Deletes existing user.
     * 
     * @param user

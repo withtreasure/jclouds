@@ -400,6 +400,15 @@ public interface EnterpriseAsyncApi {
          @EndpointLink("edit") @BinderParam(BindToXMLPayloadAndPath.class) TemplateDefinitionListDto templateList);
 
    /**
+    * @see EnterpriseApi#refreshTemplateDefinitionList(TemplateDefinitionListDto)
+    */
+   @PUT
+   @Consumes(TemplateDefinitionListDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<TemplateDefinitionListDto> refreshTemplateDefinitionList(
+         @EndpointLink("edit") @BinderParam(BindToPath.class) TemplateDefinitionListDto templateList);
+
+   /**
     * @see EnterpriseApi#deleteTemplateDefinitionList(EnterpriseDto)
     */
    @DELETE

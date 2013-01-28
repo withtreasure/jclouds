@@ -84,28 +84,29 @@ public class TemplateDefinitionListLiveApiTest extends BaseAbiquoApiLiveApiTest 
       assertNull(env.enterprise.getTemplateDefinitionList(idTemplateList));
    }
 
-   @Test(enabled = false)
-   // Disabled until we have the TemplateDefinitionList.refresh() method
+   @Test
    public void testDownload() {
       TemplateDefinition templateDef = templateBySize().min(list.listDefinitions());
 
       List<VirtualMachineTemplate> templates = env.enterprise.listTemplatesInRepository(env.datacenter,
             VirtualMachineTemplatePredicates.templateDefinition(templateDef));
 
-      assertEquals(templates.size(), 0); // template not present in datacenter
+      assertEquals(templates.size(), 0, "template present in datacenter");
 
       VirtualMachineTemplateTask task = templateDef.downloadToRepository(env.datacenter);
       env.context.getMonitoringService().getAsyncTaskMonitor().awaitCompletion(30l, TimeUnit.MINUTES, task);
       assertEquals(task.getState(), TaskState.FINISHED_SUCCESSFULLY);
 
       VirtualMachineTemplate vmt = task.getResult();
-      assertVirtualMachineCreation(vmt, templateDef);
+      try {
+         assertVirtualMachineCreation(vmt, templateDef);
 
-      templates = env.enterprise.listTemplatesInRepository(env.datacenter,
-            VirtualMachineTemplatePredicates.templateDefinition(templateDef));
-      assertEquals(templates.size(), 1); // template present in datacenter
-
-      vmt.delete();
+         templates = env.enterprise.listTemplatesInRepository(env.datacenter,
+               VirtualMachineTemplatePredicates.templateDefinition(templateDef));
+         assertEquals(templates.size(), 1, "template not present in datacenter");
+      } finally {
+         vmt.delete();
+      }
    }
 
    private void assertVirtualMachineCreation(VirtualMachineTemplate template, TemplateDefinition templateDef) {
@@ -115,7 +116,7 @@ public class TemplateDefinitionListLiveApiTest extends BaseAbiquoApiLiveApiTest 
       assertEquals(template.getDescription(), templateDef.getDescription());
       assertEquals(template.getLoginUser(), templateDef.getLoginUser());
       assertEquals(template.getLoginPassword(), templateDef.getLoginPassword());
-      assertEquals(template.getDiskFileSize(), templateDef.getDiskFileSize());
+      assertEquals(template.getDiskFileSize() / 1048576, templateDef.getDiskFileSize());
       assertEquals(template.getDiskFormatType(), templateDef.getDiskFormatType());
       assertEquals(template.getEthernetDriverType(), templateDef.getEthernetDriverType());
       assertEquals(template.getDiskControllerType(), templateDef.getDiskControllerType());
