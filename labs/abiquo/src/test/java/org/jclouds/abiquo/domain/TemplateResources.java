@@ -76,6 +76,10 @@ public class TemplateResources {
       template.setLoginUser("myuser");
       template.setLoginPassword("mypass");
       template.setState(VMTemplateState.DONE);
+      template.setCpuRequired(1);
+      template.setRamRequired(1);
+      template.setHdRequired(20l);
+      template.setDiskFileSize(30l);
 
       template.setCostCode(0);
       return template;
@@ -100,10 +104,10 @@ public class TemplateResources {
       buffer.append("<loginPassword>mypass</loginPassword>");
       buffer.append("<state>DONE</state>");
 
-      buffer.append("<diskFileSize>0</diskFileSize>");
-      buffer.append("<cpuRequired>0</cpuRequired>");
-      buffer.append("<ramRequired>0</ramRequired>");
-      buffer.append("<hdRequired>0</hdRequired>");
+      buffer.append("<diskFileSize>30</diskFileSize>");
+      buffer.append("<cpuRequired>1</cpuRequired>");
+      buffer.append("<ramRequired>1</ramRequired>");
+      buffer.append("<hdRequired>20</hdRequired>");
       buffer.append("<shared>false</shared>");
       buffer.append("<costCode>0</costCode>");
       buffer.append("<chefEnabled>false</chefEnabled>");

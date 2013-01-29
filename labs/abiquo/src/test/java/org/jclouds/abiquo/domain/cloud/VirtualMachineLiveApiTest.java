@@ -114,7 +114,7 @@ public class VirtualMachineLiveApiTest extends BaseAbiquoApiLiveApiTest {
          VirtualMachineTask task = vm.update(true);
 
          assertNull(task);
-         assertEquals(vm.getCpu(), 7);
+         assertEquals(vm.getCpu().intValue(), 7);
       } finally {
          env.virtualDatacenter.setCpuCountHardLimit(originalHard);
          env.virtualDatacenter.setCpuCountSoftLimit(originalSoft);

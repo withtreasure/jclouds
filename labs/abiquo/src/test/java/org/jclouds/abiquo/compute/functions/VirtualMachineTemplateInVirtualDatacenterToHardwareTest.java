@@ -84,7 +84,7 @@ public class VirtualMachineTemplateInVirtualDatacenterToHardwareTest {
       assertEquals(hardware.getName(), template.getName());
       assertEquals(hardware.getUri(), URI.create("http://foo/bar"));
 
-      assertEquals(hardware.getRam(), template.getRamRequired());
+      assertEquals(hardware.getRam(), template.getRamRequired().intValue());
       assertEquals(hardware.getProcessors().size(), 1);
       assertEquals(hardware.getProcessors().get(0).getCores(), (double) template.getCpuRequired());
       assertEquals(hardware.getProcessors().get(0).getSpeed(),
@@ -131,79 +131,6 @@ public class VirtualMachineTemplateInVirtualDatacenterToHardwareTest {
 
       new MockVirtualMachineTemplateInVirtualDatacenterToHardware()
             .apply(new VirtualMachineTemplateInVirtualDatacenter(template, vdc));
-   }
-
-   public void testConvertWithoutCpu() {
-      @SuppressWarnings("unchecked")
-      RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
-
-      VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
-      dto.setId(5);
-      dto.setName("Template");
-      dto.setDescription("Template description");
-      dto.setHdRequired(50L * 1024 * 1024 * 1024); // 50 GB
-      dto.setRamRequired(2048);
-      VirtualMachineTemplate template = wrap(context, VirtualMachineTemplate.class, dto);
-
-      VirtualDatacenterDto vdcDto = new VirtualDatacenterDto();
-      vdcDto.setId(6);
-      vdcDto.setHypervisorType(HypervisorType.VMX_04);
-      VirtualDatacenter vdc = wrap(context, VirtualDatacenter.class, vdcDto);
-
-      Hardware hardware = new MockVirtualMachineTemplateInVirtualDatacenterToHardware()
-            .apply(new VirtualMachineTemplateInVirtualDatacenter(template, vdc));
-
-      assertEquals(hardware.getProcessors().size(), 1);
-      assertEquals(hardware.getProcessors().get(0).getCores(), 0D);
-   }
-
-   public void testConvertWithoutRam() {
-      @SuppressWarnings("unchecked")
-      RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
-
-      VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
-      dto.setId(5);
-      dto.setName("Template");
-      dto.setDescription("Template description");
-      dto.setHdRequired(50L * 1024 * 1024 * 1024); // 50 GB
-      dto.setCpuRequired(5);
-      VirtualMachineTemplate template = wrap(context, VirtualMachineTemplate.class, dto);
-
-      VirtualDatacenterDto vdcDto = new VirtualDatacenterDto();
-      vdcDto.setId(6);
-      vdcDto.setHypervisorType(HypervisorType.VMX_04);
-      VirtualDatacenter vdc = wrap(context, VirtualDatacenter.class, vdcDto);
-
-      Hardware hardware = new MockVirtualMachineTemplateInVirtualDatacenterToHardware()
-            .apply(new VirtualMachineTemplateInVirtualDatacenter(template, vdc));
-
-      assertEquals(hardware.getRam(), 0);
-   }
-
-   public void testConvertWithoutHd() {
-      @SuppressWarnings("unchecked")
-      RestContext<AbiquoApi, AbiquoAsyncApi> context = EasyMock.createMock(RestContext.class);
-
-      // VirtualMachineTemplate domain object does not have a builder, it is
-      // read only
-      VirtualMachineTemplateDto dto = new VirtualMachineTemplateDto();
-      dto.setId(5);
-      dto.setName("Template");
-      dto.setDescription("Template description");
-      dto.setCpuRequired(5);
-      dto.setRamRequired(2048);
-      VirtualMachineTemplate template = wrap(context, VirtualMachineTemplate.class, dto);
-
-      VirtualDatacenterDto vdcDto = new VirtualDatacenterDto();
-      vdcDto.setId(6);
-      vdcDto.setHypervisorType(HypervisorType.VMX_04);
-      VirtualDatacenter vdc = wrap(context, VirtualDatacenter.class, vdcDto);
-
-      Hardware hardware = new MockVirtualMachineTemplateInVirtualDatacenterToHardware()
-            .apply(new VirtualMachineTemplateInVirtualDatacenter(template, vdc));
-
-      assertEquals(hardware.getVolumes().size(), 1);
-      assertEquals(hardware.getVolumes().get(0).getSize(), 0F);
    }
 
    private static class MockVirtualMachineTemplateInVirtualDatacenterToHardware implements
