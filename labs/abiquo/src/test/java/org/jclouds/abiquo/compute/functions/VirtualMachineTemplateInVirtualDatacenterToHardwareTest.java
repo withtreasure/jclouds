@@ -129,23 +129,7 @@ public class VirtualMachineTemplateInVirtualDatacenterToHardwareTest {
       VirtualMachineTemplate template = wrap(context, VirtualMachineTemplate.class, new VirtualMachineTemplateDto());
       VirtualDatacenter vdc = wrap(context, VirtualDatacenter.class, new VirtualDatacenterDto());
 
-      new MockVirtualMachineTemplateInVirtualDatacenterToHardware()
-            .apply(new VirtualMachineTemplateInVirtualDatacenter(template, vdc));
-   }
-
-   private static class MockVirtualMachineTemplateInVirtualDatacenterToHardware implements
-         Function<VirtualMachineTemplateInVirtualDatacenter, Hardware> {
-      private Function<VirtualDatacenter, Location> vdcToLocation = mockVirtualDatacenterToLocation();
-
-      private VirtualMachineTemplateInVirtualDatacenterToHardware function = new VirtualMachineTemplateInVirtualDatacenterToHardware(
-            vdcToLocation);
-
-      @Override
-      public Hardware apply(VirtualMachineTemplateInVirtualDatacenter input) {
-         Hardware hw = function.apply(input);
-         verify(vdcToLocation);
-         return hw;
-      }
+      function.apply(new VirtualMachineTemplateInVirtualDatacenter(template, vdc));
    }
 
    @SuppressWarnings("unchecked")

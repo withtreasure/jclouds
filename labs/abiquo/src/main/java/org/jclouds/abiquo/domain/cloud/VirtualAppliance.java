@@ -375,7 +375,7 @@ public class VirtualAppliance extends DomainWrapper<VirtualApplianceDto> {
    }
 
    /**
-    * @deprecated This field will disappear in future versions.
+    * @deprecated This field will be removed in future versions.
     */
    @Deprecated
    public int getHighDisponibility() {
@@ -391,7 +391,7 @@ public class VirtualAppliance extends DomainWrapper<VirtualApplianceDto> {
    }
 
    /**
-    * @deprecated This field will disappear in future versions.
+    * @deprecated This field will be removed in future versions.
     */
    @Deprecated
    public int getPublicApp() {
