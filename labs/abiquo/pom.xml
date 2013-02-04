@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.jclouds</groupId>
         <artifactId>jclouds-project</artifactId>
-        <version>1.6.0-rc.230</version>
+        <version>1.6.0-rc.240</version>
         <relativePath>../../project/pom.xml</relativePath>
     </parent>
     
@@ -15,8 +15,8 @@
     <packaging>bundle</packaging>
     
     <properties>
-        <abiquomodel.version>2.2.0</abiquomodel.version>
-        <abiquoam.version>2.1.2</abiquoam.version>
+        <abiquomodel.version>2.2.1</abiquomodel.version>
+        <abiquoam.version>2.1.3</abiquoam.version>
         <test.abiquo.endpoint>http://localhost/api</test.abiquo.endpoint>
         <test.abiquo.identity>FIXME</test.abiquo.identity>
         <test.abiquo.credential>FIXME</test.abiquo.credential>
