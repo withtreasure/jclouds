@@ -18,12 +18,28 @@
  */
 package org.jclouds.abiquo.domain.cloud;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
+import org.jclouds.abiquo.reference.ValidationErrors;
+import org.jclouds.abiquo.reference.rest.ParentLinkName;
+import org.jclouds.abiquo.rest.internal.ExtendedUtils;
+import org.jclouds.http.HttpResponse;
+import org.jclouds.http.functions.ParseXMLWithJAXB;
 import org.jclouds.rest.RestContext;
 
+import com.abiquo.model.rest.RESTLink;
 import com.abiquo.server.core.cloud.LayerDto;
+import com.abiquo.server.core.cloud.VirtualApplianceDto;
+import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
+import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
+import com.google.inject.TypeLiteral;
 
 /**
  * Abiquo has added layer concept in order to offer Anti Host Affinity
@@ -35,12 +51,41 @@ import com.abiquo.server.core.cloud.LayerDto;
  * @author Susana Acedo
  */
 public class Layer extends DomainWrapper<LayerDto> {
+
    /**
     * Constructor to be used only by the builder. This resource cannot be
     * created.
     */
    private Layer(final RestContext<AbiquoApi, AbiquoAsyncApi> context, final LayerDto target) {
       super(context, target);
+   }
+
+   /**
+    * Creates a new layer.
+    */
+   public void save() {
+      // retrieve the virtual appliance based on the virtual machine link
+      // current approach vm -> vapp required 2 additional HTTP requests
+      RESTLink vmlink = target.searchLink(ParentLinkName.VIRTUAL_MACHINE);
+      checkNotNull(vmlink, ValidationErrors.MISSING_REQUIRED_LINK + VirtualMachine.class);
+
+      vmlink.setType(VirtualMachineWithNodeExtendedDto.MEDIA_TYPE);
+      ExtendedUtils utils = (ExtendedUtils) context.getUtils();
+      HttpResponse response = utils.getAbiquoHttpClient().get(vmlink);
+
+      VirtualMachine vm = wrap(context, VirtualMachine.class, new ParseXMLWithJAXB<VirtualMachineWithNodeExtendedDto>(
+            utils.getXml(), TypeLiteral.get(VirtualMachineWithNodeExtendedDto.class)).apply(response));
+      VirtualApplianceDto vappDto = vm.getVirtualAppliance().unwrap();
+
+      target = context.getApi().getCloudApi().createLayer(vappDto, target);
+   }
+
+   /**
+    * Removes the layer.
+    * */
+   public void delete() {
+      context.getApi().getCloudApi().deleteLayer(target);
+      target = null;
    }
 
    /**
@@ -61,6 +106,8 @@ public class Layer extends DomainWrapper<LayerDto> {
 
       private String name;
 
+      private VirtualMachine virtualMachine;
+
       public Builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context) {
          super();
          this.context = context;
@@ -71,19 +118,36 @@ public class Layer extends DomainWrapper<LayerDto> {
          return this;
       }
 
+      public Builder virtualMachine(final VirtualMachine virtualMachine) {
+         this.virtualMachine = virtualMachine;
+         return this;
+      }
+
       public Layer build() {
+         checkNotNull(virtualMachine, ValidationErrors.NULL_RESOURCE + VirtualMachine.class);
+         checkArgument(!StringUtils.isBlank(name), ValidationErrors.MISSING_REQUIRED_FIELD + "name");
+
          LayerDto dto = new LayerDto();
          dto.setName(name);
-         Layer layer = new Layer(context, dto);
+         dto.addLink(new RESTLink(ParentLinkName.VIRTUAL_MACHINE, virtualMachine.unwrap().getEditLink().getHref()));
+         return new Layer(context, dto);
+      }
+   }
 
-         return layer;
+   public List<VirtualMachine> getVirtualMachines() {
+      ExtendedUtils utils = (ExtendedUtils) context.getUtils();
+      VirtualMachinesWithNodeExtendedDto vms = new VirtualMachinesWithNodeExtendedDto();
+
+      for (RESTLink vmlink : target.searchLinks(ParentLinkName.VIRTUAL_MACHINE)) {
+
+         vmlink.setType(VirtualMachineWithNodeExtendedDto.MEDIA_TYPE);
+         HttpResponse response = utils.getAbiquoHttpClient().get(vmlink);
+
+         vms.add(new ParseXMLWithJAXB<VirtualMachineWithNodeExtendedDto>(utils.getXml(), TypeLiteral
+               .get(VirtualMachineWithNodeExtendedDto.class)).apply(response));
       }
 
-      public static Builder fromLayer(final Layer in) {
-         Builder builder = Layer.builder(in.context).name(in.getName());
-
-         return builder;
-      }
+      return wrap(context, VirtualMachine.class, vms.getCollection());
    }
 
    public String getName() {

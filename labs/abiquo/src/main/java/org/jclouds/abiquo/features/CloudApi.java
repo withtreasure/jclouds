@@ -426,7 +426,6 @@ public interface CloudApi {
    VirtualMachinesWithNodeExtendedDto listAllVirtualMachines();
 
    /**
->>>>>>> 2.4-branch
     * 
     * @param virtualAppliance
     *           The virtual appliance.
@@ -740,6 +739,26 @@ public interface CloudApi {
    /*********************** AntiAffinity ***********************/
 
    /**
+    * Creates a new layer containing a single virtual machine.
+    * 
+    * @param virtualAppliance
+    *           The virtual appliance where the new layer will belong to
+    * 
+    * @param layer
+    *           The layer to be created. It requires a name and *a single*
+    *           virtual machine link
+    */
+   LayerDto createLayer(VirtualApplianceDto virtualAppliance, LayerDto layer);
+
+   /**
+    * Deletes a layer composed of a single virtual machine.
+    * 
+    * @param layer
+    *           The layer to be deleted
+    */
+   Void deleteLayer(LayerDto layer);
+
+   /**
     * Antiaffinity related resource. Returns the list of layers and the set of
     * virtual machines included in these layers
     * 
@@ -763,7 +782,7 @@ public interface CloudApi {
 
    /**
     * Antiaffinity related resource. Modifies virtual machines layer name of a
-    * given layer
+    * given layer.
     * 
     * @param virtualAppliance
     *           The virtual appliance.

@@ -43,6 +43,8 @@ public class ParentLinkName {
 
    public static final String VIRTUAL_MACHINE_TEMPLATE = "virtualmachinetemplate";
 
+   public static final String VIRTUAL_MACHINE = "virtualmachine";
+
    public static final String TEMPLATE_DEFINITION = "templateDefinition";
 
    public static final String DATACENTER_REPOSITORY = "datacenterrepository";
@@ -68,4 +70,6 @@ public class ParentLinkName {
    public final static String NETWORK_GATEWAY = "network_configuration";
 
    public final static String TASK_RESULT = "result";
+
+   public final static String LAYER = "layer";
 }

@@ -24,39 +24,59 @@ import static org.testng.Assert.assertNull;
 
 import java.util.List;
 
+import org.jclouds.abiquo.AbiquoApi;
+import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.internal.BaseAbiquoApiLiveApiTest;
+import org.jclouds.rest.RestContext;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = "api", testName = "LayersLiveApiTest")
 public class LayersLiveApiTest extends BaseAbiquoApiLiveApiTest {
-   private VirtualMachine vm1;
 
-   private VirtualMachine vm2;
+   private Layer l1;
 
-   private VirtualMachine vm3;
+   private Layer l2;
+
+   private VirtualMachine vm_l1;
+
+   private VirtualMachine vmother_l1;
+
+   private VirtualMachine vm_l2;
 
    @BeforeClass
    public void setupLayers() {
-      vm1 = VirtualMachine.Builder.fromVirtualMachine(env.virtualMachine).build();
-      vm1.setLayer("layer1");
-      vm1.save();
 
-      vm2 = VirtualMachine.Builder.fromVirtualMachine(env.virtualMachine).build();
-      vm2.setLayer("layer1");
-      vm2.save();
+      @SuppressWarnings("unchecked")
+      RestContext<AbiquoApi, AbiquoAsyncApi> abqContext = (RestContext<AbiquoApi, AbiquoAsyncApi>) context;
 
-      vm3 = VirtualMachine.Builder.fromVirtualMachine(env.virtualMachine).build();
-      vm3.setLayer("layer2");
-      vm3.save();
+      vm_l1 = VirtualMachine.Builder.fromVirtualMachine(env.virtualMachine).build();
+      vm_l1.save();
+
+      vm_l2 = VirtualMachine.Builder.fromVirtualMachine(env.virtualMachine).build();
+      vm_l2.save();
+
+      l1 = Layer.builder(abqContext).name("layer1").virtualMachine(vm_l1).build();
+      l1.save();
+
+      l2 = Layer.builder(abqContext).name("layer2").virtualMachine(vm_l2).build();
+      l2.save();
+
+      // creates a new virtual machine inside the layer
+      vmother_l1 = VirtualMachine.Builder.fromVirtualMachine(env.virtualMachine).layer(l1).build();
+      vmother_l1.save();
    }
 
    @AfterClass
    public void tearDownLayers() {
-      vm1.delete();
-      vm2.delete();
-      vm3.delete();
+      vmother_l1.delete();
+
+      l1.delete();
+      l2.delete();
+
+      vm_l1.delete();
+      vm_l2.delete();
    }
 
    // Returns layers with its virtualmachines, so in that case we should have
@@ -74,6 +94,11 @@ public class LayersLiveApiTest extends BaseAbiquoApiLiveApiTest {
       assertEquals(layer.getName(), "layer2");
    }
 
+   public void testGetVirtualMachinesInLayer() {
+      assertEquals(l1.getVirtualMachines().size(), 2);
+      assertEquals(l2.getVirtualMachines().size(), 1);
+   }
+
    public void testUpdateLayer() {
       Layer layer = env.virtualAppliance.getLayer("layer2");
       layer.setName("updatedName");
@@ -85,5 +110,4 @@ public class LayersLiveApiTest extends BaseAbiquoApiLiveApiTest {
       Layer old = env.virtualAppliance.getLayer("layer2");
       assertNull(old);
    }
-
 }

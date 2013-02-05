@@ -752,6 +752,23 @@ public interface CloudAsyncApi {
    /*********************** AntiAffinity ***********************/
 
    /**
+    * @see CloudApi#createLayer(VirtualApplianceDto, LayerDto)
+    */
+   @POST
+   @Consumes(LayerDto.MEDIA_TYPE)
+   @Produces(LayerDto.MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<LayerDto> createLayer(
+         @EndpointLink("layers") @BinderParam(BindToPath.class) VirtualApplianceDto virtualAppliance,
+         @BinderParam(BindToXMLPayload.class) LayerDto layer);
+
+   /**
+    * @see CloudApi#deleteLayer(LayerDto)
+    */
+   @DELETE
+   ListenableFuture<Void> deleteLayer(@EndpointLink("edit") @BinderParam(BindToPath.class) LayerDto layer);
+
+   /**
     * @see CloudApi#getLayers(VirtualApplianceDto)
     */
    @GET

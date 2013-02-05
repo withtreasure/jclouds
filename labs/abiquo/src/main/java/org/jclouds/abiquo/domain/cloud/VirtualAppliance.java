@@ -373,6 +373,7 @@ public class VirtualAppliance extends DomainWrapper<VirtualApplianceDto> {
       return target.getError();
    }
 
+   @Deprecated
    public int getHighDisponibility() {
       return target.getHighDisponibility();
    }
@@ -385,6 +386,7 @@ public class VirtualAppliance extends DomainWrapper<VirtualApplianceDto> {
       return target.getName();
    }
 
+   @Deprecated
    public int getPublicApp() {
       return target.getPublicApp();
    }
