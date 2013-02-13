@@ -192,21 +192,6 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    }
 
    /**
-    * Synchronize the last status of the virtual machine.
-    */
-   public void refresh() {
-      RESTLink link = checkNotNull(target.getEditLink(), ValidationErrors.MISSING_REQUIRED_LINK + " edit");
-
-      ExtendedUtils utils = (ExtendedUtils) context.getUtils();
-      HttpResponse response = utils.getAbiquoHttpClient().get(link);
-
-      ParseXMLWithJAXB<VirtualMachineWithNodeExtendedDto> parser = new ParseXMLWithJAXB<VirtualMachineWithNodeExtendedDto>(
-            utils.getXml(), TypeLiteral.get(VirtualMachineWithNodeExtendedDto.class));
-
-      target = parser.apply(response);
-   }
-
-   /**
     * Take a snapshot of the given virtual machine.
     * <p>
     * This will create a new {@link VirtualMachineTemplate} in the appliance
@@ -648,8 +633,8 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
       }
 
       // This methods are used only to build a builder from an existing
-      // VirtualMachine but should
-      // never be used by the user. This fields are set automatically by Abiquo
+      // VirtualMachine but should never be used by the user. This fields are
+      // set automatically by Abiquo
 
       private Builder vncPort(final int vdrpPort) {
          this.vncPort = vdrpPort;
@@ -718,7 +703,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
          dto.setUuid(uuid);
 
          if (layer != null) {
-            dto.addLink(layer.unwrap().getEditLink());
+            dto.addLink(new RESTLink(ParentLinkName.LAYER, layer.unwrap().getEditLink().getHref()));
          }
 
          // DVD

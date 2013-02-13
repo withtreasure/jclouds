@@ -23,7 +23,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
@@ -39,14 +38,15 @@ import com.abiquo.server.core.cloud.LayerDto;
 import com.abiquo.server.core.cloud.VirtualApplianceDto;
 import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
 import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
+import com.google.common.base.Strings;
 import com.google.inject.TypeLiteral;
 
 /**
- * Abiquo has added layer concept in order to offer Anti Host Affinity
+ * Abiquo has added the layer concept in order to offer Anti Host Affinity
  * allocation between virtual machines. That means that one virtual appliance
- * can have different layers, and a virtual machine could belong to a layer (it
- * is not mandatory). Virtual machines with same layer will deploy in different
- * host to assure appliance stability.
+ * can have different layers, and a virtual machine can belong to a layer (it is
+ * not mandatory). Virtual machines with same layer will deploy in different
+ * hosts to provide high availability.
  * 
  * @author Susana Acedo
  */
@@ -64,8 +64,6 @@ public class Layer extends DomainWrapper<LayerDto> {
     * Creates a new layer.
     */
    public void save() {
-      // retrieve the virtual appliance based on the virtual machine link
-      // current approach vm -> vapp required 2 additional HTTP requests
       RESTLink vmlink = target.searchLink(ParentLinkName.VIRTUAL_MACHINE);
       checkNotNull(vmlink, ValidationErrors.MISSING_REQUIRED_LINK + VirtualMachine.class);
 
@@ -82,7 +80,7 @@ public class Layer extends DomainWrapper<LayerDto> {
 
    /**
     * Removes the layer.
-    * */
+    */
    public void delete() {
       context.getApi().getCloudApi().deleteLayer(target);
       target = null;
@@ -114,7 +112,7 @@ public class Layer extends DomainWrapper<LayerDto> {
       }
 
       public Builder name(final String name) {
-         this.name = name;
+         this.name = checkNotNull(name, "name must not be null");
          return this;
       }
 
@@ -125,7 +123,7 @@ public class Layer extends DomainWrapper<LayerDto> {
 
       public Layer build() {
          checkNotNull(virtualMachine, ValidationErrors.NULL_RESOURCE + VirtualMachine.class);
-         checkArgument(!StringUtils.isBlank(name), ValidationErrors.MISSING_REQUIRED_FIELD + "name");
+         checkArgument(!Strings.isNullOrEmpty(name), ValidationErrors.MISSING_REQUIRED_FIELD + "name");
 
          LayerDto dto = new LayerDto();
          dto.setName(name);
@@ -134,14 +132,14 @@ public class Layer extends DomainWrapper<LayerDto> {
       }
    }
 
-   public List<VirtualMachine> getVirtualMachines() {
+   public List<VirtualMachine> listVirtualMachines() {
       ExtendedUtils utils = (ExtendedUtils) context.getUtils();
       VirtualMachinesWithNodeExtendedDto vms = new VirtualMachinesWithNodeExtendedDto();
 
-      for (RESTLink vmlink : target.searchLinks(ParentLinkName.VIRTUAL_MACHINE)) {
-
-         vmlink.setType(VirtualMachineWithNodeExtendedDto.MEDIA_TYPE);
-         HttpResponse response = utils.getAbiquoHttpClient().get(vmlink);
+      List<RESTLink> vmLinks = target.searchLinks(ParentLinkName.VIRTUAL_MACHINE);
+      for (RESTLink vmLink : vmLinks) {
+         vmLink.setType(VirtualMachineWithNodeExtendedDto.MEDIA_TYPE);
+         HttpResponse response = utils.getAbiquoHttpClient().get(vmLink);
 
          vms.add(new ParseXMLWithJAXB<VirtualMachineWithNodeExtendedDto>(utils.getXml(), TypeLiteral
                .get(VirtualMachineWithNodeExtendedDto.class)).apply(response));

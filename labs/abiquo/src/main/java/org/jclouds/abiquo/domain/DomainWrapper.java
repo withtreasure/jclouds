@@ -35,6 +35,9 @@ import org.jclouds.abiquo.domain.task.VirtualMachineTask;
 import org.jclouds.abiquo.domain.task.VirtualMachineTemplateTask;
 import org.jclouds.abiquo.domain.util.LinkUtils;
 import org.jclouds.abiquo.reference.ValidationErrors;
+import org.jclouds.abiquo.rest.internal.ExtendedUtils;
+import org.jclouds.http.HttpResponse;
+import org.jclouds.http.functions.ParseXMLWithJAXB;
 import org.jclouds.rest.RestContext;
 
 import com.abiquo.model.rest.RESTLink;
@@ -45,6 +48,7 @@ import com.abiquo.server.core.task.TaskDto;
 import com.abiquo.server.core.task.enums.TaskType;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.google.inject.TypeLiteral;
 
 /**
  * This class is used to decorate transport objects with high level
@@ -81,6 +85,22 @@ public abstract class DomainWrapper<T extends SingleResourceTransportDto> {
     */
    public T unwrap() {
       return target;
+   }
+
+   /**
+    * Refresh the state of the current object.
+    */
+   @SuppressWarnings("unchecked")
+   public void refresh() {
+      RESTLink link = checkNotNull(LinkUtils.getSelfLink(target), ValidationErrors.MISSING_REQUIRED_LINK + " edit/self");
+
+      ExtendedUtils utils = (ExtendedUtils) context.getUtils();
+      HttpResponse response = utils.getAbiquoHttpClient().get(link);
+
+      ParseXMLWithJAXB<T> parser = new ParseXMLWithJAXB<T>(utils.getXml(),
+            TypeLiteral.get((Class<T>) target.getClass()));
+
+      target = parser.apply(response);
    }
 
    /**
