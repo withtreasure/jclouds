@@ -73,6 +73,7 @@ public abstract class AsyncTask<T extends DomainWrapper<D>, D extends SingleReso
    /**
     * Refresh the state of the task.
     */
+   @Override
    public void refresh() {
       RESTLink self = checkNotNull(target.searchLink("self"), ValidationErrors.MISSING_REQUIRED_LINK + "self");
 
