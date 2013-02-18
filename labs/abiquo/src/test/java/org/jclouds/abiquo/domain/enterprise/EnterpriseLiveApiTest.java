@@ -28,7 +28,6 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.Response.Status;

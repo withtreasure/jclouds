@@ -182,37 +182,6 @@ public class VirtualMachineTemplate extends DomainWrapper<VirtualMachineTemplate
       return getTask(response).asVirtualMachineTemplateTask();
    }
 
-   /**
-    * Creates a new virtual machine template by copy an already existing virtual
-    * machine template instance disk files, the new template won't be an
-    * instance and its not related to the original virtual machine template (you
-    * can delete the instance once the promoted is finished). Conversions are
-    * copied as well.
-    * 
-    * @param promotedName
-    *           Desired name for the new virtual machine template
-    * @return the task to track the progress for the new virtual machine
-    *         template creation process
-    */
-   public AsyncTask promoteToMaster(final String promotedName) {
-
-      RESTLink vmtLink = new RESTLink(ParentLinkName.VIRTUAL_MACHINE_TEMPLATE, target.getEditLink().getHref());
-      Integer repositoryId = target.getIdFromLink(ParentLinkName.DATACENTER_REPOSITORY);
-      Integer enterpriseId = target.getIdFromLink(ParentLinkName.ENTERPRISE);
-      checkNotNull(vmtLink, "virtual machine template edit link");
-      checkNotNull(enterpriseId, "virtual machine template's enterprise link");
-      checkNotNull(repositoryId, "virtual machine template's datacenter repository link");
-
-      VirtualMachineTemplateRequestDto request = new VirtualMachineTemplateRequestDto();
-      request.setPromotedName(promotedName);
-      request.getLinks().add(vmtLink);
-
-      AcceptedRequestDto<String> response = context.getApi().getVirtualMachineTemplateApi()
-            .createVirtualMachineTemplate(enterpriseId, repositoryId, request);
-
-      return getTask(response);
-   }
-
    // Children access
 
    /**

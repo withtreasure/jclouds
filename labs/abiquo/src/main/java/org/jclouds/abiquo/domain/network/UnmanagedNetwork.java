@@ -206,11 +206,6 @@ public class UnmanagedNetwork extends Network<UnmanagedIp> {
          return this;
       }
 
-      public Builder networkServiceType(final NetworkServiceType nst) {
-         this.nst = nst;
-         return this;
-      }
-
       public UnmanagedNetwork build() {
          VLANNetworkDto dto = new VLANNetworkDto();
          dto.setName(name);

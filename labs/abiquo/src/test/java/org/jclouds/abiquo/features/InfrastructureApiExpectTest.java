@@ -20,16 +20,6 @@
 package org.jclouds.abiquo.features;
 
 import static org.testng.Assert.assertEquals;
-
-import java.io.IOException;
-import java.net.URI;
-
-import javax.ws.rs.core.Response.Status;
-
-import org.jclouds.abiquo.AbiquoApi;
-import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
-
-import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 

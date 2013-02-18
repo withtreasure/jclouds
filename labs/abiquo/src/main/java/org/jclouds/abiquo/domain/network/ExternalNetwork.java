@@ -204,11 +204,6 @@ public class ExternalNetwork extends Network<ExternalIp> {
          return this;
       }
 
-      public Builder networkServiceType(final NetworkServiceType nst) {
-         this.nst = nst;
-         return this;
-      }
-
       public ExternalNetwork build() {
          VLANNetworkDto dto = new VLANNetworkDto();
          dto.setName(name);

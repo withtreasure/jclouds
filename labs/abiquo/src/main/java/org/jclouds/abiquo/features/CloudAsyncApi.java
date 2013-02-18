@@ -614,23 +614,10 @@ public interface CloudAsyncApi {
          @EndpointLink("reset") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine);
 
    /**
-    * @see CloudApi#VirtualMachine(VirtualMachineDto, VirtualMachineInstanceDto)
-    */
-   @Named("vm:snapshot")
-   @POST
-   @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
-   @Produces(VirtualMachineInstanceDto.BASE_MEDIA_TYPE)
-   @JAXBResponseParser
-   ListenableFuture<AcceptedRequestDto<String>> snapshotVirtualMachine(
-         @EndpointLink("instance") @BinderParam(BindToPath.class) VirtualMachineDto virtualMachine,
-         @BinderParam(BindToXMLPayload.class) VirtualMachineInstanceDto snapshotConfig);
-
-   /*********************** Virtual Machine Template ***********************/
-
-   /**
     * @see CloudApi#snapshotVirtualMachine(VirtualMachineDto,
     *      VirtualMachineInstanceDto)
     */
+   @Named("vm:snapshot")
    @POST
    @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
    @Produces(VirtualMachineInstanceDto.BASE_MEDIA_TYPE)
@@ -856,9 +843,9 @@ public interface CloudAsyncApi {
     * @see CloudApi#getLayer(VirtualApplianceDto, String)
     */
    @GET
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
    @Consumes(LayerDto.MEDIA_TYPE)
    @JAXBResponseParser
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<LayerDto> getLayer(
          @EndpointLink("layers") @BinderParam(BindToPath.class) VirtualApplianceDto virtualAppliance,
          @BinderParam(AppendToPath.class) String layerName);

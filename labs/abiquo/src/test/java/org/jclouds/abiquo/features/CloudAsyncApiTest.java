@@ -57,7 +57,6 @@ import com.abiquo.server.core.cloud.VirtualAppliancesDto;
 import com.abiquo.server.core.cloud.VirtualDatacenterDto;
 import com.abiquo.server.core.cloud.VirtualDatacentersDto;
 import com.abiquo.server.core.cloud.VirtualMachineDto;
-import com.abiquo.server.core.cloud.VirtualMachineInstanceDto;
 import com.abiquo.server.core.cloud.VirtualMachineStateDto;
 import com.abiquo.server.core.cloud.VirtualMachineTaskDto;
 import com.abiquo.server.core.cloud.VirtualMachineWithNodeExtendedDto;
@@ -923,29 +922,11 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       checkFilters(request);
    }
-   
-   public void testSnapshotVirtualMachine() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("snapshotVirtualMachine", VirtualMachineDto.class,
-            VirtualMachineInstanceDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualMachinePut(),
-            CloudResources.snapshot());
-
-      assertRequestLineEquals(request,
-            "POST http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/action/instance HTTP/1.1");
-      assertNonPayloadHeadersEqual(request, "Accept: " + AcceptedRequestDto.BASE_MEDIA_TYPE + "\n");
-      assertPayloadEquals(request, withHeader(CloudResources.snapshotPayload()), VirtualMachineInstanceDto.class,
-            VirtualMachineInstanceDto.BASE_MEDIA_TYPE, false);
-
-      assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
-      assertSaxResponseParserClassEquals(method, null);
-      assertFallbackClassEquals(method, null);
-
-      checkFilters(request);
-   }
 
    public void testListNetworkConfigurations() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("listNetworkConfigurations", VirtualMachineDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualMachinePut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "listNetworkConfigurations", VirtualMachineDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualMachinePut())));
 
       assertRequestLineEquals(
             request,

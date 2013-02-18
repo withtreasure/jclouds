@@ -23,8 +23,6 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 
-import static org.testng.Assert.assertNotNull;
-
 import java.net.URI;
 
 import org.jclouds.abiquo.AbiquoApi;
@@ -33,11 +31,10 @@ import org.jclouds.http.HttpResponse;
 import org.testng.annotations.Test;
 
 import com.abiquo.model.rest.RESTLink;
+import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.server.core.cloud.LayerDto;
 import com.abiquo.server.core.cloud.LayersDto;
 import com.abiquo.server.core.cloud.VirtualApplianceDto;
-import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
-import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.server.core.cloud.VirtualMachineDto;
 import com.abiquo.server.core.cloud.VirtualMachineInstanceDto;
 import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;

@@ -269,7 +269,7 @@ public abstract class DomainWrapper<T extends SingleResourceTransportDto> {
          case VIRTUAL_MACHINE:
             // A VirtualMachine task can generate a template (if task is an
             // instance)
-            taskClass = dto.getType() == TaskType.SNAPSHOT || dto.getType() == TaskType.INSTANCE_PERSISTENT ? VirtualMachineTemplateTask.class
+            taskClass = dto.getType() == TaskType.INSTANCE || dto.getType() == TaskType.INSTANCE_PERSISTENT ? VirtualMachineTemplateTask.class
                   : VirtualMachineTask.class;
             break;
       }

@@ -31,9 +31,7 @@ import org.jclouds.abiquo.domain.infrastructure.Datacenter;
 import org.jclouds.rest.RestContext;
 
 import com.abiquo.am.model.TemplatesStateDto;
-import com.abiquo.server.core.appslibrary.TemplateDefinitionDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListDto;
-import com.google.common.base.Function;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionsDto;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -120,6 +118,7 @@ public class TemplateDefinitionList extends DomainWrapper<TemplateDefinitionList
     *      TemplateDefinitionListResource-Refreshatemplatedefinitionlistfromtheurl
     *      </a>
     */
+   @Override
    public void refresh() {
       target = context.getApi().getEnterpriseApi().refreshTemplateDefinitionList(target);
    }

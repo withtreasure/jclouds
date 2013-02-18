@@ -21,7 +21,6 @@ package org.jclouds.abiquo.domain;
 
 import static com.google.common.collect.Iterables.filter;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 

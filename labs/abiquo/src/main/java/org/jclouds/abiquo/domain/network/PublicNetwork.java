@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.AbiquoAsyncApi;
-import org.jclouds.abiquo.domain.enterprise.Enterprise;
 import org.jclouds.abiquo.domain.infrastructure.Datacenter;
 import org.jclouds.abiquo.domain.network.options.IpOptions;
 import org.jclouds.abiquo.reference.ValidationErrors;
@@ -160,11 +159,6 @@ public class PublicNetwork extends Network<PublicIp> {
 
       public Builder networkServiceType(final NetworkServiceType networkServiceType) {
          this.networkServiceType = Optional.of(networkServiceType);
-         return this;
-      }
-
-      public Builder networkServiceType(final NetworkServiceType nst) {
-         this.nst = nst;
          return this;
       }
 

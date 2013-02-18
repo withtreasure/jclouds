@@ -212,26 +212,6 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
       return getTask(response).asVirtualMachineTemplateTask();
    }
 
-   /**
-    * Take a snapshot of the given virtual machine.
-    * <p>
-    * This will create a new {@link VirtualMachineTemplate} in the appliance
-    * library based on the given virtual machine.
-    * 
-    * @param snapshotName
-    *           The name of the snapshot.
-    * @return The task reference to the snapshot process.
-    */
-   public VirtualMachineTemplateTask snapshot(final String snapshotName) {
-      VirtualMachineInstanceDto snapshotConfig = new VirtualMachineInstanceDto();
-      snapshotConfig.setInstanceName(snapshotName);
-
-      AcceptedRequestDto<String> response = context.getApi().getCloudApi()
-            .snapshotVirtualMachine(target, snapshotConfig);
-
-      return getTask(response).asVirtualMachineTemplateTask();
-   }
-
    // Parent access
 
    /**
@@ -429,7 +409,7 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
       return setNics(ips != null && !ips.isEmpty() ? ips.get(0).getNetwork() : null, ips, null);
    }
 
-   public VirtualMachineTask setNics(final List<Ip<?, ?>> ips, final List<UnmanagedNetwork> unmanagedNetworks) {
+   public VirtualMachineTask setNics(final List<? extends Ip<?, ?>> ips, final List<UnmanagedNetwork> unmanagedNetworks) {
       // By default the network of the first ip will be used as a gateway
       Network<?> gateway = null;
       if (ips != null && !ips.isEmpty()) {
@@ -441,11 +421,11 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
       return setNics(gateway, ips, unmanagedNetworks);
    }
 
-   public VirtualMachineTask setNics(final Network<?> gatewayNetwork, final List<Ip<?, ?>> ips) {
+   public VirtualMachineTask setNics(final Network<?> gatewayNetwork, final List<? extends Ip<?, ?>> ips) {
       return setNics(gatewayNetwork, ips, null);
    }
 
-   public VirtualMachineTask setNics(final Network<?> gatewayNetwork, final List<Ip<?, ?>> ips,
+   public VirtualMachineTask setNics(final Network<?> gatewayNetwork, final List<? extends Ip<?, ?>> ips,
          final List<UnmanagedNetwork> unmanagedNetworks) {
       // Remove the gateway configuration and the current nics
       Iterables.removeIf(target.getLinks(),

@@ -19,14 +19,11 @@
 
 package org.jclouds.abiquo.features;
 
-import java.util.concurrent.TimeUnit;
-
 import org.jclouds.abiquo.domain.cloud.TemplateDefinition;
 import org.jclouds.abiquo.domain.cloud.VirtualMachineTemplate;
 import org.jclouds.abiquo.domain.cloud.options.ConversionOptions;
 import org.jclouds.abiquo.domain.cloud.options.VirtualMachineTemplateOptions;
 import org.jclouds.abiquo.domain.infrastructure.Datacenter;
-import org.jclouds.concurrent.Timeout;
 
 import com.abiquo.model.enumerator.DiskFormatType;
 import com.abiquo.model.transport.AcceptedRequestDto;
