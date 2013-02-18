@@ -677,6 +677,7 @@ public interface CloudAsyncApi {
    /**
     * @see CloudApi#getVirtualMachineTemplate(VirtualMachineTemplateDto)
     */
+   @Named("vm:gettemplate")
    @GET
    @Consumes(VirtualMachineTemplateDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
