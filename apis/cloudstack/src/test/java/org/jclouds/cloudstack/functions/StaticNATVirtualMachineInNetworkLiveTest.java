@@ -66,7 +66,7 @@ public class StaticNATVirtualMachineInNetworkLiveTest extends NATClientLiveTest 
          vm = VirtualMachineClientLiveTest.createVirtualMachineInNetwork(network,
                defaultTemplateOrPreferredInZone(defaultTemplate, client, network.getZoneId()), client, jobComplete,
                virtualMachineRunning);
-         if (vm.getPassword() != null && !loginCredentials.hasPasswordOption())
+         if (vm.getPassword() != null && loginCredentials.getOptionalPassword() == null)
             loginCredentials = loginCredentials.toBuilder().password(vm.getPassword()).build();
       } catch (NoSuchElementException e) {
          networksDisabled = true;
@@ -108,7 +108,8 @@ public class StaticNATVirtualMachineInNetworkLiveTest extends NATClientLiveTest 
    }
 
    @AfterGroups(groups = "live")
-   protected void tearDown() {
+   @Override
+   protected void tearDownContext() {
       if (rule != null) {
          client.getNATClient().deleteIPForwardingRule(rule.getId());
       }
@@ -118,7 +119,7 @@ public class StaticNATVirtualMachineInNetworkLiveTest extends NATClientLiveTest 
       if (ip != null) {
          client.getAddressClient().disassociateIPAddress(ip.getId());
       }
-      super.tearDown();
+      super.tearDownContext();
    }
 
 }

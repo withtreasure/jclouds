@@ -19,19 +19,21 @@
 
 package org.jclouds.abiquo.rest.internal;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
+import static org.jclouds.reflect.Reflection2.method;
 
+import java.io.IOException;
+
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.abiquo.features.BaseAbiquoAsyncApiTest;
 import org.jclouds.functions.IdentityFunction;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
+import org.jclouds.reflect.Invocation;
 import org.jclouds.rest.internal.GeneratedHttpRequest;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
 import org.testng.annotations.Test;
 
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.server.core.infrastructure.DatacentersDto;
-import com.google.inject.TypeLiteral;
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 
 /**
  * Tests annotation parsing of {@code AbiquoHttpAsyncApi}.
@@ -44,8 +46,8 @@ public class AbiquoHttpAsyncClientTest extends BaseAbiquoAsyncApiTest<AbiquoHttp
       RESTLink link = new RESTLink("edit", "http://foo/bar");
       link.setType(DatacentersDto.BASE_MEDIA_TYPE);
 
-      Method method = AbiquoHttpAsyncClient.class.getMethod("get", RESTLink.class);
-      GeneratedHttpRequest request = processor.createRequest(method, link);
+      Invokable<?, ?> method = method(AbiquoHttpAsyncClient.class, "get", RESTLink.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(link)));
 
       assertRequestLineEquals(request, "GET http://foo/bar HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + DatacentersDto.BASE_MEDIA_TYPE + "\n");
@@ -53,15 +55,8 @@ public class AbiquoHttpAsyncClientTest extends BaseAbiquoAsyncApiTest<AbiquoHttp
 
       assertResponseParserClassEquals(method, request, IdentityFunction.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<AbiquoHttpAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<AbiquoHttpAsyncClient>>() {
-      };
-   }
-
 }

@@ -18,13 +18,14 @@
  */
 package org.jclouds.s3.xml;
 
+import static com.google.common.io.BaseEncoding.base16;
+import static org.jclouds.http.Uris.uriBuilder;
 import static org.jclouds.util.SaxUtils.currentOrNull;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.ws.rs.core.UriBuilder;
+import java.util.regex.Pattern;
 
-import org.jclouds.crypto.CryptoStreams;
+import javax.inject.Inject;
+
 import org.jclouds.date.DateService;
 import org.jclouds.http.functions.ParseSax;
 import org.jclouds.s3.domain.CanonicalUser;
@@ -56,7 +57,6 @@ public class ListBucketHandler extends ParseSax.HandlerWithResult<ListBucketResp
 
    private ObjectMetadataBuilder builder = new ObjectMetadataBuilder();
 
-   private final Provider<UriBuilder> uriBuilders;
    private final DateService dateParser;
 
    private String bucketName;
@@ -66,10 +66,12 @@ public class ListBucketHandler extends ParseSax.HandlerWithResult<ListBucketResp
    private String delimiter;
    private boolean isTruncated;
 
+   /** Some blobs have a non-hex suffix when created by multi-part uploads such Amazon S3. */
+   private static final Pattern MULTIPART_BLOB_ETAG = Pattern.compile("[0-9a-f]+-[0-9]+");
+
    @Inject
-   public ListBucketHandler(DateService dateParser, Provider<UriBuilder> uriBuilders) {
+   public ListBucketHandler(DateService dateParser) {
       this.dateParser = dateParser;
-      this.uriBuilders = uriBuilders;
    }
 
    public ListBucketResponse getResult() {
@@ -96,13 +98,16 @@ public class ListBucketHandler extends ParseSax.HandlerWithResult<ListBucketResp
       } else if (qName.equals("Key")) { // content stuff
          currentKey = currentOrNull(currentText);
          builder.key(currentKey);
-         builder.uri(uriBuilders.get().uri(getRequest().getEndpoint()).path(currentKey).replaceQuery("").build());
+         builder.uri(uriBuilder(getRequest().getEndpoint()).clearQuery().appendPath(currentKey).build());
       } else if (qName.equals("LastModified")) {
          builder.lastModified(dateParser.iso8601DateParse(currentOrNull(currentText)));
       } else if (qName.equals("ETag")) {
          String currentETag = currentOrNull(currentText);
          builder.eTag(currentETag);
-         builder.contentMD5(CryptoStreams.hex(Strings2.replaceAll(currentETag, '"', "")));
+         currentETag = Strings2.replaceAll(currentETag, '"', "");
+         if (!MULTIPART_BLOB_ETAG.matcher(currentETag).matches()) {
+            builder.contentMD5(base16().lowerCase().decode(currentETag));
+         }
       } else if (qName.equals("Size")) {
          builder.contentLength(Long.valueOf(currentOrNull(currentText)));
       } else if (qName.equals("Owner")) {

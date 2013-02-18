@@ -22,11 +22,14 @@ import static org.jclouds.aws.reference.FormParameters.ACTION;
 
 import java.util.Set;
 
+import javax.inject.Named;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
 import org.jclouds.aws.filters.FormSigner;
+import org.jclouds.ec2.EC2Fallbacks.VoidOnVolumeAvailable;
 import org.jclouds.ec2.binders.BindUserGroupsToIndexedFormParams;
 import org.jclouds.ec2.binders.BindUserIdsToIndexedFormParams;
 import org.jclouds.ec2.binders.BindVolumeIdsToIndexedFormParams;
@@ -34,7 +37,6 @@ import org.jclouds.ec2.domain.Attachment;
 import org.jclouds.ec2.domain.Permission;
 import org.jclouds.ec2.domain.Snapshot;
 import org.jclouds.ec2.domain.Volume;
-import org.jclouds.ec2.functions.ReturnVoidOnVolumeAvailable;
 import org.jclouds.ec2.options.CreateSnapshotOptions;
 import org.jclouds.ec2.options.DescribeSnapshotsOptions;
 import org.jclouds.ec2.options.DetachVolumeOptions;
@@ -49,12 +51,11 @@ import org.jclouds.location.functions.RegionToEndpointOrProviderIfNull;
 import org.jclouds.location.functions.ZoneToEndpoint;
 import org.jclouds.rest.annotations.BinderParam;
 import org.jclouds.rest.annotations.EndpointParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.FormParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.VirtualHost;
 import org.jclouds.rest.annotations.XMLResponseParser;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -71,6 +72,7 @@ public interface ElasticBlockStoreAsyncClient {
    /**
     * @see ElasticBlockStoreClient#createVolumeFromSnapshotInAvailabilityZone
     */
+   @Named("CreateVolume")   
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "CreateVolume")
@@ -82,6 +84,7 @@ public interface ElasticBlockStoreAsyncClient {
    /**
     * @see ElasticBlockStoreClient#createVolumeFromSnapshotInAvailabilityZone
     */
+   @Named("CreateVolume")   
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "CreateVolume")
@@ -93,6 +96,7 @@ public interface ElasticBlockStoreAsyncClient {
    /**
     * @see ElasticBlockStoreClient#createVolumeInAvailabilityZone
     */
+   @Named("CreateVolume")   
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "CreateVolume")
@@ -105,6 +109,7 @@ public interface ElasticBlockStoreAsyncClient {
     * @see ElasticBlockStoreClient#describeVolumesInRegion
     */
    @POST
+   @Named("DescribeVolumes")   
    @Path("/")
    @FormParams(keys = ACTION, values = "DescribeVolumes")
    @XMLResponseParser(DescribeVolumesResponseHandler.class)
@@ -115,6 +120,7 @@ public interface ElasticBlockStoreAsyncClient {
    /**
     * @see ElasticBlockStoreClient#deleteVolumeInRegion
     */
+   @Named("DeleteVolume")   
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "DeleteVolume")
@@ -124,16 +130,18 @@ public interface ElasticBlockStoreAsyncClient {
    /**
     * @see ElasticBlockStoreClient#detachVolumeInRegion
     */
+   @Named("DetachVolume")   
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "DetachVolume")
-   @ExceptionParser(ReturnVoidOnVolumeAvailable.class)
+   @Fallback(VoidOnVolumeAvailable.class)
    ListenableFuture<Void> detachVolumeInRegion(@EndpointParam(parser = RegionToEndpointOrProviderIfNull.class) @Nullable String region,
             @FormParam("VolumeId") String volumeId, @FormParam("Force") boolean force, DetachVolumeOptions... options);
 
    /**
     * @see ElasticBlockStoreClient#attachVolumeInRegion
     */
+   @Named("AttachVolume")   
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "AttachVolume")
@@ -146,6 +154,7 @@ public interface ElasticBlockStoreAsyncClient {
    /**
     * @see ElasticBlockStoreClient#createSnapshotInRegion
     */
+   @Named("CreateSnapshot")   
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "CreateSnapshot")
@@ -157,11 +166,12 @@ public interface ElasticBlockStoreAsyncClient {
    /**
     * @see ElasticBlockStoreClient#describeSnapshotsInRegion
     */
+   @Named("DescribeSnapshots")   
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "DescribeSnapshots")
    @XMLResponseParser(DescribeSnapshotsResponseHandler.class)
-   @ExceptionParser(ReturnEmptySetOnNotFoundOr404.class)
+   @Fallback(EmptySetOnNotFoundOr404.class)
    ListenableFuture<? extends Set<Snapshot>> describeSnapshotsInRegion(
             @EndpointParam(parser = RegionToEndpointOrProviderIfNull.class) @Nullable String region,
             DescribeSnapshotsOptions... options);
@@ -169,6 +179,7 @@ public interface ElasticBlockStoreAsyncClient {
    /**
     * @see ElasticBlockStoreClient#deleteSnapshotInRegion
     */
+   @Named("DeleteSnapshot")   
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "DeleteSnapshot")
@@ -179,6 +190,7 @@ public interface ElasticBlockStoreAsyncClient {
    /**
     * @see ElasticBlockStoreClient#addCreateVolumePermissionsToSnapshotInRegion
     */
+   @Named("ModifySnapshotAttribute")   
    @POST
    @Path("/")
    @FormParams(keys = { ACTION, "OperationType", "Attribute" }, values = { "ModifySnapshotAttribute", "add",
@@ -192,6 +204,7 @@ public interface ElasticBlockStoreAsyncClient {
    /**
     * @see ElasticBlockStoreClient#removeCreateVolumePermissionsFromSnapshotInRegion
     */
+   @Named("ModifySnapshotAttribute")   
    @POST
    @Path("/")
    @FormParams(keys = { ACTION, "OperationType", "Attribute" }, values = { "ModifySnapshotAttribute", "remove",
@@ -205,6 +218,7 @@ public interface ElasticBlockStoreAsyncClient {
    /**
     * @see ElasticBlockStoreClient#getCreateVolumePermissionForSnapshotInRegion
     */
+   @Named("DescribeSnapshotAttribute")   
    @POST
    @Path("/")
    @FormParams(keys = { ACTION, "Attribute" }, values = { "DescribeSnapshotAttribute", "createVolumePermission" })
@@ -216,6 +230,7 @@ public interface ElasticBlockStoreAsyncClient {
    /**
     * @see ElasticBlockStoreClient#resetCreateVolumePermissionsOnSnapshotInRegion
     */
+   @Named("ResetSnapshotAttribute")   
    @POST
    @Path("/")
    @FormParams(keys = { ACTION, "Attribute" }, values = { "ResetSnapshotAttribute", "createVolumePermission" })

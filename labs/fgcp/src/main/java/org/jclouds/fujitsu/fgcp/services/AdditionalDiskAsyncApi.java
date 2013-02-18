@@ -18,14 +18,12 @@
  */
 package org.jclouds.fujitsu.fgcp.services;
 
-import java.util.concurrent.TimeUnit;
-
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
-import org.jclouds.concurrent.Timeout;
 import org.jclouds.fujitsu.fgcp.FGCPAsyncApi;
 import org.jclouds.fujitsu.fgcp.binders.BindAlsoToSystemId;
 import org.jclouds.fujitsu.fgcp.compute.functions.SingleElementResponseToElement;
@@ -51,9 +49,9 @@ import com.google.common.util.concurrent.ListenableFuture;
 @QueryParams(keys = RequestParameters.VERSION, values = FGCPAsyncApi.VERSION)
 @PayloadParams(keys = RequestParameters.VERSION, values = FGCPAsyncApi.VERSION)
 @Consumes(MediaType.TEXT_XML)
-@Timeout(duration = 60, timeUnit = TimeUnit.SECONDS)
 public interface AdditionalDiskAsyncApi {
 
+   @Named("GetVDiskStatus")
    @GET
    @JAXBResponseParser
    @QueryParams(keys = "Action", values = "GetVDiskStatus")
@@ -61,6 +59,7 @@ public interface AdditionalDiskAsyncApi {
    ListenableFuture<VDiskStatus> getStatus(
          @BinderParam(BindAlsoToSystemId.class) @QueryParam("vdiskId") String id);
 
+   @Named("GetVDiskAttributes")
    @GET
    @JAXBResponseParser
    @QueryParams(keys = "Action", values = "GetVDiskAttributes")
@@ -68,6 +67,7 @@ public interface AdditionalDiskAsyncApi {
    ListenableFuture<VDisk> get(
          @BinderParam(BindAlsoToSystemId.class) @QueryParam("vdiskId") String id);
 
+   @Named("UpdateVDiskAttribute")
    @GET
    @QueryParams(keys = "Action", values = "UpdateVDiskAttribute")
    ListenableFuture<Void> update(
@@ -75,24 +75,28 @@ public interface AdditionalDiskAsyncApi {
          @QueryParam("attributeName") String name,
          @QueryParam("attributeValue") String value);
 
+   @Named("BackupVDisk")
    @GET
    @JAXBResponseParser
    @QueryParams(keys = "Action", values = "BackupVDisk")
    ListenableFuture<Void> backup(
          @BinderParam(BindAlsoToSystemId.class) @QueryParam("vdiskId") String id);
 
+   @Named("RestoreVDisk")
    @GET
    @JAXBResponseParser
    @QueryParams(keys = "Action", values = "RestoreVDisk")
    ListenableFuture<Void> restore(@QueryParam("vsysId") String systemId,
          @QueryParam("backupId") String backupId);
 
+   @Named("DestroyVDisk")
    @GET
    @JAXBResponseParser
    @QueryParams(keys = "Action", values = "DestroyVDisk")
    ListenableFuture<Void> destroy(
          @BinderParam(BindAlsoToSystemId.class) @QueryParam("vdiskId") String id);
 
+   @Named("DetachVDisk")
    @GET
    @JAXBResponseParser
    @QueryParams(keys = "Action", values = "DetachVDisk")
@@ -100,6 +104,7 @@ public interface AdditionalDiskAsyncApi {
          @BinderParam(BindAlsoToSystemId.class) @QueryParam("vdiskId") String diskId,
          @QueryParam("vserverId") String serverId);
 
+   @Named("DestroyVDiskBackup")
    @GET
    @JAXBResponseParser
    @QueryParams(keys = "Action", values = "DestroyVDiskBackup")

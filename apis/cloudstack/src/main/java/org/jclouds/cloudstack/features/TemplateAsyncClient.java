@@ -20,11 +20,14 @@ package org.jclouds.cloudstack.features;
 
 import java.util.Set;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.cloudstack.binders.BindTemplateMetadataToQueryParams;
 import org.jclouds.cloudstack.domain.AsyncCreateResponse;
 import org.jclouds.cloudstack.domain.ExtractMode;
@@ -41,15 +44,12 @@ import org.jclouds.cloudstack.options.RegisterTemplateOptions;
 import org.jclouds.cloudstack.options.UpdateTemplateOptions;
 import org.jclouds.cloudstack.options.UpdateTemplatePermissionsOptions;
 import org.jclouds.rest.annotations.BinderParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.OnlyElement;
 import org.jclouds.rest.annotations.QueryParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.SelectJson;
-import org.jclouds.rest.annotations.SkipEncoding;
 import org.jclouds.rest.annotations.Unwrap;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -65,12 +65,12 @@ import com.google.common.util.concurrent.ListenableFuture;
  */
 @RequestFilters(AuthenticationFilter.class)
 @QueryParams(keys = "response", values = "json")
-@SkipEncoding(',')
 public interface TemplateAsyncClient {
 
    /**
     * @see TemplateClient#createTemplate
     */
+   @Named("createTemplate")
    @GET
    @QueryParams(keys = "command", values = "createTemplate")
    @Unwrap
@@ -82,6 +82,7 @@ public interface TemplateAsyncClient {
    /**
     * @see TemplateClient#registerTemplate
     */
+   @Named("registerTemplate")
    @GET
    @QueryParams(keys = "command", values = "registerTemplate")
    @SelectJson("template")
@@ -94,6 +95,7 @@ public interface TemplateAsyncClient {
    /**
     * @see TemplateClient#updateTemplate
     */
+   @Named("updateTemplate")
    @GET
    @QueryParams(keys = "command", values = "updateTemplate")
    @SelectJson("template")
@@ -103,6 +105,7 @@ public interface TemplateAsyncClient {
    /**
     * @see TemplateClient#copyTemplate
     */
+   @Named("copyTemplate")
    @GET
    @QueryParams(keys = "command", values = "copyTemplate")
    @Unwrap
@@ -113,6 +116,7 @@ public interface TemplateAsyncClient {
    /**
     * @see TemplateClient#deleteTemplate
     */
+   @Named("deleteTemplate")
    @GET
    @QueryParams(keys = "command", values = "deleteTemplate")
    @Unwrap
@@ -122,38 +126,42 @@ public interface TemplateAsyncClient {
    /**
     * @see TemplateClient#listTemplates
     */
+   @Named("listTemplates")
    @GET
    @QueryParams(keys = { "command", "listAll", "templatefilter" }, values = { "listTemplates", "true", "executable" })
    @SelectJson("template")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnEmptySetOnNotFoundOr404.class)
+   @Fallback(EmptySetOnNotFoundOr404.class)
    ListenableFuture<Set<Template>> listTemplates();
 
    /**
     * @see TemplateClient#listTemplates(ListTemplatesOptions)
     */
+   @Named("listTemplates")
    @GET
    @QueryParams(keys = { "command", "listAll" }, values = { "listTemplates", "true" })
    @SelectJson("template")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnEmptySetOnNotFoundOr404.class)
+   @Fallback(EmptySetOnNotFoundOr404.class)
    ListenableFuture<Set<Template>> listTemplates(ListTemplatesOptions options);
 
    /**
     * @see TemplateClient#getTemplate
     */
+   @Named("listTemplates")
    @GET
    // templatefilter required in at least 2.2.8 version
    @QueryParams(keys = { "command", "listAll", "templatefilter" }, values = { "listTemplates", "true", "executable" })
    @SelectJson("template")
    @OnlyElement
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<Template> getTemplateInZone(@QueryParam("id") String templateId, @QueryParam("zoneid") String zoneId);
 
    /**
     * @see TemplateClient#updateTemplatePermissions
     */
+   @Named("updateTemplatePermissions")
    @GET
    @QueryParams(keys = "command", values = "updateTemplatePermissions")
    ListenableFuture<Void> updateTemplatePermissions(@QueryParam("id") String id,
@@ -162,6 +170,7 @@ public interface TemplateAsyncClient {
    /**
     * @see TemplateClient#listTemplatePermissions
     */
+   @Named("listTemplatePermissions")
    @GET
    @QueryParams(keys = { "command", "listAll" }, values = { "listTemplatePermissions", "true" })
    @Unwrap
@@ -172,6 +181,7 @@ public interface TemplateAsyncClient {
    /**
     * @see TemplateClient#extractTemplate
     */
+   @Named("extractTemplate")
    @GET
    @QueryParams(keys = "command", values = "extractTemplate")
    @Unwrap

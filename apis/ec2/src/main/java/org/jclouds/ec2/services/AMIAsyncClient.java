@@ -23,16 +23,18 @@ import static org.jclouds.aws.reference.FormParameters.ACTION;
 import java.util.Map;
 import java.util.Set;
 
+import javax.inject.Named;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
 import org.jclouds.aws.filters.FormSigner;
 import org.jclouds.ec2.binders.BindUserGroupsToIndexedFormParams;
 import org.jclouds.ec2.binders.BindUserIdsToIndexedFormParams;
 import org.jclouds.ec2.domain.Image;
-import org.jclouds.ec2.domain.Permission;
 import org.jclouds.ec2.domain.Image.EbsBlockDevice;
+import org.jclouds.ec2.domain.Permission;
 import org.jclouds.ec2.options.CreateImageOptions;
 import org.jclouds.ec2.options.DescribeImagesOptions;
 import org.jclouds.ec2.options.RegisterImageBackedByEbsOptions;
@@ -45,12 +47,11 @@ import org.jclouds.javax.annotation.Nullable;
 import org.jclouds.location.functions.RegionToEndpointOrProviderIfNull;
 import org.jclouds.rest.annotations.BinderParam;
 import org.jclouds.rest.annotations.EndpointParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.FormParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.VirtualHost;
 import org.jclouds.rest.annotations.XMLResponseParser;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -67,11 +68,12 @@ public interface AMIAsyncClient {
    /**
     * @see AMIClient#describeImagesInRegion
     */
+   @Named("DescribeImages")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "DescribeImages")
    @XMLResponseParser(DescribeImagesResponseHandler.class)
-   @ExceptionParser(ReturnEmptySetOnNotFoundOr404.class)
+   @Fallback(EmptySetOnNotFoundOr404.class)
    ListenableFuture<Set<? extends Image>> describeImagesInRegion(
             @EndpointParam(parser = RegionToEndpointOrProviderIfNull.class) @Nullable String region,
             DescribeImagesOptions... options);
@@ -79,6 +81,7 @@ public interface AMIAsyncClient {
    /**
     * @see AMIClient#createImageInRegion
     */
+   @Named("CreateImage")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "CreateImage")
@@ -90,6 +93,7 @@ public interface AMIAsyncClient {
    /**
     * @see AMIClient#deregisterImageInRegion
     */
+   @Named("DeregisterImage")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "DeregisterImage")
@@ -100,6 +104,7 @@ public interface AMIAsyncClient {
    /**
     * @see AMIClient#registerImageFromManifestInRegion
     */
+   @Named("RegisterImage")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "RegisterImage")
@@ -112,6 +117,7 @@ public interface AMIAsyncClient {
    /**
     * @see AMIClient#registerUnixImageBackedByEbsInRegion
     */
+   @Named("RegisterImage")
    @POST
    @Path("/")
    @FormParams(keys = { ACTION, "RootDeviceName", "BlockDeviceMapping.0.DeviceName" }, values = { "RegisterImage",
@@ -126,6 +132,7 @@ public interface AMIAsyncClient {
    /**
     * @see AMIClient#resetLaunchPermissionsOnImageInRegion
     */
+   @Named("ResetImageAttribute")
    @POST
    @Path("/")
    @FormParams(keys = { ACTION, "Attribute" }, values = { "ResetImageAttribute", "launchPermission" })
@@ -136,6 +143,7 @@ public interface AMIAsyncClient {
    /**
     * @see AMIClient#addLaunchPermissionsToImageInRegion
     */
+   @Named("ModifyImageAttribute")
    @POST
    @Path("/")
    @FormParams(keys = { ACTION, "OperationType", "Attribute" }, values = { "ModifyImageAttribute", "add",
@@ -149,6 +157,7 @@ public interface AMIAsyncClient {
    /**
     * @see AMIClient#removeLaunchPermissionsToImageInRegion
     */
+   @Named("ModifyImageAttribute")
    @POST
    @Path("/")
    @FormParams(keys = { ACTION, "OperationType", "Attribute" }, values = { "ModifyImageAttribute", "remove",
@@ -162,6 +171,7 @@ public interface AMIAsyncClient {
    /**
     * @see AMIClient#getLaunchPermissionForImageInRegion
     */
+   @Named("DescribeImageAttribute")
    @POST
    @Path("/")
    @FormParams(keys = { ACTION, "Attribute" }, values = { "DescribeImageAttribute", "launchPermission" })
@@ -173,6 +183,7 @@ public interface AMIAsyncClient {
    /**
     * @see AMIClient#getBlockDeviceMappingsForImageInRegion
     */
+   @Named("DescribeImageAttribute")
    @POST
    @Path("/")
    @FormParams(keys = { ACTION, "Attribute" }, values = { "DescribeImageAttribute", "blockDeviceMapping" })

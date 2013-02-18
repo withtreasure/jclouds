@@ -20,6 +20,7 @@ package org.jclouds.openstack.nova.v2_0.extensions;
 
 import java.util.Map;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -29,18 +30,18 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.EmptyFluentIterableOnNotFoundOr404;
+import org.jclouds.Fallbacks.FalseOnNotFoundOr404;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.openstack.keystone.v2_0.filters.AuthenticateRequest;
 import org.jclouds.openstack.nova.v2_0.domain.HostAggregate;
 import org.jclouds.openstack.v2_0.ServiceType;
 import org.jclouds.openstack.v2_0.services.Extension;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.PayloadParam;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.SelectJson;
 import org.jclouds.rest.annotations.WrapWith;
-import org.jclouds.rest.functions.ReturnEmptyFluentIterableOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnFalseOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.google.common.annotations.Beta;
 import com.google.common.collect.FluentIterable;
@@ -61,25 +62,28 @@ public interface HostAggregateAsyncApi {
    /**
     * @see HostAggregateApi#list()
     */
+   @Named("hostaggregate:list")
    @GET
    @SelectJson("aggregates")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnEmptyFluentIterableOnNotFoundOr404.class)
+   @Fallback(EmptyFluentIterableOnNotFoundOr404.class)
    ListenableFuture<? extends FluentIterable<? extends HostAggregate>> list();
 
    /**
     * @see HostAggregateApi#get(String)
     */
+   @Named("hostaggregate:get")
    @GET
    @Path("/{id}")
    @SelectJson("aggregate")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<? extends HostAggregate> get(@PathParam("id") String id);
 
    /**
     * @see HostAggregateApi#createInAvailabilityZone(String, String)
     */
+   @Named("hostaggregate:create")
    @POST
    @SelectJson("aggregate")
    @Consumes(MediaType.APPLICATION_JSON)
@@ -91,6 +95,7 @@ public interface HostAggregateAsyncApi {
    /**
     * @see HostAggregateApi#updateName
     */
+   @Named("hostaggregate:update")
    @POST
    @Path("/{id}")
    @SelectJson("aggregate")
@@ -101,6 +106,7 @@ public interface HostAggregateAsyncApi {
    /**
     * @see HostAggregateApi#updateAvailabilityZone
     */
+   @Named("hostaggregate:update")
    @POST
    @Path("/{id}")
    @SelectJson("aggregate")
@@ -111,15 +117,17 @@ public interface HostAggregateAsyncApi {
    /**
     * @see HostAggregateApi#delete(String)
     */
+   @Named("hostaggregate:delete")
    @DELETE
    @Path("/{id}")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnFalseOnNotFoundOr404.class)
+   @Fallback(FalseOnNotFoundOr404.class)
    ListenableFuture<Boolean> delete(@PathParam("id") String id);
 
    /**
     * @see HostAggregateApi#addHost(String,String)
     */
+   @Named("hostaggregate:addhost")
    @POST
    @Path("/{id}/action")
    @SelectJson("aggregate")
@@ -132,6 +140,7 @@ public interface HostAggregateAsyncApi {
    /**
     * @see HostAggregateApi#removeHost(String,String)
     */
+   @Named("hostaggregate:removehost")
    @POST
    @Path("/{id}/action")
    @SelectJson("aggregate")
@@ -143,6 +152,7 @@ public interface HostAggregateAsyncApi {
    /**
     * @see HostAggregateApi#setMetadata
     */
+   @Named("hostaggregate:setmetadata")
    @POST
    @Path("/{id}/action")
    @SelectJson("aggregate")

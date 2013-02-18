@@ -17,22 +17,22 @@
  * under the License.
  */
 package org.jclouds.vcloud;
-
+import static org.jclouds.reflect.Reflection2.method;
 import static org.testng.Assert.assertEquals;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 
 import org.jclouds.http.HttpRequest;
 import org.jclouds.http.functions.ParseSax;
 import org.jclouds.providers.AnonymousProviderMetadata;
 import org.jclouds.providers.ProviderMetadata;
 import org.jclouds.rest.internal.BaseAsyncClientTest;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.jclouds.vcloud.xml.SupportedVersionsHandler;
 import org.testng.annotations.Test;
 
-import com.google.inject.TypeLiteral;
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 
 /**
  * Tests behavior of {@code VCloudVersionsAsyncClient}
@@ -44,8 +44,8 @@ import com.google.inject.TypeLiteral;
 public class VCloudVersionsAsyncClientTest extends BaseAsyncClientTest<VCloudVersionsAsyncClient> {
 
    public void testVersions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VCloudVersionsAsyncClient.class.getMethod("getSupportedVersions");
-      HttpRequest request = processor.createRequest(method);
+      Invokable<?, ?> method = method(VCloudVersionsAsyncClient.class, "getSupportedVersions");
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.of());
 
       assertEquals(request.getRequestLine(), "GET http://localhost:8080/versions HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
@@ -53,7 +53,7 @@ public class VCloudVersionsAsyncClientTest extends BaseAsyncClientTest<VCloudVer
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, SupportedVersionsHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -61,12 +61,6 @@ public class VCloudVersionsAsyncClientTest extends BaseAsyncClientTest<VCloudVer
    @Override
    protected void checkFilters(HttpRequest request) {
       assertEquals(request.getFilters().size(), 0);
-   }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<VCloudVersionsAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<VCloudVersionsAsyncClient>>() {
-      };
    }
 
    @Override

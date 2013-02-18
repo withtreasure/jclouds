@@ -19,18 +19,19 @@
 package org.jclouds.internal;
 
 import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expect;
+import static org.jclouds.reflect.Reflection2.typeToken;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.fail;
 
+import org.jclouds.domain.Credentials;
 import org.jclouds.lifecycle.Closer;
 import org.jclouds.providers.ProviderMetadata;
 import org.jclouds.rest.Utils;
 import org.testng.annotations.Test;
 
-import com.google.common.base.Objects;
-import com.google.common.reflect.TypeToken;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 
 /** 
  * @author Adrian Cole
@@ -38,57 +39,47 @@ import com.google.common.reflect.TypeToken;
 @Test(groups = "unit", testName = "BaseViewTest")
 public class BaseViewTest {
 
+   static Supplier<Credentials> creds = Suppliers.ofInstance(new Credentials("identity", null));
+
    private static class Water extends ContextImpl {
 
       protected Water() {
-         super("water", createMock(ProviderMetadata.class), "identity", createMock(Utils.class), createMock(Closer.class));
+         super("water", createMock(ProviderMetadata.class), creds, createMock(Utils.class), createMock(Closer.class));
       }
 
-      @Override
       public void close() {
-      }
-      
-      @Override
-      public boolean equals(Object in){
-         return Objects.equal(in.getClass(), getClass());
       }
    }
 
    private static class PeanutButter extends ContextImpl {
 
       protected PeanutButter() {
-         super("peanutbutter", createMock(ProviderMetadata.class), "identity", createMock(Utils.class), createMock(Closer.class));
+         super("peanutbutter", createMock(ProviderMetadata.class), creds, createMock(Utils.class), createMock(Closer.class));
       }
 
-      @Override
       public void close() {
-      }
-      
-      @Override
-      public boolean equals(Object in){
-         return Objects.equal(in.getClass(), getClass());
       }
    }
    
    private static class Wine extends BaseView {
 
       protected Wine() {
-         super(new Water(), TypeToken.of(Water.class));
+         super(new Water(), typeToken(Water.class));
       }
    }
 
    public void testWaterTurnedIntoWine() {
       Wine wine = new Wine();
-      assertEquals(wine.getBackendType(), TypeToken.of(Water.class));
-      assertEquals(wine.unwrap(TypeToken.of(Water.class)), new Water());
-      assertEquals(wine.unwrap(), new Water());
+      assertEquals(wine.getBackendType(), typeToken(Water.class));
+      assertEquals(wine.unwrap(typeToken(Water.class)).getClass(), Water.class);
+      assertEquals(wine.unwrap().getClass(), Water.class);
    }
 
    public void testPeanutButterDidntTurnIntoWine() {
       Wine wine = new Wine();
-      assertNotEquals(wine.getBackendType(), TypeToken.of(PeanutButter.class));
+      assertNotEquals(wine.getBackendType(), typeToken(PeanutButter.class));
       try {
-         wine.unwrap(TypeToken.of(PeanutButter.class));
+         wine.unwrap(typeToken(PeanutButter.class));
          fail();
       } catch (IllegalArgumentException e) {
          assertEquals(e.getMessage(), "backend type: org.jclouds.internal.BaseViewTest$Water not assignable from org.jclouds.internal.BaseViewTest$PeanutButter");

@@ -18,11 +18,8 @@
  */
 package org.jclouds.azure.management.features;
 
-import java.util.concurrent.TimeUnit;
-
 import org.jclouds.azure.management.domain.DeploymentParams;
 import org.jclouds.azure.management.domain.role.PersistentVMRole;
-import org.jclouds.concurrent.Timeout;
 
 /**
  * The Service Management API includes operations for managing the virtual
@@ -32,64 +29,47 @@ import org.jclouds.concurrent.Timeout;
  * @see RoleAsyncApi
  * @author Gerald Pereira, Adrian Cole
  */
-@Timeout(duration = 30, timeUnit = TimeUnit.SECONDS)
 public interface RoleApi {
 
-	// FUUUUUU this is not the good REST call !!! Use getDeployment instead :@
-	 PersistentVMRole getRole(String serviceName, String deploymentName,
-	 String roleName);
+   // TODO: this is not the good REST call !!! Use getDeployment instead :@
+   PersistentVMRole getRole(String serviceName, String deploymentName, String roleName);
 
-	// This is a PaaS REST service !
-	// void addRole(String serviceName, String deploymentName, PersistentVMRole
-	// role);
+   String restartRole(String serviceName, String deploymentName, String roleName);
 
-	// This is a PaaS REST service ! => Delete the deployment instead
-	// void deleteRole(String serviceName, String deploymentName, String
-	// roleName);
+   /**
+    * http://msdn.microsoft.com/en-us/library/jj157194
+    * 
+    * @param serviceName
+    * @param deploymentParams
+    * @return
+    */
+   String createDeployment(String serviceName, DeploymentParams deploymentParams);
 
-	String restartRole(String serviceName, String deploymentName,
-			String roleName);
+   /**
+    * http://msdn.microsoft.com/en-us/library/jj157201
+    * 
+    * @return
+    */
+   String captureRole(String serviceName, String deploymentName, String roleName, String imageName, String imageLabel);
 
-//	@Deprecated
-//	String createVirtualMachineDeployment(String serviceName,
-//			Deployment deployment);
+   /**
+    * http://msdn.microsoft.com/en-us/library/jj157195
+    * 
+    * @param serviceName
+    * @param deploymentName
+    * @param roleName
+    * @return
+    */
+   String shutdownRole(String serviceName, String deploymentName, String roleName);
 
-	/**
-	 * http://msdn.microsoft.com/en-us/library/jj157194
-	 * 
-	 * @param serviceName
-	 * @param deploymentParams
-	 * @return
-	 */
-	String createDeployment(String serviceName,
-			DeploymentParams deploymentParams);
-
-	/**
-	 * http://msdn.microsoft.com/en-us/library/jj157201
-	 * 
-	 * @return
-	 */
-	String captureRole(String serviceName, String deploymentName,
-			String roleName, String imageName, String imageLabel);
-	
-	/**
-	 * http://msdn.microsoft.com/en-us/library/jj157195
-	 * @param serviceName
-	 * @param deploymentName
-	 * @param roleName
-	 * @return
-	 */
-	String shutdownRole(String serviceName, String deploymentName,
-			String roleName);
-	
-	/**
-	 * http://msdn.microsoft.com/en-us/library/jj157189
-	 * @param serviceName
-	 * @param deploymentName
-	 * @param roleName
-	 * @return
-	 */
-	String startRole(String serviceName, String deploymentName,
-			String roleName);
+   /**
+    * http://msdn.microsoft.com/en-us/library/jj157189
+    * 
+    * @param serviceName
+    * @param deploymentName
+    * @param roleName
+    * @return
+    */
+   String startRole(String serviceName, String deploymentName, String roleName);
 
 }

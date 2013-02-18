@@ -18,6 +18,7 @@
  */
 package org.jclouds.openstack.nova.v2_0.extensions;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -27,6 +28,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.EmptyFluentIterableOnNotFoundOr404;
+import org.jclouds.Fallbacks.FalseOnNotFoundOr404;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.openstack.keystone.v2_0.filters.AuthenticateRequest;
 import org.jclouds.openstack.nova.v2_0.binders.BindSecurityGroupRuleToJsonPayload;
 import org.jclouds.openstack.nova.v2_0.domain.Ingress;
@@ -34,16 +38,12 @@ import org.jclouds.openstack.nova.v2_0.domain.SecurityGroup;
 import org.jclouds.openstack.nova.v2_0.domain.SecurityGroupRule;
 import org.jclouds.openstack.v2_0.ServiceType;
 import org.jclouds.openstack.v2_0.services.Extension;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.MapBinder;
 import org.jclouds.rest.annotations.Payload;
 import org.jclouds.rest.annotations.PayloadParam;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.SelectJson;
-import org.jclouds.rest.annotations.SkipEncoding;
-import org.jclouds.rest.functions.ReturnEmptyFluentIterableOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnFalseOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.google.common.annotations.Beta;
 import com.google.common.collect.FluentIterable;
@@ -62,37 +62,39 @@ import com.google.common.util.concurrent.ListenableFuture;
  */
 @Beta
 @Extension(of = ServiceType.COMPUTE, namespace = ExtensionNamespaces.SECURITY_GROUPS)
-@SkipEncoding( { '/', '=' })
 @RequestFilters(AuthenticateRequest.class)
 public interface SecurityGroupAsyncApi {
 
    /**
     * @see SecurityGroupApi#list
     */
+   @Named("securitygroup:list")
    @GET
    @SelectJson("security_groups")
    @Consumes(MediaType.APPLICATION_JSON)
    @Path("/os-security-groups")
-   @ExceptionParser(ReturnEmptyFluentIterableOnNotFoundOr404.class)
+   @Fallback(EmptyFluentIterableOnNotFoundOr404.class)
    ListenableFuture<? extends FluentIterable<? extends SecurityGroup>> list();
 
    /**
     * @see SecurityGroupApi#get
     */
+   @Named("securitygroup:get")
    @GET
    @Path("/os-security-groups/{id}")
    @SelectJson("security_group")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<? extends SecurityGroup> get(@PathParam("id") String id);
 
    /**
     * @see SecurityGroupApi#createWithDescription
     */
+   @Named("securitygroup:create")
    @POST
    @Path("/os-security-groups")
    @SelectJson("security_group")
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    @Consumes(MediaType.APPLICATION_JSON)
    @Produces(MediaType.APPLICATION_JSON)
    @Payload("%7B\"security_group\":%7B\"name\":\"{name}\",\"description\":\"{description}\"%7D%7D")
@@ -102,19 +104,21 @@ public interface SecurityGroupAsyncApi {
    /**
     * @see SecurityGroupApi#delete
     */
+   @Named("securitygroup:delete")
    @DELETE
    @Path("/os-security-groups/{id}")
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(FalseOnNotFoundOr404.class)
    @Consumes(MediaType.APPLICATION_JSON)
    ListenableFuture<Boolean> delete(@PathParam("id") String id);
 
    /**
     * @see SecurityGroupApi#createRuleAllowingCidrBlock
     */
+   @Named("securitygroup:create")
    @POST
    @Path("/os-security-group-rules")
    @SelectJson("security_group_rule")
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    @Consumes(MediaType.APPLICATION_JSON)
    @Produces(MediaType.APPLICATION_JSON)
    @MapBinder(BindSecurityGroupRuleToJsonPayload.class)
@@ -125,10 +129,11 @@ public interface SecurityGroupAsyncApi {
    /**
     * @see SecurityGroupApi#createRuleOnSecurityGroupToCidrBlock
     */
+   @Named("securitygroup:create")
    @POST
    @Path("/os-security-group-rules")
    @SelectJson("security_group_rule")
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    @Consumes(MediaType.APPLICATION_JSON)
    @Produces(MediaType.APPLICATION_JSON)
    @MapBinder(BindSecurityGroupRuleToJsonPayload.class)
@@ -139,9 +144,10 @@ public interface SecurityGroupAsyncApi {
    /**
     * @see SecurityGroupApi#deleteRule
     */
+   @Named("securitygroup:delete")
    @DELETE
    @Path("/os-security-group-rules/{security_group_rule_ID}")
-   @ExceptionParser(ReturnFalseOnNotFoundOr404.class)
+   @Fallback(FalseOnNotFoundOr404.class)
    @Consumes
    ListenableFuture<Boolean> deleteRule(@PathParam("security_group_rule_ID") String security_group_rule_ID);
 

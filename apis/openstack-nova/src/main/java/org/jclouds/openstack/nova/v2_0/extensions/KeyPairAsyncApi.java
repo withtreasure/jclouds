@@ -18,6 +18,7 @@
  */
 package org.jclouds.openstack.nova.v2_0.extensions;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -27,20 +28,22 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.EmptyFluentIterableOnNotFoundOr404;
+import org.jclouds.Fallbacks.FalseOnNotFoundOr404;
 import org.jclouds.openstack.keystone.v2_0.filters.AuthenticateRequest;
+import org.jclouds.openstack.nova.v2_0.binders.BindKeyPairToJsonPayload;
 import org.jclouds.openstack.nova.v2_0.domain.KeyPair;
 import org.jclouds.openstack.nova.v2_0.functions.internal.ParseKeyPairs;
 import org.jclouds.openstack.v2_0.ServiceType;
+import org.jclouds.openstack.v2_0.features.ExtensionAsyncApi;
 import org.jclouds.openstack.v2_0.services.Extension;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
+import org.jclouds.rest.annotations.MapBinder;
 import org.jclouds.rest.annotations.Payload;
 import org.jclouds.rest.annotations.PayloadParam;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.ResponseParser;
 import org.jclouds.rest.annotations.SelectJson;
-import org.jclouds.rest.annotations.SkipEncoding;
-import org.jclouds.rest.functions.ReturnEmptyFluentIterableOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnFalseOnNotFoundOr404;
 
 import com.google.common.annotations.Beta;
 import com.google.common.collect.FluentIterable;
@@ -61,17 +64,18 @@ import com.google.common.util.concurrent.ListenableFuture;
  */
 @Beta
 @Extension(of = ServiceType.COMPUTE, namespace = ExtensionNamespaces.KEYPAIRS)
-@SkipEncoding({ '/', '=' })
 @RequestFilters(AuthenticateRequest.class)
 public interface KeyPairAsyncApi {
 
+   @Named("keypair:list")
    @GET
    @Path("/os-keypairs")
    @ResponseParser(ParseKeyPairs.class)
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnEmptyFluentIterableOnNotFoundOr404.class)
+   @Fallback(EmptyFluentIterableOnNotFoundOr404.class)
    ListenableFuture<? extends FluentIterable<? extends KeyPair>> list();
 
+   @Named("keypair:create")
    @POST
    @Path("/os-keypairs")
    @SelectJson("keypair")
@@ -80,18 +84,20 @@ public interface KeyPairAsyncApi {
    @Payload("%7B\"keypair\":%7B\"name\":\"{name}\"%7D%7D")
    ListenableFuture<? extends KeyPair> create(@PayloadParam("name") String name);
 
+   @Named("keypair:create")
    @POST
    @Path("/os-keypairs")
    @SelectJson("keypair")
    @Consumes(MediaType.APPLICATION_JSON)
    @Produces(MediaType.APPLICATION_JSON)
-   @Payload("%7B\"keypair\":%7B\"name\":\"{name}\",\"public_key\":\"{publicKey}\"%7D%7D")
+   @MapBinder(BindKeyPairToJsonPayload.class)
    ListenableFuture<? extends KeyPair> createWithPublicKey(@PayloadParam("name") String name,
-         @PayloadParam("publicKey") String publicKey);
+         @PayloadParam("public_key") String publicKey);
 
+   @Named("keypair:delete")
    @DELETE
    @Path("/os-keypairs/{name}")
-   @ExceptionParser(ReturnFalseOnNotFoundOr404.class)
+   @Fallback(FalseOnNotFoundOr404.class)
    @Consumes
    ListenableFuture<Boolean> delete(@PathParam("name") String name);
 

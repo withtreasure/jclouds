@@ -22,6 +22,7 @@ import static com.google.common.base.Objects.equal;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Strings.emptyToNull;
 
 import java.util.List;
 import java.util.Map;
@@ -36,12 +37,12 @@ import org.jclouds.ec2.domain.BlockDeviceMapping.MapNewVolumeToDevice;
 import org.jclouds.ec2.domain.BlockDeviceMapping.UnmapDeviceNamed;
 import org.jclouds.javax.annotation.Nullable;
 import org.jclouds.scriptbuilder.domain.Statement;
-import org.jclouds.util.Preconditions2;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.hash.Hashing;
 import com.google.common.primitives.Bytes;
 
 /**
@@ -119,7 +120,8 @@ public class EC2TemplateOptions extends TemplateOptions implements Cloneable {
       if (noKeyPair)
          toString.add("noKeyPair", noKeyPair);
       toString.add("keyPair", keyPair);
-      toString.add("userData", userData);
+      if (userData != null && userData.size() > 0)
+         toString.add("userDataCksum", Hashing.crc32().hashBytes(Bytes.toArray(userData)));
       ImmutableSet<BlockDeviceMapping> mappings = blockDeviceMappings.build();
       if (mappings.size() != 0)
          toString.add("blockDeviceMappings", mappings);
@@ -142,7 +144,7 @@ public class EC2TemplateOptions extends TemplateOptions implements Cloneable {
    public EC2TemplateOptions securityGroups(Iterable<String> groupNames) {
       checkArgument(Iterables.size(groupNames) > 0, "you must specify at least one security group");
       for (String groupId : groupNames)
-         Preconditions2.checkNotEmpty(groupId, "all security groups must be non-empty");
+         checkNotNull(emptyToNull(groupId), "all security groups must be non-empty");
       this.groupNames = ImmutableSet.copyOf(groupNames);
       return this;
    }
@@ -161,10 +163,8 @@ public class EC2TemplateOptions extends TemplateOptions implements Cloneable {
     * Specifies the keypair used to run instances with
     */
    public EC2TemplateOptions keyPair(String keyPair) {
-      checkNotNull(keyPair, "use noKeyPair option to request boot without a keypair");
       checkState(!noKeyPair, "you cannot specify both options keyPair and noKeyPair");
-      Preconditions2.checkNotEmpty(keyPair, "keypair must be non-empty");
-      this.keyPair = keyPair;
+      this.keyPair = checkNotNull(emptyToNull(keyPair), "use noKeyPair option to request boot without a keypair");
       return this;
    }
 

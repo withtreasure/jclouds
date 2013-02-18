@@ -23,15 +23,14 @@ import java.net.URI;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 
-import org.jclouds.rest.annotations.Delegate;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.rest.annotations.EndpointParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.JAXBResponseParser;
 import org.jclouds.rest.annotations.RequestFilters;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 import org.jclouds.vcloud.director.v1_5.domain.network.Network;
 import org.jclouds.vcloud.director.v1_5.filters.AddVCloudAuthorizationAndCookieToRequest;
-import org.jclouds.vcloud.director.v1_5.functions.href.NetworkURNToHref;
+import org.jclouds.vcloud.director.v1_5.functions.URNToHref;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -48,8 +47,8 @@ public interface NetworkAsyncApi {
    @GET
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
-   ListenableFuture<? extends Network> get(@EndpointParam(parser = NetworkURNToHref.class) String networkUrn);
+   @Fallback(NullOnNotFoundOr404.class)
+   ListenableFuture<? extends Network> get(@EndpointParam(parser = URNToHref.class) String networkUrn);
 
    /**
     * @see NetworkApi#get(URI)
@@ -57,16 +56,6 @@ public interface NetworkAsyncApi {
    @GET
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<? extends Network> get(@EndpointParam URI networkHref);
-
-   /**
-    * @return asynchronous access to {@link Metadata.Readable} features
-    */
-   @Delegate
-   MetadataAsyncApi.Readable getMetadataApi(@EndpointParam(parser = NetworkURNToHref.class) String networkUrn);
-
-   @Delegate
-   MetadataAsyncApi.Readable getMetadataApi(@EndpointParam URI networkHref);
-
 }

@@ -42,7 +42,6 @@ import org.xml.sax.Attributes;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.Sets;
-import com.google.inject.Provider;
 
 /**
  * 
@@ -52,21 +51,28 @@ public abstract class BaseReservationHandler<T> extends HandlerForGeneratedReque
 
    protected final DateCodec dateCodec;
    protected final Supplier<String> defaultRegion;
-   protected final Provider<Builder> builderProvider;
 
    @Inject
-   public BaseReservationHandler(DateCodecFactory dateCodecFactory, @Region Supplier<String> defaultRegion,
-            Provider<RunningInstance.Builder> builderProvider) {
+   public BaseReservationHandler(DateCodecFactory dateCodecFactory, @Region Supplier<String> defaultRegion) {
       this.dateCodec = dateCodecFactory.iso8601();
       this.defaultRegion = defaultRegion;
-      this.builderProvider = builderProvider;
-      this.builder = builderProvider.get();
+   }
+
+   protected Builder<?> builder = newBuilder();
+
+   protected Builder<?> newBuilder() {
+      return RunningInstance.builder();
+   }
+
+   protected void inItem() {
+      if (endOfInstanceItem()) {
+         refineBuilderBeforeAddingInstance();
+         instances.add(builder.build());
+         builder = newBuilder();
+      }
    }
 
    protected StringBuilder currentText = new StringBuilder();
-
-   protected Builder builder;
-
    protected int itemDepth;
    protected boolean inInstancesSet;
    protected boolean inProductCodes;
@@ -121,10 +127,7 @@ public abstract class BaseReservationHandler<T> extends HandlerForGeneratedReque
       } else if (equalsOrSuffix(qName, "amiLaunchIndex")) {
          builder.amiLaunchIndex(currentOrNull(currentText));
       } else if (equalsOrSuffix(qName, "dnsName")) {
-         String dnsName = currentOrNull(currentText);
-         // Eucalyptus
-         if (!"0.0.0.0".equals(dnsName))
-            builder.dnsName(dnsName);
+         builder.dnsName(currentOrNull(currentText));
       } else if (equalsOrSuffix(qName, "imageId")) {
          builder.imageId(currentOrNull(currentText));
       } else if (equalsOrSuffix(qName, "instanceId")) {
@@ -152,10 +155,7 @@ public abstract class BaseReservationHandler<T> extends HandlerForGeneratedReque
       } else if (equalsOrSuffix(qName, "platform")) {
          builder.platform(currentOrNull(currentText));
       } else if (equalsOrSuffix(qName, "privateDnsName")) {
-         String privateDnsName = currentOrNull(currentText);
-         // Eucalyptus
-         if (!"0.0.0.0".equals(privateDnsName))
-            builder.privateDnsName(privateDnsName);
+         builder.privateDnsName(currentOrNull(currentText));
       } else if (equalsOrSuffix(qName, "privateIpAddress")) {
          builder.privateIpAddress(currentOrNull(currentText));
       } else if (equalsOrSuffix(qName, "ramdiskId")) {
@@ -187,34 +187,11 @@ public abstract class BaseReservationHandler<T> extends HandlerForGeneratedReque
       currentText = new StringBuilder();
    }
 
-   protected void inItem() {
-      if (endOfInstanceItem()) {
-         refineBuilderBeforeAddingInstance();
-         instances.add(builder.build());
-         builder = builderProvider.get();
-      }
-   }
 
    protected void refineBuilderBeforeAddingInstance() {
       String region = getRequest() != null ? AWSUtils.findRegionInArgsOrNull(getRequest()) : null;
-
-      // Eucalyptus
-      if (builder.getIpAddress() == null && builder.getDnsName() != null && builder.getDnsName().matches(".*[0-9]$")) {
-         builder.ipAddress(builder.getDnsName());
-         builder.dnsName(null);
-      }
-      if (builder.getPrivateIpAddress() == null && builder.getPrivateDnsName() != null
-            && builder.getPrivateDnsName().matches(".*[0-9]$")) {
-         builder.privateIpAddress(builder.getPrivateDnsName());
-         builder.privateDnsName(null);
-      }
-
       builder.region((region == null) ? defaultRegion.get() : region);
       builder.groupNames(groupNames);
-   }
-
-   protected Builder builder() {
-      return builder;
    }
 
    protected boolean endOfInstanceItem() {

@@ -37,8 +37,8 @@ import com.abiquo.server.core.infrastructure.DatacenterDto;
 import com.abiquo.server.core.infrastructure.storage.StoragePoolsDto;
 import com.abiquo.server.core.infrastructure.storage.TierDto;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 
 /**
  * Adds high level functionality to {@link TierDto}. The Tier Resource offers
@@ -104,7 +104,7 @@ public class Tier extends DomainWrapper<TierDto> {
     * @return Filtered list of storage pools in this tier.
     */
    public List<StoragePool> listStoragePools(final Predicate<StoragePool> filter) {
-      return Lists.newLinkedList(filter(listStoragePools(), filter));
+      return ImmutableList.copyOf(filter(listStoragePools(), filter));
    }
 
    /**

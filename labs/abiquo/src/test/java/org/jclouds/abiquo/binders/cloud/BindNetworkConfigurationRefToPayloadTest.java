@@ -21,9 +21,9 @@ package org.jclouds.abiquo.binders.cloud;
 
 import static org.jclouds.abiquo.domain.DomainUtils.withHeader;
 import static org.jclouds.abiquo.util.Assert.assertPayloadEquals;
+import static org.jclouds.reflect.Reflection2.method;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.NoSuchElementException;
 
@@ -33,6 +33,7 @@ import javax.ws.rs.HttpMethod;
 import org.jclouds.abiquo.domain.CloudResources;
 import org.jclouds.abiquo.domain.NetworkResources;
 import org.jclouds.http.HttpRequest;
+import org.jclouds.reflect.Invocation;
 import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.jclouds.xml.internal.JAXBParser;
 import org.testng.annotations.Test;
@@ -41,7 +42,8 @@ import com.abiquo.model.transport.LinksDto;
 import com.abiquo.server.core.cloud.VirtualMachineDto;
 import com.abiquo.server.core.infrastructure.network.VLANNetworkDto;
 import com.google.common.collect.ImmutableList;
-
+import com.google.common.collect.Lists;
+import com.google.common.reflect.Invokable;
 /**
  * Unit tests for the {@link BindNetworkConfigurationRefToPayload} binder.
  * 
@@ -66,9 +68,11 @@ public class BindNetworkConfigurationRefToPayloadTest {
    public void testInvalidNullInput() throws SecurityException, NoSuchMethodException {
       VirtualMachineDto vm = CloudResources.virtualMachinePut();
 
-      Method method = TestNetworkConfig.class.getMethod("withAll", VirtualMachineDto.class, VLANNetworkDto.class);
-      GeneratedHttpRequest request = GeneratedHttpRequest.builder().declaring(TestNetworkConfig.class)
-            .javaMethod(method).args(ImmutableList.<Object> of(vm, null)).method(HttpMethod.GET)
+      Invokable<?, ?> method = method(TestNetworkConfig.class, "withAll", VirtualMachineDto.class,
+            VLANNetworkDto.class);
+      GeneratedHttpRequest request = GeneratedHttpRequest.builder()
+            .invocation(Invocation.create(method, Lists.<Object> newArrayList(vm, null)))
+            .method(HttpMethod.GET)
             .endpoint(URI.create("http://localhost")).build();
 
       BindNetworkConfigurationRefToPayload binder = new BindNetworkConfigurationRefToPayload(new JAXBParser("false"));
@@ -80,9 +84,11 @@ public class BindNetworkConfigurationRefToPayloadTest {
       VirtualMachineDto vm = CloudResources.virtualMachinePut();
       Object network = new Object();
 
-      Method method = TestNetworkConfig.class.getMethod("withAll", VirtualMachineDto.class, VLANNetworkDto.class);
-      GeneratedHttpRequest request = GeneratedHttpRequest.builder().declaring(TestNetworkConfig.class)
-            .javaMethod(method).args(ImmutableList.<Object> of(vm, network)).method(HttpMethod.GET)
+      Invokable<?, ?> method = method(TestNetworkConfig.class, "withAll", VirtualMachineDto.class,
+            VLANNetworkDto.class);
+      GeneratedHttpRequest request = GeneratedHttpRequest.builder()
+            .invocation(Invocation.create(method, ImmutableList.<Object> of(vm, network)))
+            .method(HttpMethod.GET)
             .endpoint(URI.create("http://localhost")).build();
 
       BindNetworkConfigurationRefToPayload binder = new BindNetworkConfigurationRefToPayload(new JAXBParser("false"));
@@ -93,9 +99,11 @@ public class BindNetworkConfigurationRefToPayloadTest {
    public void testBindNetworkConfigurationRefWithoutVirtualMachine() throws SecurityException, NoSuchMethodException {
       VLANNetworkDto network = NetworkResources.privateNetworkPut();
 
-      Method method = TestNetworkConfig.class.getMethod("withoutVirtualMachine", VLANNetworkDto.class);
-      GeneratedHttpRequest request = GeneratedHttpRequest.builder().declaring(TestNetworkConfig.class)
-            .javaMethod(method).args(ImmutableList.<Object> of(network)).method(HttpMethod.GET)
+      Invokable<?, ?> method = method(TestNetworkConfig.class, "withoutVirtualMachine",
+            VLANNetworkDto.class);
+      GeneratedHttpRequest request = GeneratedHttpRequest.builder()
+            .invocation(Invocation.create(method, ImmutableList.<Object> of(network)))
+            .method(HttpMethod.GET)
             .endpoint(URI.create("http://localhost")).build();
 
       BindNetworkConfigurationRefToPayload binder = new BindNetworkConfigurationRefToPayload(new JAXBParser("false"));
@@ -106,9 +114,11 @@ public class BindNetworkConfigurationRefToPayloadTest {
       VirtualMachineDto vm = CloudResources.virtualMachinePut();
       VLANNetworkDto network = NetworkResources.privateNetworkPut();
 
-      Method method = TestNetworkConfig.class.getMethod("withAll", VirtualMachineDto.class, VLANNetworkDto.class);
-      GeneratedHttpRequest request = GeneratedHttpRequest.builder().declaring(TestNetworkConfig.class)
-            .javaMethod(method).args(ImmutableList.<Object> of(vm, network)).method(HttpMethod.GET)
+      Invokable<?, ?> method = method(TestNetworkConfig.class, "withAll", VirtualMachineDto.class,
+            VLANNetworkDto.class);
+      GeneratedHttpRequest request = GeneratedHttpRequest.builder()
+            .invocation(Invocation.create(method, ImmutableList.<Object> of(vm, network)))
+            .method(HttpMethod.GET)
             .endpoint(URI.create("http://localhost")).build();
 
       BindNetworkConfigurationRefToPayload binder = new BindNetworkConfigurationRefToPayload(new JAXBParser("false"));

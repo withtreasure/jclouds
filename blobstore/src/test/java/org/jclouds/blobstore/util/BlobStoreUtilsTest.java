@@ -24,22 +24,21 @@ import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.jclouds.blobstore.util.BlobStoreUtils.createParentIfNeededAsync;
 import static org.jclouds.blobstore.util.BlobStoreUtils.getNameFor;
-import static org.jclouds.blobstore.util.BlobStoreUtils.parseContainerFromPath;
-import static org.jclouds.blobstore.util.BlobStoreUtils.parsePrefixFromPath;
+import static org.jclouds.reflect.Reflection2.method;
 import static org.testng.Assert.assertEquals;
 
 import java.net.URI;
+import java.util.List;
 
 import org.jclouds.blobstore.AsyncBlobStore;
 import org.jclouds.blobstore.domain.Blob;
 import org.jclouds.blobstore.domain.MutableBlobMetadata;
-import org.jclouds.rest.Providers;
+import org.jclouds.reflect.Invocation;
 import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-
 /**
  * Tests behavior of {@code BlobStoreUtils}
  * 
@@ -47,18 +46,6 @@ import com.google.common.collect.Iterables;
  */
 @Test(groups = "unit")
 public class BlobStoreUtilsTest {
-
-   @Test
-   public void testSupportedBlobStoreProviders() {
-      Iterable<String> providers = BlobStoreUtils.getSupportedProviders();
-      assert Iterables.contains(providers, "transient") : providers;
-   }
-
-   @Test
-   public void testSupportedProviders() {
-      Iterable<String> providers = Providers.getSupportedProviders();
-      assert Iterables.contains(providers, "transient") : providers;
-   }
 
    public void testCreateParentIfNeededAsyncNoPath() {
       AsyncBlobStore asyncBlobStore = createMock(AsyncBlobStore.class);
@@ -123,48 +110,26 @@ public class BlobStoreUtilsTest {
    }
 
    public void testGetKeyForAzureS3AndRackspace() {
-
-      GeneratedHttpRequest request = createMock(GeneratedHttpRequest.class);
-
-      expect(request.getEndpoint()).andReturn(
-            URI.create("https://jclouds.blob.core.windows.net/adriancole-blobstore0/five"));
-      expect(request.getArgs()).andReturn(ImmutableList.<Object> of("adriancole-blobstore0", "five")).atLeastOnce();
-
-      replay(request);
-
+      GeneratedHttpRequest request = requestForEndpointAndArgs(
+            "https://jclouds.blob.core.windows.net/adriancole-blobstore0/five",
+            ImmutableList.<Object> of("adriancole-blobstore0", "five"));
       assertEquals(getNameFor(request), "five");
    }
 
    public void testGetKeyForAtmos() {
-
-      GeneratedHttpRequest request = createMock(GeneratedHttpRequest.class);
-
-      expect(request.getEndpoint())
-            .andReturn(
-                  URI.create("https://storage4.clouddrive.com/v1/MossoCloudFS_dc1f419c-5059-4c87-a389-3f2e33a77b22/adriancole-blobstore0/four"));
-      expect(request.getArgs()).andReturn(ImmutableList.<Object> of("adriancole-blobstore0/four")).atLeastOnce();
-
-      replay(request);
-
+      GeneratedHttpRequest request = requestForEndpointAndArgs(
+            "https://storage4.clouddrive.com/v1/MossoCloudFS_dc1f419c-5059-4c87-a389-3f2e33a77b22/adriancole-blobstore0/four",
+            ImmutableList.<Object> of("adriancole-blobstore0/four"));
       assertEquals(getNameFor(request), "four");
    }
 
-   public void testGetContainer() {
-      String container = parseContainerFromPath("foo");
-      assertEquals(container, "foo");
-      container = parseContainerFromPath("foo/");
-      assertEquals(container, "foo");
-      container = parseContainerFromPath("foo/bar");
-      assertEquals(container, "foo");
+   GeneratedHttpRequest requestForEndpointAndArgs(String endpoint, List<Object> args) {
+      try {
+         Invocation invocation = Invocation.create(method(String.class, "toString"), args);
+         return GeneratedHttpRequest.builder().method("POST").endpoint(URI.create(endpoint)).invocation(invocation)
+               .build();
+      } catch (SecurityException e) {
+         throw Throwables.propagate(e);
+      }
    }
-
-   public void testGetPrefix() {
-      String prefix = parsePrefixFromPath("foo");
-      assertEquals(prefix, null);
-      prefix = parsePrefixFromPath("foo/");
-      assertEquals(prefix, null);
-      prefix = parsePrefixFromPath("foo/bar");
-      assertEquals(prefix, "bar");
-   }
-
 }

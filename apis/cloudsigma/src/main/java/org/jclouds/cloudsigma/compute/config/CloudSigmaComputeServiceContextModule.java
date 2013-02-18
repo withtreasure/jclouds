@@ -18,7 +18,8 @@
  */
 package org.jclouds.cloudsigma.compute.config;
 
-import java.util.concurrent.TimeUnit;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.jclouds.util.Predicates2.retry;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -30,7 +31,6 @@ import org.jclouds.cloudsigma.compute.functions.ParseOsFamilyVersion64BitFromIma
 import org.jclouds.cloudsigma.compute.functions.PreinstalledDiskToImage;
 import org.jclouds.cloudsigma.compute.functions.ServerInfoToNodeMetadata;
 import org.jclouds.cloudsigma.compute.functions.ServerInfoToNodeMetadata.DeviceToVolume;
-import org.jclouds.cloudsigma.compute.functions.ServerInfoToNodeMetadata.FindImageForId;
 import org.jclouds.cloudsigma.compute.functions.ServerInfoToNodeMetadata.GetImageIdFromServer;
 import org.jclouds.cloudsigma.compute.options.CloudSigmaTemplateOptions;
 import org.jclouds.cloudsigma.domain.Device;
@@ -47,10 +47,9 @@ import org.jclouds.compute.domain.OsFamilyVersion64Bit;
 import org.jclouds.compute.domain.TemplateBuilder;
 import org.jclouds.compute.domain.Volume;
 import org.jclouds.compute.options.TemplateOptions;
-import org.jclouds.compute.reference.ComputeServiceConstants;
+import org.jclouds.compute.reference.ComputeServiceConstants.Timeouts;
 import org.jclouds.domain.Location;
 import org.jclouds.functions.IdentityFunction;
-import org.jclouds.predicates.RetryablePredicate;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -86,8 +85,6 @@ public class CloudSigmaComputeServiceContextModule extends
       }).to(DeviceToVolume.class);
       bind(new TypeLiteral<Function<Server, String>>() {
       }).to(GetImageIdFromServer.class);
-      bind(new TypeLiteral<Function<String, Image>>() {
-      }).to(FindImageForId.class);
       bind(new TypeLiteral<Function<String, OsFamilyVersion64Bit>>() {
       }).to(ParseOsFamilyVersion64BitFromImageName.class);
       bind(TemplateBuilder.class)
@@ -117,10 +114,8 @@ public class CloudSigmaComputeServiceContextModule extends
 
    @Provides
    @Singleton
-   protected Predicate<DriveInfo> supplyDriveUnclaimed(DriveClaimed driveClaimed,
-         ComputeServiceConstants.Timeouts timeouts) {
-      return new RetryablePredicate<DriveInfo>(Predicates.not(driveClaimed), timeouts.nodeRunning, 1000,
-            TimeUnit.MILLISECONDS);
+   protected Predicate<DriveInfo> supplyDriveUnclaimed(DriveClaimed driveClaimed, Timeouts timeouts) {
+      return retry(Predicates.not(driveClaimed), timeouts.nodeRunning, 1000, MILLISECONDS);
    }
 
    @Provides

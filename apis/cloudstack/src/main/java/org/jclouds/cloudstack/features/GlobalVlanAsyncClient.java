@@ -20,23 +20,24 @@ package org.jclouds.cloudstack.features;
 
 import java.util.Set;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
+import org.jclouds.Fallbacks.VoidOnNotFoundOr404;
 import org.jclouds.cloudstack.domain.VlanIPRange;
 import org.jclouds.cloudstack.filters.AuthenticationFilter;
 import org.jclouds.cloudstack.options.CreateVlanIPRangeOptions;
 import org.jclouds.cloudstack.options.ListVlanIPRangesOptions;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.OnlyElement;
 import org.jclouds.rest.annotations.QueryParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.SelectJson;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnVoidOnNotFoundOr404;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -57,12 +58,13 @@ public interface GlobalVlanAsyncClient {
     * @param id the required IP range.
     * @return the requested IP range.
     */
+   @Named("listVlanIpRanges")
    @GET
    @QueryParams(keys = { "command", "listAll" }, values = { "listVlanIpRanges", "true" })
    @SelectJson("vlaniprange")
    @OnlyElement
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<VlanIPRange> getVlanIPRange(@QueryParam("id") String id);
 
    /**
@@ -71,11 +73,12 @@ public interface GlobalVlanAsyncClient {
     * @param options optional arguments.
     * @return the list of IP ranges that match the criteria.
     */
+   @Named("listVlanIpRanges")
    @GET
    @QueryParams(keys = { "command", "listAll" }, values = { "listVlanIpRanges", "true" })
    @SelectJson("vlaniprange")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnEmptySetOnNotFoundOr404.class)
+   @Fallback(EmptySetOnNotFoundOr404.class)
    ListenableFuture<Set<VlanIPRange>> listVlanIPRanges(ListVlanIPRangesOptions... options);
 
    /**
@@ -86,11 +89,12 @@ public interface GlobalVlanAsyncClient {
     * @param options optional arguments
     * @return the newly-create IP range.
     */
+   @Named("createVlanIpRange")
    @GET
    @QueryParams(keys = "command", values = "createVlanIpRange")
    @SelectJson("vlaniprange")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<VlanIPRange> createVlanIPRange(@QueryParam("startip") String startIP, @QueryParam("endip") String endIP, CreateVlanIPRangeOptions... options);
 
    /**
@@ -98,9 +102,10 @@ public interface GlobalVlanAsyncClient {
     * @param rangeId the id of the VLAN IP range
     * @return void
     */
+   @Named("deleteVlanIpRange")
    @GET
    @QueryParams(keys = "command", values = "deleteVlanIpRange")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnVoidOnNotFoundOr404.class)
+   @Fallback(VoidOnNotFoundOr404.class)
    ListenableFuture<Void> deleteVlanIPRange(@QueryParam("id") String rangeId);
 }

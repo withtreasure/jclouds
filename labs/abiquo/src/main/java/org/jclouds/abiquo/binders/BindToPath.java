@@ -52,7 +52,7 @@ public class BindToPath implements Binder {
       checkArgument(checkNotNull(request, "request") instanceof GeneratedHttpRequest,
             "this binder is only valid for GeneratedHttpRequests");
       GeneratedHttpRequest gRequest = (GeneratedHttpRequest) request;
-      checkState(gRequest.getArgs() != null, "args should be initialized at this point");
+      checkState(gRequest.getInvocation().getArgs() != null, "args should be initialized at this point");
 
       // Update the request URI with the configured link URI
       String newEndpoint = getNewEndpoint(gRequest, input);
@@ -83,8 +83,8 @@ public class BindToPath implements Binder {
     * @return The link to be used to build the request URI.
     */
    static RESTLink getLinkToUse(final GeneratedHttpRequest request, final SingleResourceTransportDto payload) {
-      int argIndex = request.getArgs().indexOf(payload);
-      Annotation[] annotations = request.getJavaMethod().getParameterAnnotations()[argIndex];
+      int argIndex = request.getInvocation().getArgs().indexOf(payload);
+      Annotation[] annotations = request.getInvocation().getInvokable().getParameters().get(argIndex).getAnnotations();
 
       EndpointLink linkName = (EndpointLink) Iterables.find(Arrays.asList(annotations),
             Predicates.instanceOf(EndpointLink.class), null);
@@ -107,7 +107,7 @@ public class BindToPath implements Binder {
     */
    @SuppressWarnings("unchecked")
    static <R extends HttpRequest> R bindToPath(final R request, final String endpoint) {
-      // Preserve current query and matrix parameters
+      // Preserve current query parameters
       String newEndpoint = endpoint + getParameterString(request);
 
       // Replace the URI with the edit link in the DTO
@@ -126,20 +126,13 @@ public class BindToPath implements Binder {
       String endpoint = request.getEndpoint().toString();
 
       int query = endpoint.indexOf('?');
-      int matrix = endpoint.indexOf(';');
 
-      if (query == -1 && matrix == -1) {
+      if (query == -1) {
          // No parameters
          return "";
-      } else if (query != -1 && matrix != -1) {
-         // Both parameter types
-         return endpoint.substring(query < matrix ? query : matrix);
-      } else if (query != -1) {
+      } else {
          // Only request parameters
          return endpoint.substring(query);
-      } else {
-         // Only matrix parameters
-         return endpoint.substring(matrix);
       }
 
    }

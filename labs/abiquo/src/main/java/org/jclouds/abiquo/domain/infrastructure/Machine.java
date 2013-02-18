@@ -51,8 +51,8 @@ import com.abiquo.server.core.infrastructure.MachineStateDto;
 import com.abiquo.server.core.infrastructure.RackDto;
 import com.abiquo.server.core.infrastructure.network.NetworkInterfacesDto;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.inject.TypeLiteral;
 
 /**
@@ -175,7 +175,7 @@ public class Machine extends AbstractPhysicalMachine {
     *         given filter.
     */
    public List<VirtualMachine> listVirtualMachines(final Predicate<VirtualMachine> filter) {
-      return Lists.newLinkedList(filter(listVirtualMachines(), filter));
+      return ImmutableList.copyOf(filter(listVirtualMachines(), filter));
    }
 
    /**
@@ -220,7 +220,7 @@ public class Machine extends AbstractPhysicalMachine {
     *         matching the given filter.
     */
    public List<VirtualMachine> listRemoteVirtualMachines(final Predicate<VirtualMachine> filter) {
-      return Lists.newLinkedList(filter(listVirtualMachines(), filter));
+      return ImmutableList.copyOf(filter(listVirtualMachines(), filter));
    }
 
    /**

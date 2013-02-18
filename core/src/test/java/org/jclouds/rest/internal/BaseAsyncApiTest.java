@@ -35,9 +35,7 @@ import org.testng.annotations.Test;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Binder;
 import com.google.inject.Injector;
-import com.google.inject.Key;
 import com.google.inject.Module;
-import com.google.inject.TypeLiteral;
 
 /**
  * 
@@ -46,9 +44,7 @@ import com.google.inject.TypeLiteral;
 @Test(groups = "unit")
 public abstract class BaseAsyncApiTest<T> extends BaseRestApiTest {
 
-   protected RestAnnotationProcessor<T> processor;
-
-   protected abstract TypeLiteral<RestAnnotationProcessor<T>> createTypeLiteral();
+   protected RestAnnotationProcessor processor;
 
    protected abstract void checkFilters(HttpRequest request);
 
@@ -67,31 +63,31 @@ public abstract class BaseAsyncApiTest<T> extends BaseRestApiTest {
    protected void setupFactory() throws IOException {
       injector = createInjector();
       parserFactory = injector.getInstance(ParseSax.Factory.class);
-      processor = injector.getInstance(Key.get(createTypeLiteral()));
+      processor = injector.getInstance(RestAnnotationProcessor.class);
    }
-   
+
    protected String identity = "identity";
    protected String credential = "credential";
-   
+
    /**
     * @see org.jclouds.providers.Providers#withId
     */
    protected ProviderMetadata createProviderMetadata() {
       return null;
    }
-   
+
    /**
     * @see org.jclouds.apis.Apis#withId
     */
    protected ApiMetadata createApiMetadata() {
       return null;
    }
-   
+
    protected Injector createInjector() {
       ProviderMetadata pm = createProviderMetadata();
 
-      ContextBuilder builder = pm != null ? ContextBuilder.newBuilder(pm) : ContextBuilder
-            .newBuilder(ApiMetadata.class.cast(checkNotNull(createApiMetadata(),
+      ContextBuilder builder = pm != null ? ContextBuilder.newBuilder(pm) : ContextBuilder.newBuilder(ApiMetadata.class
+            .cast(checkNotNull(createApiMetadata(),
                   "either createApiMetadata or createProviderMetadata must be overridden")));
 
       return builder.credentials(identity, credential)

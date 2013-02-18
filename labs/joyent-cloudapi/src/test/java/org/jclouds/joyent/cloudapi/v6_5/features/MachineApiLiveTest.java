@@ -19,24 +19,24 @@
 package org.jclouds.joyent.cloudapi.v6_5.features;
 
 import static com.google.common.base.Predicates.not;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jclouds.util.Predicates2.retry;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.jclouds.compute.domain.ExecResponse;
-import org.jclouds.crypto.SshKeys;
 import org.jclouds.domain.LoginCredentials;
 import org.jclouds.joyent.cloudapi.v6_5.domain.Key;
 import org.jclouds.joyent.cloudapi.v6_5.domain.Machine;
 import org.jclouds.joyent.cloudapi.v6_5.internal.BaseJoyentCloudApiLiveTest;
 import org.jclouds.joyent.cloudapi.v6_5.options.CreateMachineOptions;
 import org.jclouds.joyent.cloudapi.v6_5.reference.Metadata;
-import org.jclouds.predicates.InetSocketAddressConnect;
-import org.jclouds.predicates.RetryablePredicate;
+import org.jclouds.predicates.SocketOpen;
 import org.jclouds.ssh.SshClient;
+import org.jclouds.ssh.SshKeys;
 import org.jclouds.sshj.config.SshjSshClientModule;
 import org.jclouds.util.InetAddresses2;
 import org.testng.annotations.AfterGroups;
@@ -80,7 +80,7 @@ public class MachineApiLiveTest extends BaseJoyentCloudApiLiveTest {
 
    private Map<String, String> key;
    private String fingerprint;
-   private RetryablePredicate<HostAndPort> socketTester;
+   private Predicate<HostAndPort> socketTester;
    private Predicate<Machine> machineRunning;
    private MachineApi api;
    private Machine machine;
@@ -96,15 +96,13 @@ public class MachineApiLiveTest extends BaseJoyentCloudApiLiveTest {
       cloudApiContext.getApi().getKeyApi().create(Key.builder().name(fingerprint).key(key.get("public")).build());
       api = cloudApiContext.getApi().getMachineApiForDatacenter(
             Iterables.get(cloudApiContext.getApi().getConfiguredDatacenters(), 0));
-      socketTester = new RetryablePredicate<HostAndPort>(new InetSocketAddressConnect(), 180, 1, 1, TimeUnit.SECONDS);
-      machineRunning = new RetryablePredicate<Machine>(new Predicate<Machine>() {
-
-         @Override
+      SocketOpen socketOpen = context.utils().injector().getInstance(SocketOpen.class);
+      socketTester = retry(socketOpen, 180, 1, 1, SECONDS);
+      machineRunning = retry(new Predicate<Machine>() {
          public boolean apply(Machine input) {
             return api.get(input.getId()).getState() == Machine.State.RUNNING;
          }
-
-      }, 600, 5, 5, TimeUnit.SECONDS);
+      }, 600, 5, 5, SECONDS);
    }
 
    public void testCreateMachine() {
@@ -151,13 +149,14 @@ public class MachineApiLiveTest extends BaseJoyentCloudApiLiveTest {
       api.delete(machine.getId());
    }
 
-   @Override
+
    @AfterGroups(groups = "live")
-   protected void tearDown() {
+   @Override
+   protected void tearDownContext() {
       if (machine != null)
          api.delete(machine.getId());
       cloudApiContext.getApi().getKeyApi().delete(fingerprint);
-      super.tearDown();
+      super.tearDownContext();
    }
 
    @Override

@@ -43,6 +43,7 @@ import com.google.inject.Module;
 public class SQSApiMetadata extends BaseRestApiMetadata {
    
    public static final TypeToken<RestContext<SQSApi, SQSAsyncApi>> CONTEXT_TOKEN = new TypeToken<RestContext<SQSApi, SQSAsyncApi>>() {
+      private static final long serialVersionUID = 1L;
    };
 
    @Override
@@ -57,7 +58,7 @@ public class SQSApiMetadata extends BaseRestApiMetadata {
    protected SQSApiMetadata(Builder builder) {
       super(builder);
    }
-   
+
    public static Properties defaultProperties() {
       Properties properties = BaseRestApiMetadata.defaultProperties();
       properties.setProperty(CREATE_QUEUE_MAX_RETRIES, "60");
@@ -67,7 +68,7 @@ public class SQSApiMetadata extends BaseRestApiMetadata {
       return properties;
    }
    
-   public static class Builder extends BaseRestApiMetadata.Builder {
+   public static class Builder extends BaseRestApiMetadata.Builder<Builder> {
 
       protected Builder(Class<?> api, Class<?> asyncApi) {
          super(api, asyncApi);
@@ -86,12 +87,10 @@ public class SQSApiMetadata extends BaseRestApiMetadata {
       public SQSApiMetadata build() {
          return new SQSApiMetadata(this);
       }
-      
+
       @Override
-      public Builder fromApiMetadata(ApiMetadata in) {
-         super.fromApiMetadata(in);
+      protected Builder self() {
          return this;
       }
    }
-
 }

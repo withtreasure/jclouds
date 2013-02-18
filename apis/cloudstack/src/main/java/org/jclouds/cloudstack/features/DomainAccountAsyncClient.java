@@ -18,20 +18,21 @@
  */
 package org.jclouds.cloudstack.features;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.cloudstack.domain.Account;
 import org.jclouds.cloudstack.domain.AsyncCreateResponse;
 import org.jclouds.cloudstack.filters.AuthenticationFilter;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.QueryParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.SelectJson;
 import org.jclouds.rest.annotations.Unwrap;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -51,22 +52,24 @@ public interface DomainAccountAsyncClient extends AccountAsyncClient {
    /**
     * @see DomainAccountClient#enableAccount
     */
+   @Named("enableAccount")
    @GET
    @QueryParams(keys = "command", values = "enableAccount")
    @SelectJson("account")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<Account> enableAccount(@QueryParam("account") String accountName, @QueryParam("domainid") String domainId);
 
 
    /**
     * @see DomainAccountAsyncClient#disableAccount
     */
+   @Named("disableAccount")
    @GET
    @QueryParams(keys = "command", values = "disableAccount")
    @Unwrap
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<AsyncCreateResponse> disableAccount(@QueryParam("account") String accountName,
       @QueryParam("domainid") String domainId, @QueryParam("lock") boolean onlyLock);
 

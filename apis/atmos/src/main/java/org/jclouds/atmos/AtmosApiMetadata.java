@@ -17,9 +17,9 @@
  * under the License.
  */
 package org.jclouds.atmos;
-
 import static org.jclouds.blobstore.reference.BlobStoreConstants.PROPERTY_USER_METADATA_PREFIX;
 import static org.jclouds.location.reference.LocationConstants.PROPERTY_REGIONS;
+import static org.jclouds.reflect.Reflection2.typeToken;
 
 import java.net.URI;
 import java.util.Properties;
@@ -36,15 +36,15 @@ import com.google.common.reflect.TypeToken;
 import com.google.inject.Module;
 
 /**
- * Implementation of {@link ApiMetadata} for Rackspace Cloud Files API
+ * Implementation of {@link ApiMetadata} for EMC Atmos API
  * 
  * @author Adrian Cole
  */
 public class AtmosApiMetadata extends BaseRestApiMetadata {
 
    public static final TypeToken<RestContext<AtmosClient, AtmosAsyncClient>> CONTEXT_TOKEN = new TypeToken<RestContext<AtmosClient, AtmosAsyncClient>>() {
+      private static final long serialVersionUID = 1L;
    };
-   
    
    private static Builder builder() {
       return new Builder();
@@ -70,7 +70,7 @@ public class AtmosApiMetadata extends BaseRestApiMetadata {
       return properties;
    }
 
-   public static class Builder extends BaseRestApiMetadata.Builder {
+   public static class Builder extends BaseRestApiMetadata.Builder<Builder> {
       protected Builder() {
          super(AtmosClient.class, AtmosAsyncClient.class);
          id("atmos")
@@ -81,7 +81,7 @@ public class AtmosApiMetadata extends BaseRestApiMetadata {
          .version("1.4.0")
          .defaultEndpoint("https://accesspoint.atmosonline.com")
          .defaultProperties(AtmosApiMetadata.defaultProperties())
-         .view(TypeToken.of(BlobStoreContext.class))
+         .view(typeToken(BlobStoreContext.class))
          .defaultModules(ImmutableSet.<Class<? extends Module>>of(AtmosRestClientModule.class, AtmosBlobStoreContextModule.class));
       }
 
@@ -91,8 +91,7 @@ public class AtmosApiMetadata extends BaseRestApiMetadata {
       }
 
       @Override
-      public Builder fromApiMetadata(ApiMetadata in) {
-         super.fromApiMetadata(in);
+      protected Builder self() {
          return this;
       }
    }

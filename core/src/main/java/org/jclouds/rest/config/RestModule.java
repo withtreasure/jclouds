@@ -18,75 +18,123 @@
  */
 package org.jclouds.rest.config;
 
-import static com.google.common.reflect.Reflection.newProxy;
-import static org.jclouds.Constants.PROPERTY_TIMEOUTS_PREFIX;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Iterables.toArray;
+import static com.google.common.collect.Iterables.transform;
+import static com.google.common.util.concurrent.Atomics.newReference;
+import static org.jclouds.reflect.Reflection2.method;
+import static org.jclouds.reflect.Reflection2.methods;
+import static org.jclouds.rest.config.BinderUtils.bindHttpApi;
 
-import java.lang.reflect.Method;
+import java.net.Proxy;
 import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.inject.Named;
 import javax.inject.Singleton;
-import javax.ws.rs.core.UriBuilder;
 
+import org.jclouds.fallbacks.MapHttp4xxCodesToExceptions;
 import org.jclouds.functions.IdentityFunction;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.http.HttpResponse;
-import org.jclouds.http.TransformingHttpCommand;
-import org.jclouds.http.TransformingHttpCommandExecutorService;
-import org.jclouds.http.TransformingHttpCommandImpl;
 import org.jclouds.http.functions.config.SaxParserModule;
-import org.jclouds.internal.ClassMethodArgs;
 import org.jclouds.internal.FilterStringsBoundToInjectorByName;
 import org.jclouds.json.config.GsonModule;
 import org.jclouds.location.config.LocationModule;
+import org.jclouds.proxy.ProxyForURI;
+import org.jclouds.reflect.Invocation;
 import org.jclouds.rest.AuthorizationException;
 import org.jclouds.rest.HttpAsyncClient;
 import org.jclouds.rest.HttpClient;
 import org.jclouds.rest.binders.BindToJsonPayloadWrappedWith;
-import org.jclouds.rest.internal.AsyncRestClientProxy;
+import org.jclouds.rest.internal.InvokeHttpMethod;
 import org.jclouds.rest.internal.RestAnnotationProcessor;
-import org.jclouds.rest.internal.RestAnnotationProcessor.MethodKey;
-import org.jclouds.rest.internal.SeedAnnotationCache;
-import org.jclouds.util.Maps2;
-import org.jclouds.util.Predicates2;
+import org.jclouds.rest.internal.TransformerForRequest;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import com.google.common.util.concurrent.Atomics;
+import com.google.common.reflect.Invokable;
+import com.google.common.reflect.Parameter;
 import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Key;
 import com.google.inject.Provides;
-import com.google.inject.Scopes;
 import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
-import com.google.inject.name.Names;
-import com.google.inject.util.Types;
-import com.sun.jersey.api.uri.UriBuilderImpl;
 
 public class RestModule extends AbstractModule {
 
    public static final TypeLiteral<Supplier<URI>> URI_SUPPLIER_TYPE = new TypeLiteral<Supplier<URI>>() {
    };
+
    protected final Map<Class<?>, Class<?>> sync2Async;
-   protected final AtomicReference<AuthorizationException> authException = Atomics.newReference();
-   
+   protected final AtomicReference<AuthorizationException> authException = newReference();
+
    public RestModule() {
       this(ImmutableMap.<Class<?>, Class<?>> of());
    }
-   
+
    public RestModule(Map<Class<?>, Class<?>> sync2Async) {
       this.sync2Async = sync2Async;
+   }
+
+   /**
+    * seeds well-known invokables.
+    */
+   @Provides
+   @Singleton
+   protected Cache<Invokable<?, ?>, Invokable<?, ?>> seedKnownSync2AsyncInvokables() {
+      return seedKnownSync2AsyncInvokables(sync2Async);
+   }
+
+   /**
+    * function view of above
+    */
+   @Provides
+   @Singleton
+   protected Function<Invocation, Invocation> sync2async(final Cache<Invokable<?, ?>, Invokable<?, ?>> cache) {
+      return new Function<Invocation, Invocation>() {
+         public Invocation apply(Invocation in) {
+            return Invocation.create(
+                  checkNotNull(cache.getIfPresent(in.getInvokable()), "invokable %s not in %s", in.getInvokable(),
+                        cache), in.getArgs());
+         }
+      };
+   }
+
+   @VisibleForTesting
+   static Cache<Invokable<?, ?>, Invokable<?, ?>> seedKnownSync2AsyncInvokables(Map<Class<?>, Class<?>> sync2Async) {
+      Cache<Invokable<?, ?>, Invokable<?, ?>> sync2AsyncBuilder = CacheBuilder.newBuilder().build();
+      putInvokables(HttpClient.class, HttpAsyncClient.class, sync2AsyncBuilder);
+      for (Map.Entry<Class<?>, Class<?>> entry : sync2Async.entrySet()) {
+         putInvokables(entry.getKey(), entry.getValue(), sync2AsyncBuilder);
+      }
+      return sync2AsyncBuilder;
+   }
+
+   // accessible for ClientProvider
+   public static void putInvokables(Class<?> sync, Class<?> async, Cache<Invokable<?, ?>, Invokable<?, ?>> cache) {
+      for (Invokable<?, ?> invoked : methods(sync)) {
+         Invokable<?, ?> delegatedMethod = method(async, invoked.getName(), getParameterTypes(invoked));
+         checkArgument(delegatedMethod.getExceptionTypes().equals(invoked.getExceptionTypes()),
+               "invoked %s has different typed exceptions than target %s", invoked, delegatedMethod);
+         cache.put(invoked, delegatedMethod);
+      }
+   }
+
+   /**
+    * for portability with {@link Class#getMethod(String, Class...)}
+    */
+   private static Class<?>[] getParameterTypes(Invokable<?, ?> in) {
+      return toArray(transform(checkNotNull(in, "invokable").getParameters(), new Function<Parameter, Class<?>>() {
+         public Class<?> apply(Parameter input) {
+            return input.getType().getRawType();
+         }
+      }), Class.class);
    }
 
    protected void installLocations() {
@@ -95,118 +143,29 @@ public class RestModule extends AbstractModule {
 
    @Override
    protected void configure() {
+      bind(new TypeLiteral<Map<Class<?>, Class<?>>>() {
+      }).toInstance(sync2Async);
       install(new SaxParserModule());
       install(new GsonModule());
+      install(new SetCaller.Module());
       install(new FactoryModuleBuilder().build(BindToJsonPayloadWrappedWith.Factory.class));
+      bind(new TypeLiteral<Function<HttpRequest, Function<HttpResponse, ?>>>() {
+      }).to(TransformerForRequest.class);
+      bind(new TypeLiteral<Function<Invocation, Object>>() {
+      }).to(InvokeHttpMethod.class);
+      bind(new TypeLiteral<org.jclouds.Fallback<Object>>() {
+      }).to(MapHttp4xxCodesToExceptions.class);
+      bind(new TypeLiteral<Function<Invocation, HttpRequest>>() {
+      }).to(RestAnnotationProcessor.class);
       bind(IdentityFunction.class).toInstance(IdentityFunction.INSTANCE);
-      bind(UriBuilder.class).to(UriBuilderImpl.class);
-      bind(AsyncRestClientProxy.Factory.class).to(Factory.class).in(Scopes.SINGLETON);
-      BinderUtils.bindAsyncClient(binder(), HttpAsyncClient.class);
-      BinderUtils.bindClient(binder(), HttpClient.class, HttpAsyncClient.class, ImmutableMap.<Class<?>, Class<?>> of(
-               HttpClient.class, HttpAsyncClient.class));
+      bindHttpApi(binder(), HttpClient.class, HttpAsyncClient.class);
       // this will help short circuit scenarios that can otherwise lock out users
       bind(new TypeLiteral<AtomicReference<AuthorizationException>>() {
       }).toInstance(authException);
       bind(new TypeLiteral<Function<Predicate<String>, Map<String, String>>>() {
       }).to(FilterStringsBoundToInjectorByName.class);
+      bind(new TypeLiteral<Function<URI, Proxy>>() {
+      }).to(ProxyForURI.class);
       installLocations();
    }
-
-   /**
-    * Shared for all types of rest clients. this is read-only in this class, and
-    * currently populated only by {@link SeedAnnotationCache}
-    * 
-    * @see SeedAnnotationCache
-    */
-   @Provides
-   @Singleton
-   protected Cache<MethodKey, Method> delegationMap(){
-      return CacheBuilder.newBuilder().build();
-   }
-
-   @Provides
-   @Singleton
-   @Named("TIMEOUTS")
-   protected Map<String, Long> timeouts(Function<Predicate<String>, Map<String, String>> filterStringsBoundByName) {
-      Map<String, String> stringBoundWithTimeoutPrefix = filterStringsBoundByName.apply(Predicates2.startsWith(PROPERTY_TIMEOUTS_PREFIX));
-      Map<String, Long> longsByName = Maps.transformValues(stringBoundWithTimeoutPrefix, new Function<String, Long>() {
-
-         @Override
-         public Long apply(String input) {
-            return Long.valueOf(String.valueOf(input));
-         }
-
-      });
-      return Maps2.transformKeys(longsByName, new Function<String, String>() {
-
-         @Override
-         public String apply(String input) {
-            return input.replaceFirst(PROPERTY_TIMEOUTS_PREFIX, "");
-         }
-
-      });
-
-   }
-
-   @Provides
-   @Singleton
-   protected LoadingCache<Class<?>, Boolean> seedAnnotationCache(SeedAnnotationCache seedAnnotationCache) {
-      return CacheBuilder.newBuilder().build(seedAnnotationCache);
-   }
-
-   @Provides
-   @Singleton
-   @Named("async")
-   LoadingCache<ClassMethodArgs, Object> provideAsyncDelegateMap(CreateAsyncClientForCaller createAsyncClientForCaller) {
-      return CacheBuilder.newBuilder().build(createAsyncClientForCaller);
-   }
-
-   static class CreateAsyncClientForCaller extends CacheLoader<ClassMethodArgs, Object> {
-      private final Injector injector;
-      private final AsyncRestClientProxy.Factory factory;
-
-      @Inject
-      CreateAsyncClientForCaller(Injector injector, AsyncRestClientProxy.Factory factory) {
-         this.injector = injector;
-         this.factory = factory;
-      }
-
-      @SuppressWarnings( { "unchecked", "rawtypes" })
-      @Override
-      public Object load(final ClassMethodArgs from) {
-         Class clazz = from.getClazz();
-         TypeLiteral typeLiteral = TypeLiteral.get(clazz);
-         RestAnnotationProcessor util = (RestAnnotationProcessor) injector.getInstance(Key.get(TypeLiteral.get(Types
-                  .newParameterizedType(RestAnnotationProcessor.class, clazz))));
-         // cannot use child injectors due to the super coarse guice lock on Singleton
-         util.setCaller(from);
-         LoadingCache<ClassMethodArgs, Object> delegateMap = injector.getInstance(Key.get(
-                  new TypeLiteral<LoadingCache<ClassMethodArgs, Object>>() {
-                  }, Names.named("async")));
-         AsyncRestClientProxy proxy = new AsyncRestClientProxy(injector, factory, util, typeLiteral, delegateMap);
-         injector.injectMembers(proxy);
-         return newProxy(clazz, proxy);
-      }
-   }
-
-   private static class Factory implements AsyncRestClientProxy.Factory {
-      @Inject
-      private TransformingHttpCommandExecutorService executorService;
-
-      @SuppressWarnings( { "unchecked", "rawtypes" })
-      @Override
-      public TransformingHttpCommand<?> create(HttpRequest request, Function<HttpResponse, ?> transformer) {
-         return new TransformingHttpCommandImpl(executorService, request, transformer);
-      }
-
-   }
-
-   @Provides
-   @Singleton
-   @Named("sync")
-   LoadingCache<ClassMethodArgs, Object> provideSyncDelegateMap(CreateClientForCaller createClientForCaller) {
-      createClientForCaller.sync2Async = sync2Async;
-      return CacheBuilder.newBuilder().build(createClientForCaller);
-   }
-
 }

@@ -25,6 +25,7 @@ import static org.jclouds.aws.reference.AWSConstants.PROPERTY_HEADER_TAG;
 import static org.jclouds.blobstore.reference.BlobStoreConstants.DIRECTORY_SUFFIX_FOLDER;
 import static org.jclouds.blobstore.reference.BlobStoreConstants.PROPERTY_BLOBSTORE_DIRECTORY_SUFFIX;
 import static org.jclouds.blobstore.reference.BlobStoreConstants.PROPERTY_USER_METADATA_PREFIX;
+import static org.jclouds.reflect.Reflection2.typeToken;
 import static org.jclouds.s3.reference.S3Constants.PROPERTY_S3_SERVICE_PATH;
 import static org.jclouds.s3.reference.S3Constants.PROPERTY_S3_VIRTUAL_HOST_BUCKETS;
 
@@ -63,18 +64,19 @@ import com.google.inject.Module;
 public class S3ApiMetadata extends BaseRestApiMetadata {
    
    public static final TypeToken<RestContext<? extends S3Client,? extends  S3AsyncClient>> CONTEXT_TOKEN = new TypeToken<RestContext<? extends S3Client,? extends  S3AsyncClient>>() {
+      private static final long serialVersionUID = 1L;
    };
 
    @Override
-   public Builder toBuilder() {
-      return (Builder) new Builder(getApi(), getAsyncApi()).fromApiMetadata(this);
+   public Builder<?> toBuilder() {
+      return new ConcreteBuilder().fromApiMetadata(this);
    }
 
    public S3ApiMetadata() {
-      this(new Builder(S3Client.class, S3AsyncClient.class));
+      this(new ConcreteBuilder());
    }
 
-   protected S3ApiMetadata(Builder builder) {
+   protected S3ApiMetadata(Builder<?> builder) {
       super(builder);
    }
 
@@ -91,7 +93,10 @@ public class S3ApiMetadata extends BaseRestApiMetadata {
       return properties;
    }
    
-   public static class Builder extends BaseRestApiMetadata.Builder {
+   public static abstract class Builder<T extends Builder<T>> extends BaseRestApiMetadata.Builder<T> {
+      protected Builder() {
+         this(S3Client.class, S3AsyncClient.class);
+      }
 
       protected Builder(Class<?> syncClient, Class<?> asyncClient){
          super(syncClient, asyncClient);
@@ -104,7 +109,7 @@ public class S3ApiMetadata extends BaseRestApiMetadata {
          .version(S3AsyncClient.VERSION)
          .defaultProperties(S3ApiMetadata.defaultProperties())
          .context(CONTEXT_TOKEN)
-         .view(TypeToken.of(S3BlobStoreContext.class))
+         .view(typeToken(S3BlobStoreContext.class))
          .defaultModules(ImmutableSet.<Class<? extends Module>>of(S3RestClientModule.class, S3BlobStoreContextModule.class));
       }
 
@@ -112,12 +117,12 @@ public class S3ApiMetadata extends BaseRestApiMetadata {
       public ApiMetadata build() {
          return new S3ApiMetadata(this);
       }
-
+   }
+   
+   private static class ConcreteBuilder extends Builder<ConcreteBuilder> {
       @Override
-      public Builder fromApiMetadata(ApiMetadata in) {
-         super.fromApiMetadata(in);
+      protected ConcreteBuilder self() {
          return this;
       }
    }
-
 }

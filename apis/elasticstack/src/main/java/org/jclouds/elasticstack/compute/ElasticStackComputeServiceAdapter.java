@@ -21,13 +21,10 @@ package org.jclouds.elasticstack.compute;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.notNull;
-import static com.google.common.collect.Iterables.filter;
 import static org.jclouds.concurrent.FutureIterables.transformParallel;
 import static org.jclouds.elasticstack.util.Servers.small;
 
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
 import javax.annotation.Resource;
 import javax.inject.Inject;
@@ -35,6 +32,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.jclouds.Constants;
+import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.ComputeServiceAdapter;
 import org.jclouds.compute.domain.Hardware;
 import org.jclouds.compute.domain.HardwareBuilder;
@@ -57,16 +55,18 @@ import org.jclouds.elasticstack.domain.ServerStatus;
 import org.jclouds.elasticstack.domain.WellKnownImage;
 import org.jclouds.elasticstack.reference.ElasticStackConstants;
 import org.jclouds.logging.Logger;
-import org.jclouds.util.Iterables2;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 /**
@@ -82,7 +82,7 @@ public class ElasticStackComputeServiceAdapter implements
    private final Map<String, WellKnownImage> preinstalledImages;
    private final LoadingCache<String, DriveInfo> cache;
    private final String defaultVncPassword;
-   private final ExecutorService executor;
+   private final ListeningExecutorService userExecutor;
 
    @Resource
    @Named(ComputeServiceConstants.COMPUTE_LOGGER)
@@ -92,14 +92,14 @@ public class ElasticStackComputeServiceAdapter implements
    public ElasticStackComputeServiceAdapter(ElasticStackClient client, Predicate<DriveInfo> driveNotClaimed,
          Map<String, WellKnownImage> preinstalledImages, LoadingCache<String, DriveInfo> cache,
          @Named(ElasticStackConstants.PROPERTY_VNC_PASSWORD) String defaultVncPassword,
-         @Named(Constants.PROPERTY_USER_THREADS) ExecutorService executor) {
+         @Named(Constants.PROPERTY_USER_THREADS) ListeningExecutorService userExecutor) {
       this.client = checkNotNull(client, "client");
       this.driveNotClaimed = checkNotNull(driveNotClaimed, "driveNotClaimed");
       this.preinstalledImages = checkNotNull(preinstalledImages, "preinstalledImages");
       this.cache = checkNotNull(cache, "cache");
       this.defaultVncPassword = checkNotNull(defaultVncPassword, "defaultVncPassword");
       checkArgument(defaultVncPassword.length() <= 8, "vnc passwords should be less that 8 characters!");
-      this.executor = checkNotNull(executor, "executor");
+      this.userExecutor = checkNotNull(userExecutor, "userExecutor");
    }
 
    @Override
@@ -163,11 +163,11 @@ public class ElasticStackComputeServiceAdapter implements
     */
    @Override
    public Iterable<DriveInfo> listImages() {
-      Iterable<? extends DriveInfo> drives = transformParallel(preinstalledImages.keySet(),
-            new Function<String, Future<? extends DriveInfo>>() {
+      return FluentIterable.from(transformParallel(preinstalledImages.keySet(),
+            new Function<String, ListenableFuture<? extends DriveInfo>>() {
 
                @Override
-               public Future<? extends DriveInfo> apply(String input) {
+               public ListenableFuture<? extends DriveInfo> apply(String input) {
                   try {
                      return Futures.immediateFuture(cache.getUnchecked(input));
                   } catch (CacheLoader.InvalidCacheLoadException e) {
@@ -183,8 +183,7 @@ public class ElasticStackComputeServiceAdapter implements
                   return "seedDriveCache()";
                }
 
-            }, executor, null, logger, "drives");
-      return Iterables2.concreteCopy(filter(drives, notNull()));
+            }, userExecutor, null, logger, "drives")).filter(notNull());
    }
 
    @SuppressWarnings("unchecked")

@@ -18,10 +18,10 @@
  */
 package org.jclouds.vcloud.internal;
 
+import static org.jclouds.reflect.Reflection2.method;
 import static org.testng.Assert.assertEquals;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URI;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -32,17 +32,17 @@ import org.jclouds.location.Provider;
 import org.jclouds.providers.AnonymousProviderMetadata;
 import org.jclouds.providers.ProviderMetadata;
 import org.jclouds.rest.internal.BaseAsyncClientTest;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.jclouds.vcloud.endpoints.VCloudLogin;
 import org.jclouds.vcloud.functions.ParseLoginResponseFromHeaders;
 import org.testng.annotations.Test;
 
 import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Provides;
-import com.google.inject.TypeLiteral;
-
 /**
  * Tests behavior of {@code VCloudLoginAsyncClient}
  * 
@@ -53,8 +53,8 @@ import com.google.inject.TypeLiteral;
 public class VCloudLoginAsyncClientTest extends BaseAsyncClientTest<VCloudLoginAsyncClient> {
 
    public void testLogin() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VCloudLoginAsyncClient.class.getMethod("login");
-      HttpRequest request = processor.createRequest(method);
+      Invokable<?, ?> method = method(VCloudLoginAsyncClient.class, "login");
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.of());
 
       assertEquals(request.getRequestLine(), "POST http://localhost:8080/login HTTP/1.1");
       assertNonPayloadHeadersEqual(request, HttpHeaders.ACCEPT + ": application/vnd.vmware.vcloud.orgList+xml\n");
@@ -62,7 +62,7 @@ public class VCloudLoginAsyncClientTest extends BaseAsyncClientTest<VCloudLoginA
 
       assertResponseParserClassEquals(method, request, ParseLoginResponseFromHeaders.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -71,12 +71,6 @@ public class VCloudLoginAsyncClientTest extends BaseAsyncClientTest<VCloudLoginA
    protected void checkFilters(HttpRequest request) {
       assertEquals(request.getFilters().size(), 1);
       assertEquals(request.getFilters().get(0).getClass(), BasicAuthentication.class);
-   }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<VCloudLoginAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<VCloudLoginAsyncClient>>() {
-      };
    }
 
    @Override

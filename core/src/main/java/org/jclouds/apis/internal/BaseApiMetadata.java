@@ -32,6 +32,7 @@ import static org.jclouds.Constants.PROPERTY_SCHEDULER_THREADS;
 import static org.jclouds.Constants.PROPERTY_SESSION_INTERVAL;
 import static org.jclouds.Constants.PROPERTY_SO_TIMEOUT;
 import static org.jclouds.Constants.PROPERTY_USER_THREADS;
+import static org.jclouds.reflect.Reflection2.typeToken;
 
 import java.net.URI;
 import java.util.Properties;
@@ -42,8 +43,8 @@ import org.jclouds.View;
 import org.jclouds.apis.ApiMetadata;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Optional;
 import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Module;
@@ -76,55 +77,56 @@ public abstract class BaseApiMetadata implements ApiMetadata {
       return props;
    }
    
-   public static class Builder implements ApiMetadata.Builder {
-      protected String id;
-      protected String name;
-      protected Set<TypeToken<? extends View>> views = ImmutableSet.of();
-      protected String endpointName = "https endpoint";
-      protected String identityName;
-      protected Optional<String> credentialName = Optional.absent();
-      protected String version = "";
-      protected Optional<String> buildVersion = Optional.of("");
-      protected Optional<String> defaultEndpoint = Optional.absent();
-      protected Optional<String> defaultIdentity = Optional.absent();
-      protected Optional<String> defaultCredential = Optional.absent();
-      protected Properties defaultProperties = BaseApiMetadata.defaultProperties();
-      protected URI documentation;
-      //
-      protected TypeToken<? extends Context> context = TypeToken.of(Context.class);
-      protected Set<Class<? extends Module>> defaultModules = ImmutableSet.of();
+   public static abstract class Builder<T extends Builder<T>> implements ApiMetadata.Builder<T> {
+      protected abstract T self();
+
+      private String id;
+      private String name;
+      private Set<TypeToken<? extends View>> views = ImmutableSet.of();
+      private String endpointName = "https endpoint";
+      private String identityName;
+      private Optional<String> credentialName = Optional.absent();
+      private String version = "";
+      private Optional<String> buildVersion = Optional.of("");
+      private Optional<String> defaultEndpoint = Optional.absent();
+      private Optional<String> defaultIdentity = Optional.absent();
+      private Optional<String> defaultCredential = Optional.absent();
+      private Properties defaultProperties = BaseApiMetadata.defaultProperties();
+      private URI documentation;
+      private TypeToken<? extends Context> context = typeToken(Context.class);
+      private Set<Class<? extends Module>> defaultModules = ImmutableSet.of();
 
       /**
        * {@inheritDoc}
        */
       @Override
-      public Builder id(String id) {
+      public T id(String id) {
          this.id = checkNotNull(id, "id");
-         return this;
+         return self();
       }
 
       /**
        * {@inheritDoc}
        */
       @Override
-      public Builder name(String name) {
+      public T name(String name) {
          this.name = checkNotNull(name, "name");
-         return this;
+         return self();
       }
       
       /**
        * {@inheritDoc}
        */
       @Override
-      public Builder view(Class<? extends View> view) {
-         return view(TypeToken.of(checkNotNull(view, "view")));
+      public T view(Class<? extends View> view) {
+         return view(typeToken(checkNotNull(view, "view")));
       }
       
       /**
        * {@inheritDoc}
        */
       @Override
-      public Builder view(TypeToken<? extends View> view) {
+      public T view(TypeToken<? extends View> view) {
          return views(ImmutableSet.<TypeToken<? extends View>>of(checkNotNull(view, "view")));
       }
       
@@ -132,115 +134,115 @@ public abstract class BaseApiMetadata implements ApiMetadata {
        * {@inheritDoc}
        */
       @Override
-      public Builder views(Set<TypeToken<? extends View>> views) {
+      public T views(Set<TypeToken<? extends View>> views) {
          this.views = ImmutableSet.copyOf(checkNotNull(views, "views"));
-         return this;
+         return self();
       }
 
       /**
        * {@inheritDoc}
        */
       @Override
-      public Builder endpointName(String endpointName) {
+      public T endpointName(String endpointName) {
          this.endpointName = checkNotNull(endpointName, "endpointName");
-         return this;
+         return self();
       }
 
       /**
        * {@inheritDoc}
        */
       @Override
-      public Builder identityName(String identityName) {
+      public T identityName(String identityName) {
          this.identityName = checkNotNull(identityName, "identityName");
-         return this;
+         return self();
       }
 
       /**
        * {@inheritDoc}
        */
       @Override
-      public Builder credentialName(String credentialName) {
+      public T credentialName(String credentialName) {
          this.credentialName = Optional.fromNullable(credentialName);
-         return this;
+         return self();
       }
 
       /**
        * {@inheritDoc}
        */
       @Override
-      public Builder version(String version) {
+      public T version(String version) {
          this.version = checkNotNull(version, "version");
-         return this;
+         return self();
       }
 
       /**
        * {@inheritDoc}
        */
       @Override
-      public Builder buildVersion(String buildVersion) {
+      public T buildVersion(String buildVersion) {
          this.buildVersion = Optional.fromNullable(buildVersion);
-         return this;
+         return self();
       }
 
       /**
        * {@inheritDoc}
        */
       @Override
-      public Builder defaultEndpoint(String defaultEndpoint) {
+      public T defaultEndpoint(String defaultEndpoint) {
          this.defaultEndpoint = Optional.fromNullable(defaultEndpoint);
-         return this;
+         return self();
       }
 
       /**
        * {@inheritDoc}
        */
       @Override
-      public Builder defaultIdentity(String defaultIdentity) {
+      public T defaultIdentity(String defaultIdentity) {
          this.defaultIdentity = Optional.fromNullable(defaultIdentity);
-         return this;
+         return self();
       }
 
       /**
        * {@inheritDoc}
        */
       @Override
-      public Builder defaultCredential(String defaultCredential) {
+      public T defaultCredential(String defaultCredential) {
          this.defaultCredential = Optional.fromNullable(defaultCredential);
-         return this;
+         return self();
       }
 
       /**
        * {@inheritDoc}
        */
       @Override
-      public Builder defaultProperties(Properties defaultProperties) {
+      public T defaultProperties(Properties defaultProperties) {
          this.defaultProperties = checkNotNull(defaultProperties, "defaultProperties");
-         return this;
+         return self();
       }
 
       /**
        * {@inheritDoc}
        */
       @Override
-      public Builder documentation(URI documentation) {
+      public T documentation(URI documentation) {
          this.documentation = checkNotNull(documentation, "documentation");
-         return this;
+         return self();
       }
 
       /**
        * {@inheritDoc}
        */
       @Override
-      public Builder context(TypeToken<? extends Context> context) {
+      public T context(TypeToken<? extends Context> context) {
          this.context = checkNotNull(context, "context");
-         return this;
+         return self();
       }
 
       /**
        * {@inheritDoc}
        */
       @Override
-      public Builder defaultModule(Class<? extends Module> defaultModule) {
+      public T defaultModule(Class<? extends Module> defaultModule) {
          return defaultModules(ImmutableSet.<Class<? extends Module>>of(checkNotNull(defaultModule, "defaultModule")));
       }
       
@@ -248,12 +250,12 @@ public abstract class BaseApiMetadata implements ApiMetadata {
        * {@inheritDoc}
        */
       @Override
-      public Builder defaultModules(Set<Class<? extends Module>> defaultModules) {
+      public T defaultModules(Set<Class<? extends Module>> defaultModules) {
          this.defaultModules = ImmutableSet.copyOf(checkNotNull(defaultModules, "defaultModules"));
-         return this;
+         return self();
       }
 
-      public Builder fromApiMetadata(ApiMetadata in) {
+      public T fromApiMetadata(ApiMetadata in) {
          return id(in.getId()).views(in.getViews()).name(in.getName()).endpointName(in.getEndpointName()).identityName(
                   in.getIdentityName()).credentialName(in.getCredentialName().orNull()).version(in.getVersion())
                   .buildVersion(in.getBuildVersion().orNull()).defaultEndpoint(in.getDefaultEndpoint().orNull())
@@ -261,39 +263,32 @@ public abstract class BaseApiMetadata implements ApiMetadata {
                            in.getDefaultCredential().orNull()).defaultProperties(in.getDefaultProperties())
                   .documentation(in.getDocumentation()).context(in.getContext()).defaultModules(in.getDefaultModules());
       }
-
-      @Override
-      public ApiMetadata build() {
-         return new BaseApiMetadata(this) {
-         };
-      }
-
    }
 
-   protected final String id;
-   protected final String name;
-   protected final Set<TypeToken<? extends View>> views;
-   protected final String endpointName;
-   protected final String identityName;
-   protected final Optional<String> credentialName;
-   protected final String version;
-   protected final Optional<String> buildVersion;
-   protected final Optional<String> defaultEndpoint;
-   protected final Optional<String> defaultIdentity;
-   protected final Optional<String> defaultCredential;
-   protected final Properties defaultProperties;
-   protected final URI documentation;
-   protected final TypeToken<? extends Context> context;
-   protected final Set<Class<? extends Module>> defaultModules;
+   private final String id;
+   private final String name;
+   private final Set<TypeToken<? extends View>> views;
+   private final String endpointName;
+   private final String identityName;
+   private final Optional<String> credentialName;
+   private final String version;
+   private final Optional<String> buildVersion;
+   private final Optional<String> defaultEndpoint;
+   private final Optional<String> defaultIdentity;
+   private final Optional<String> defaultCredential;
+   private final Properties defaultProperties;
+   private final URI documentation;
+   private final TypeToken<? extends Context> context;
+   private final Set<Class<? extends Module>> defaultModules;
 
-   protected BaseApiMetadata(Builder builder) {
+   protected BaseApiMetadata(Builder<?> builder) {
       this(builder.id, builder.name, builder.views, builder.endpointName, builder.identityName, builder.credentialName,
                builder.version, builder.buildVersion, builder.defaultEndpoint, builder.defaultIdentity,
                builder.defaultCredential, builder.defaultProperties, builder.documentation, builder.context,
                builder.defaultModules);
    }
 
-   public BaseApiMetadata(String id, String name, Set<TypeToken<? extends View>> views, String endpointName, String identityName,
+   protected BaseApiMetadata(String id, String name, Set<TypeToken<? extends View>> views, String endpointName, String identityName, // NO_UCD (use private)
             Optional<String> credentialName, String version, Optional<String> buildVersion,
             Optional<String> defaultEndpoint, Optional<String> defaultIdentity, Optional<String> defaultCredential,
             Properties defaultProperties, URI documentation, TypeToken<? extends Context> context,
@@ -462,11 +457,6 @@ public abstract class BaseApiMetadata implements ApiMetadata {
    @Override
    public Set<Class<? extends Module>> getDefaultModules() {
       return defaultModules;
-   }
-
-   @Override
-   public Builder toBuilder() {
-      return new Builder().fromApiMetadata(this);
    }
 
 }

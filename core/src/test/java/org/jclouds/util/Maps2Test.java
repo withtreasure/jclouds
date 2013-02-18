@@ -18,11 +18,7 @@
  */
 package org.jclouds.util;
 
-import static com.google.common.base.Functions.constant;
-import static com.google.common.base.Functions.identity;
-import static com.google.common.collect.Sets.newHashSet;
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
 
 import java.util.Map;
 
@@ -30,24 +26,12 @@ import org.testng.annotations.Test;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 /**
  * @author Adrian Cole
  */
 @Test(groups = "unit")
 public class Maps2Test {
-   public void testRenameKeyWhenNotFound() {
-      Map<String, String> nothing = ImmutableMap.of();
-      assertEquals(Maps2.renameKey(nothing, "foo", "bar"), nothing);
-   }
-
-   public void testRenameKeyWhenFound() {
-      Map<String, String> nothing = ImmutableMap.of("foo", "bar");
-      assertEquals(Maps2.renameKey(nothing, "foo", "bar"), ImmutableMap.of("bar", "bar"));
-   }
 
    public void testTransformKeys() {
       Map<String, String> map = ImmutableMap.of("prefix:foo", "bar");
@@ -60,45 +44,4 @@ public class Maps2Test {
 
       }), ImmutableMap.of("foo", "bar"));
    }
-
-   public void testFromKeysEmptyKeys() {
-       assertTrue(Maps2.fromKeys(ImmutableSet.of(), identity()).isEmpty(),
-               "Expected returned map to be empty");
-   }
-   
-   @Test(expectedExceptions = { NullPointerException.class })
-   public void testFromKeysNullKey() {
-       Maps2.fromKeys(newHashSet((Object) null), constant("const"));
-   }
-   
-   public void testFromKeys() {
-       // ImmutableMap doesn't support null values
-       Map<String, String> expected = Maps.newHashMap();
-       expected.put("foo", "foo");
-       expected.put("bar", "foo");
-       expected.put("baz", null);
-
-       assertEquals(Maps2.fromKeys(ImmutableSet.of("foo", "bar", "baz"),
-           new Function<String, String>() {
-                @Override
-                public String apply(String input) {
-                    return (input.equals("baz") ? null : "foo");
-                }
-            }), expected);
-   }
-   
-   @Test
-   public void testCovariantUniqueIndex() {
-      Iterable<Integer> values = Lists.newArrayList(1, 2, 3, 4, 5);
-      Map<Number, Number> map = Maps2.<Number, Number>uniqueIndex(values, new Function<Object, Double>() {
-
-         @Override
-         public Double apply(Object input) {
-            return (Integer)input + 0.1;
-         }
-      });
-      
-      assertEquals(map.get(1.1), 1);
-   }
-   
 }

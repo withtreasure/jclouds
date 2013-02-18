@@ -18,6 +18,7 @@
  */
 package org.jclouds.openstack.cinder.v1.features;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -27,18 +28,18 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.EmptyFluentIterableOnNotFoundOr404;
+import org.jclouds.Fallbacks.FalseOnNotFoundOr404;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.openstack.cinder.v1.domain.Volume;
 import org.jclouds.openstack.cinder.v1.options.CreateVolumeOptions;
 import org.jclouds.openstack.keystone.v2_0.filters.AuthenticateRequest;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.MapBinder;
 import org.jclouds.rest.annotations.PayloadParam;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.SelectJson;
 import org.jclouds.rest.annotations.SkipEncoding;
-import org.jclouds.rest.functions.ReturnEmptyFluentIterableOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnFalseOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.google.common.collect.FluentIterable;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -56,36 +57,40 @@ public interface VolumeAsyncApi {
    /**
     * @see VolumeApi#list()
     */
+   @Named("volume:list")
    @GET
    @Path("/volumes")
    @SelectJson("volumes")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnEmptyFluentIterableOnNotFoundOr404.class)
+   @Fallback(EmptyFluentIterableOnNotFoundOr404.class)
    ListenableFuture<? extends FluentIterable<? extends Volume>> list();
 
    /**
     * @see VolumeApi#listInDetail()
     */
+   @Named("volume:list")
    @GET
    @Path("/volumes/detail")
    @SelectJson("volumes")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnEmptyFluentIterableOnNotFoundOr404.class)
+   @Fallback(EmptyFluentIterableOnNotFoundOr404.class)
    ListenableFuture<? extends FluentIterable<? extends Volume>> listInDetail();
 
    /**
     * @see VolumeApi#get(String)
     */
+   @Named("volume:get")
    @GET
    @Path("/volumes/{id}")
    @SelectJson("volume")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<? extends Volume> get(@PathParam("id") String volumeId);
 
    /**
     * @see VolumeApi#create(int, CreateVolumeOptions...)
     */
+   @Named("volume:create")
    @POST
    @Path("/volumes")
    @SelectJson("volume")
@@ -97,9 +102,10 @@ public interface VolumeAsyncApi {
    /**
     * @see VolumeApi#delete(String)
     */
+   @Named("volume:delete")
    @DELETE
    @Path("/volumes/{id}")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnFalseOnNotFoundOr404.class)
+   @Fallback(FalseOnNotFoundOr404.class)
    ListenableFuture<Boolean> delete(@PathParam("id") String volumeId);
 }

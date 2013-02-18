@@ -18,10 +18,12 @@
  */
 package org.jclouds.iam.features;
 
+import javax.inject.Named;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.aws.filters.FormSigner;
 import org.jclouds.collect.IterableWithMarker;
 import org.jclouds.collect.PagedIterable;
@@ -30,13 +32,12 @@ import org.jclouds.iam.functions.UsersToPagedIterable;
 import org.jclouds.iam.options.ListUsersOptions;
 import org.jclouds.iam.xml.ListUsersResultHandler;
 import org.jclouds.iam.xml.UserHandler;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.FormParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.Transform;
 import org.jclouds.rest.annotations.VirtualHost;
 import org.jclouds.rest.annotations.XMLResponseParser;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -54,6 +55,7 @@ public interface UserAsyncApi {
    /**
     * @see UserApi#getCurrent()
     */
+   @Named("GetUser")
    @POST
    @Path("/")
    @XMLResponseParser(UserHandler.class)
@@ -63,16 +65,18 @@ public interface UserAsyncApi {
    /**
     * @see UserApi#get()
     */
+   @Named("GetUser")
    @POST
    @Path("/")
    @XMLResponseParser(UserHandler.class)
    @FormParams(keys = "Action", values = "GetUser")
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<User> get(@FormParam("UserName") String name);
    
    /**
     * @see UserApi#list()
     */
+   @Named("ListUsers")
    @POST
    @Path("/")
    @XMLResponseParser(ListUsersResultHandler.class)
@@ -83,6 +87,7 @@ public interface UserAsyncApi {
    /**
     * @see UserApi#list(ListUsersOptions)
     */
+   @Named("ListUsers")
    @POST
    @Path("/")
    @XMLResponseParser(ListUsersResultHandler.class)

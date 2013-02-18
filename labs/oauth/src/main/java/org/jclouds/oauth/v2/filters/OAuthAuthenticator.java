@@ -55,7 +55,7 @@ public class OAuthAuthenticator implements HttpRequestFilter {
    @Override
    public HttpRequest filter(HttpRequest request) throws HttpException {
       checkState(request instanceof GeneratedHttpRequest, "request must be an instance of GeneratedHttpRequest");
-      GeneratedHttpRequest generatedHttpRequest = (GeneratedHttpRequest) request;
+      GeneratedHttpRequest generatedHttpRequest = GeneratedHttpRequest.class.cast(request);
       TokenRequest tokenRequest = tokenRequestBuilder.apply(generatedHttpRequest);
       Token token = tokenFetcher.apply(tokenRequest);
       return request.toBuilder().addHeader("Authorization", String.format("%s %s",

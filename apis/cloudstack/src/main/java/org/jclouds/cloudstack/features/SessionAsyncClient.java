@@ -18,18 +18,19 @@
  */
 package org.jclouds.cloudstack.features;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
+import org.jclouds.Fallbacks.VoidOnNotFoundOr404;
 import org.jclouds.cloudstack.domain.LoginResponse;
 import org.jclouds.cloudstack.functions.ParseLoginResponseFromHttpResponse;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.QueryParams;
 import org.jclouds.rest.annotations.ResponseParser;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnVoidOnNotFoundOr404;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -47,19 +48,21 @@ public interface SessionAsyncClient {
    /**
     * @see SessionClient#loginUserInDomainWithHashOfPassword
     */
+   @Named("login")
    @GET
    @QueryParams(keys = "command", values = "login")
    @ResponseParser(ParseLoginResponseFromHttpResponse.class)
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<LoginResponse> loginUserInDomainWithHashOfPassword(@QueryParam("username") String userName,
       @QueryParam("domain") String domain, @QueryParam("password") String hashedPassword);
 
    /**
     * @see SessionClient#logoutUser
     */
+   @Named("logout")
    @GET
    @QueryParams(keys = "command", values = "logout")
-   @ExceptionParser(ReturnVoidOnNotFoundOr404.class)
+   @Fallback(VoidOnNotFoundOr404.class)
    ListenableFuture<Void> logoutUser(@QueryParam("sessionkey") String sessionKey);
 }

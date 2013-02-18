@@ -16,8 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jclouds.abiquo.internal;
+
+import static org.jclouds.reflect.Reflection2.typeToken;
 
 import java.util.Properties;
 
@@ -58,7 +59,7 @@ public abstract class BaseAbiquoLiveApiTest extends BaseViewLiveTest<AbiquoConte
 
    @Override
    protected TypeToken<AbiquoContext> viewType() {
-      return TypeToken.of(AbiquoContext.class);
+      return typeToken(AbiquoContext.class);
    }
 
 }

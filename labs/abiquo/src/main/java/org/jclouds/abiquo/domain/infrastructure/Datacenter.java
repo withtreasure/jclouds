@@ -22,6 +22,8 @@ package org.jclouds.abiquo.domain.infrastructure;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.find;
+import static com.google.common.collect.Iterables.getFirst;
+import static com.google.common.collect.Iterables.transform;
 
 import java.util.List;
 
@@ -71,9 +73,9 @@ import com.abiquo.server.core.infrastructure.storage.StorageDevicesDto;
 import com.abiquo.server.core.infrastructure.storage.StorageDevicesMetadataDto;
 import com.abiquo.server.core.infrastructure.storage.TierDto;
 import com.abiquo.server.core.infrastructure.storage.TiersDto;
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Adds high level functionality to {@link DatacenterDto}.
@@ -208,7 +210,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     * @return Filtered list of unmanaged racks in this datacenter.
     */
    public List<Rack> listRacks(final Predicate<Rack> filter) {
-      return Lists.newLinkedList(filter(listRacks(), filter));
+      return ImmutableList.copyOf(filter(listRacks(), filter));
    }
 
    /**
@@ -225,7 +227,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *         the is none.
     */
    public Rack findRack(final Predicate<Rack> filter) {
-      return Iterables.getFirst(filter(listRacks(), filter), null);
+      return getFirst(filter(listRacks(), filter), null);
    }
 
    /**
@@ -274,7 +276,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     */
    @EnterpriseEdition
    public List<ManagedRack> listManagedRacks(final Predicate<ManagedRack> filter) {
-      return Lists.newLinkedList(filter(listManagedRacks(), filter));
+      return ImmutableList.copyOf(filter(listManagedRacks(), filter));
    }
 
    /**
@@ -292,7 +294,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     */
    @EnterpriseEdition
    public ManagedRack findManagedRack(final Predicate<ManagedRack> filter) {
-      return Iterables.getFirst(filter(listManagedRacks(), filter), null);
+      return getFirst(filter(listManagedRacks(), filter), null);
    }
 
    /**
@@ -344,7 +346,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     */
    @EnterpriseEdition
    public List<StorageDeviceMetadata> listSupportedStorageDevices(final Predicate<StorageDeviceMetadata> filter) {
-      return Lists.newLinkedList(filter(listSupportedStorageDevices(), filter));
+      return ImmutableList.copyOf(filter(listSupportedStorageDevices(), filter));
    }
 
    /**
@@ -357,7 +359,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     */
    @EnterpriseEdition
    public StorageDeviceMetadata findSupportedStorageDevice(final Predicate<StorageDeviceMetadata> filter) {
-      return Iterables.getFirst(filter(listSupportedStorageDevices(), filter), null);
+      return getFirst(filter(listSupportedStorageDevices(), filter), null);
    }
 
    /**
@@ -388,7 +390,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     */
    @EnterpriseEdition
    public List<StorageDevice> listStorageDevices(final Predicate<StorageDevice> filter) {
-      return Lists.newLinkedList(filter(listStorageDevices(), filter));
+      return ImmutableList.copyOf(filter(listStorageDevices(), filter));
    }
 
    /**
@@ -406,7 +408,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     */
    @EnterpriseEdition
    public StorageDevice findStorageDevice(final Predicate<StorageDevice> filter) {
-      return Iterables.getFirst(filter(listStorageDevices(), filter), null);
+      return getFirst(filter(listStorageDevices(), filter), null);
    }
 
    /**
@@ -434,7 +436,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     * 
     * @return List of network services in this datacenter.
     */
-   public List<NetworkServiceType> listNetworkServiceType() {
+   public List<NetworkServiceType> listNetworkServiceTypes() {
       NetworkServiceTypesDto dtos = context.getApi().getInfrastructureApi().listNetworkServiceTypes(target);
       return wrap(context, NetworkServiceType.class, dtos.getCollection());
    }
@@ -446,8 +448,8 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *           Filter to be applied to the list.
     * @return Filtered list of storage devices in this datacenter.
     */
-   public List<NetworkServiceType> listNetworkServiceType(final Predicate<NetworkServiceType> filter) {
-      return Lists.newLinkedList(filter(listNetworkServiceType(), filter));
+   public List<NetworkServiceType> listNetworkServiceTypes(final Predicate<NetworkServiceType> filter) {
+      return ImmutableList.copyOf(filter(listNetworkServiceTypes(), filter));
    }
 
    /**
@@ -460,7 +462,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *         <code>null</code> if there is none.
     */
    public NetworkServiceType findNetworkServiceType(final Predicate<NetworkServiceType> filter) {
-      return Iterables.getFirst(filter(listNetworkServiceType(), filter), null);
+      return getFirst(filter(listNetworkServiceTypes(), filter), null);
    }
 
    /**
@@ -484,7 +486,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     * @return the defult {@link NetworkServiceType}
     */
    public NetworkServiceType defaultNetworkServiceType() {
-      return find(listNetworkServiceType(), NetworkServiceTypePredicates.isDefault());
+      return find(listNetworkServiceTypes(), NetworkServiceTypePredicates.isDefault());
    }
 
    /**
@@ -513,7 +515,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     * @return Filtered list of remote services in this datacenter.
     */
    public List<RemoteService> listRemoteServices(final Predicate<RemoteService> filter) {
-      return Lists.newLinkedList(filter(listRemoteServices(), filter));
+      return ImmutableList.copyOf(filter(listRemoteServices(), filter));
    }
 
    /**
@@ -530,7 +532,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *         there is none.
     */
    public RemoteService findRemoteService(final Predicate<RemoteService> filter) {
-      return Iterables.getFirst(filter(listRemoteServices(), filter), null);
+      return getFirst(filter(listRemoteServices(), filter), null);
    }
 
    private void createRemoteServices() {
@@ -580,7 +582,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     * @return Filtered list of datacenter limits by all enterprises.
     */
    public List<Limits> listLimits(final Predicate<Limits> filter) {
-      return Lists.newLinkedList(filter(listLimits(), filter));
+      return ImmutableList.copyOf(filter(listLimits(), filter));
    }
 
    /**
@@ -599,7 +601,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *         if there is none.
     */
    public Limits findLimits(final Predicate<Limits> filter) {
-      return Iterables.getFirst(filter(listLimits(), filter), null);
+      return getFirst(filter(listLimits(), filter), null);
    }
 
    /**
@@ -630,7 +632,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     */
    @EnterpriseEdition
    public List<Tier> listTiers(final Predicate<Tier> filter) {
-      return Lists.newLinkedList(filter(listTiers(), filter));
+      return ImmutableList.copyOf(filter(listTiers(), filter));
    }
 
    /**
@@ -648,7 +650,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     */
    @EnterpriseEdition
    public Tier findTier(final Predicate<Tier> filter) {
-      return Iterables.getFirst(filter(listTiers(), filter), null);
+      return getFirst(filter(listTiers(), filter), null);
    }
 
    /**
@@ -692,7 +694,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *      PublicNetworkResource- Getthelistofpublicnetworks</a>
     */
    public List<Network<?>> listNetworks(final Predicate<Network<?>> filter) {
-      return Lists.newLinkedList(filter(listNetworks(), filter));
+      return ImmutableList.copyOf(filter(listNetworks(), filter));
    }
 
    /**
@@ -709,7 +711,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *         datacenter.
     */
    public Network<?> findNetwork(final Predicate<Network<?>> filter) {
-      return Iterables.getFirst(filter(listNetworks(), filter), null);
+      return getFirst(filter(listNetworks(), filter), null);
    }
 
    /**
@@ -745,7 +747,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *         type.
     */
    public List<Network<?>> listNetworks(final NetworkType type, final Predicate<Network<?>> filter) {
-      return Lists.newLinkedList(filter(listNetworks(type), filter));
+      return ImmutableList.copyOf(filter(listNetworks(type), filter));
    }
 
    /**
@@ -763,7 +765,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     *         <code>null</code> if there is none.
     */
    public Network<?> findNetwork(final NetworkType type, final Predicate<Network<?>> filter) {
-      return Iterables.getFirst(filter(listNetworks(type), filter), null);
+      return getFirst(filter(listNetworks(type), filter), null);
    }
 
    /**
@@ -841,7 +843,7 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     */
    @EnterpriseEdition
    public List<HypervisorType> listAvailableHypervisors(final Predicate<HypervisorType> filter) {
-      return Lists.newLinkedList(filter(listAvailableHypervisors(), filter));
+      return ImmutableList.copyOf(filter(listAvailableHypervisors(), filter));
    }
 
    /**
@@ -859,17 +861,16 @@ public class Datacenter extends DomainWrapper<DatacenterDto> {
     */
    @EnterpriseEdition
    public HypervisorType findHypervisor(final Predicate<HypervisorType> filter) {
-      return Iterables.getFirst(filter(listAvailableHypervisors(), filter), null);
+      return getFirst(filter(listAvailableHypervisors(), filter), null);
    }
 
    private List<HypervisorType> getHypervisorTypes(final HypervisorTypesDto dtos) {
-      List<HypervisorType> types = Lists.newArrayList();
-
-      for (HypervisorTypeDto dto : dtos.getCollection()) {
-         types.add(HypervisorType.fromId(dto.getId()));
-      }
-
-      return types;
+      return ImmutableList.copyOf(transform(dtos.getCollection(), new Function<HypervisorTypeDto, HypervisorType>() {
+         @Override
+         public HypervisorType apply(HypervisorTypeDto input) {
+            return HypervisorType.fromId(input.getId());
+         }
+      }));
    }
 
    /**

@@ -18,7 +18,7 @@
  */
 package org.jclouds.openstack.keystone.v2_0.domain;
 
-import static org.jclouds.http.utils.Queries.parseQueryToMap;
+import static org.jclouds.http.utils.Queries.queryParser;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -44,10 +44,6 @@ import com.google.common.collect.Iterables;
  */
 @Beta
 public class PaginatedCollection<T> extends IterableWithMarker<T> {
-
-   @SuppressWarnings({ "rawtypes", "unchecked" })
-   public static final PaginatedCollection EMPTY = new PaginatedCollection(ImmutableSet.of(), ImmutableSet.of());
-
    private Iterable<T> resources;
    private Iterable<Link> links;
 
@@ -78,7 +74,7 @@ public class PaginatedCollection<T> extends IterableWithMarker<T> {
       }).transform(new Function<Link, Optional<Object>>() {
          @Override
          public Optional<Object> apply(Link link) {
-            Collection<String> markers = parseQueryToMap(link.getHref().getRawQuery()).get("marker");
+            Collection<String> markers = queryParser().apply(link.getHref().getRawQuery()).get("marker");
             return Optional.<Object> fromNullable(markers == null ? null : Iterables.get(markers, 0));
          }
       }).first().or(Optional.absent());

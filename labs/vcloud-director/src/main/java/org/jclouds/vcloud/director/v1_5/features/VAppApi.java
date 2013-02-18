@@ -19,13 +19,9 @@
 package org.jclouds.vcloud.director.v1_5.features;
 
 import java.net.URI;
-import java.util.concurrent.TimeUnit;
 
-import org.jclouds.concurrent.Timeout;
 import org.jclouds.dmtf.ovf.NetworkSection;
 import org.jclouds.dmtf.ovf.StartupSection;
-import org.jclouds.rest.annotations.Delegate;
-import org.jclouds.rest.annotations.EndpointParam;
 import org.jclouds.vcloud.director.v1_5.domain.Owner;
 import org.jclouds.vcloud.director.v1_5.domain.ProductSectionList;
 import org.jclouds.vcloud.director.v1_5.domain.Task;
@@ -36,7 +32,6 @@ import org.jclouds.vcloud.director.v1_5.domain.params.RecomposeVAppParams;
 import org.jclouds.vcloud.director.v1_5.domain.params.UndeployVAppParams;
 import org.jclouds.vcloud.director.v1_5.domain.section.LeaseSettingsSection;
 import org.jclouds.vcloud.director.v1_5.domain.section.NetworkConfigSection;
-import org.jclouds.vcloud.director.v1_5.functions.href.VAppURNToHref;
 
 /**
  * Provides synchronous access to {@link VApp} objects.
@@ -45,7 +40,6 @@ import org.jclouds.vcloud.director.v1_5.functions.href.VAppURNToHref;
  * @see VAppAsyncApi
  * @version 1.5
  */
-@Timeout(duration = 180, timeUnit = TimeUnit.SECONDS)
 public interface VAppApi {
 
    /**
@@ -492,14 +486,4 @@ public interface VAppApi {
    Task editStartupSection(String vAppUrn, StartupSection section);
 
    Task editStartupSection(URI vAppHref, StartupSection section);
-
-   /**
-    * Synchronous access to {@link VApp} {@link Metadata} features.
-    */
-   @Delegate
-   MetadataApi.Writeable getMetadataApi(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn);
-
-   @Delegate
-   MetadataApi.Writeable getMetadataApi(@EndpointParam URI vAppHref);
-
 }

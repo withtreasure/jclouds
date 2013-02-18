@@ -19,10 +19,6 @@
 
 package org.jclouds.abiquo.features;
 
-import java.util.concurrent.TimeUnit;
-
-import org.jclouds.concurrent.Timeout;
-
 import com.abiquo.server.core.pricing.CostCodeCurrenciesDto;
 import com.abiquo.server.core.pricing.CostCodeDto;
 import com.abiquo.server.core.pricing.CostCodesDto;
@@ -44,7 +40,6 @@ import com.abiquo.server.core.pricing.PricingTiersDto;
  * @author Ignasi Barrera
  * @author Susana Acedo
  */
-@Timeout(duration = 30, timeUnit = TimeUnit.SECONDS)
 public interface PricingApi {
 
    /*********************** Currency ********************** */

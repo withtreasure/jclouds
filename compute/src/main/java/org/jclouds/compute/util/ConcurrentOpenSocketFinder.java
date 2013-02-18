@@ -17,8 +17,6 @@
  * under the License.
  */
 package org.jclouds.compute.util;
-
-import static java.lang.String.format;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.or;
@@ -27,12 +25,13 @@ import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.size;
 import static com.google.common.util.concurrent.Atomics.newReference;
 import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
+import static java.lang.String.format;
 import static org.jclouds.Constants.PROPERTY_USER_THREADS;
 import static org.jclouds.compute.config.ComputeServiceProperties.TIMEOUT_NODE_RUNNING;
+import static org.jclouds.util.Predicates2.retry;
 
 import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -42,7 +41,6 @@ import javax.inject.Named;
 import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.reference.ComputeServiceConstants;
 import org.jclouds.logging.Logger;
-import org.jclouds.predicates.RetryablePredicate;
 import org.jclouds.predicates.SocketOpen;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -66,27 +64,27 @@ public class ConcurrentOpenSocketFinder implements OpenSocketFinder {
 
    private final SocketOpen socketTester;
    private final Predicate<AtomicReference<NodeMetadata>> nodeRunning;
-   private final ListeningExecutorService executor;
+   private final ListeningExecutorService userExecutor;
 
    @Inject
    @VisibleForTesting
    ConcurrentOpenSocketFinder(SocketOpen socketTester,
          @Named(TIMEOUT_NODE_RUNNING) Predicate<AtomicReference<NodeMetadata>> nodeRunning,
-         @Named(PROPERTY_USER_THREADS) ExecutorService userThreads) {
+         @Named(PROPERTY_USER_THREADS) ListeningExecutorService userExecutor) {
       this.socketTester = checkNotNull(socketTester, "socketTester");
       this.nodeRunning = checkNotNull(nodeRunning, "nodeRunning");
-      this.executor = listeningDecorator(checkNotNull(userThreads, "userThreads"));
+      this.userExecutor = listeningDecorator(checkNotNull(userExecutor, "userExecutor"));
    }
 
    @Override
-   public HostAndPort findOpenSocketOnNode(NodeMetadata node, final int port, long timeoutValue, TimeUnit timeUnits) {
+   public HostAndPort findOpenSocketOnNode(NodeMetadata node, final int port, long timeout, TimeUnit timeUnits) {
       ImmutableSet<HostAndPort> sockets = checkNodeHasIps(node).transform(new Function<String, HostAndPort>() {
 
          @Override
          public HostAndPort apply(String from) {
             return HostAndPort.fromParts(from, port);
          }
-      }).toImmutableSet();
+      }).toSet();
 
       // Specify a retry period of 1s, expressed in the same time units.
       long period = timeUnits.convert(1, TimeUnit.SECONDS);
@@ -96,18 +94,23 @@ public class ConcurrentOpenSocketFinder implements OpenSocketFinder {
 
       Predicate<Iterable<HostAndPort>> findOrBreak = or(updateRefOnSocketOpen(result), throwISEIfNoLongerRunning(node));
 
-      logger.debug(">> blocking on sockets %s for %d %s", sockets, timeoutValue, timeUnits);
-      boolean passed = retryPredicate(findOrBreak, period, timeoutValue, timeUnits).apply(sockets);
+      logger.debug(">> blocking on sockets %s for %d %s", sockets, timeout, timeUnits);
+      boolean passed = retryPredicate(findOrBreak, timeout, period,  timeUnits).apply(sockets);
 
       if (passed) {
          logger.debug("<< socket %s opened", result);
          assert result.get() != null;
          return result.get();
       } else {
-         logger.warn("<< sockets %s didn't open after %d %s", sockets, timeoutValue, timeUnits);
+         logger.warn("<< sockets %s didn't open after %d %s", sockets, timeout, timeUnits);
          throw new NoSuchElementException(format("could not connect to any ip address port %d on node %s", port, node));
       }
 
+   }
+
+   @VisibleForTesting
+   protected <T> Predicate<T> retryPredicate(Predicate<T> findOrBreak, long timeout, long period, TimeUnit timeUnits) {
+      return retry(findOrBreak, timeout, period, timeUnits);
    }
 
    /**
@@ -123,7 +126,7 @@ public class ConcurrentOpenSocketFinder implements OpenSocketFinder {
 
             Builder<ListenableFuture<?>> futures = ImmutableList.builder();
             for (final HostAndPort socket : input) {
-               futures.add(executor.submit(new Runnable() {
+               futures.add(userExecutor.submit(new Runnable() {
 
                   @Override
                   public void run() {
@@ -172,16 +175,6 @@ public class ConcurrentOpenSocketFinder implements OpenSocketFinder {
             return "throwISEIfNoLongerRunning(" + node.getId() + ")";
          }
       };
-   }
-
-   /**
-    * @param findOrBreak
-    *           throws {@link IllegalStateException} in order to break the retry
-    *           loop
-    */
-   @VisibleForTesting
-   <T> Predicate<T> retryPredicate(Predicate<T> findOrBreak, long period, long timeoutValue, TimeUnit timeUnits) {
-      return new RetryablePredicate<T>(findOrBreak, timeoutValue, period, timeUnits);
    }
 
    private static FluentIterable<String> checkNodeHasIps(NodeMetadata node) {

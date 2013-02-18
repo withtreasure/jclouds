@@ -18,45 +18,39 @@
  */
 package org.jclouds.rest;
 
-import java.lang.reflect.Method;
-import java.util.concurrent.TimeUnit;
+import static org.jclouds.reflect.Reflection2.method;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.PathParam;
 
 import org.jclouds.ContextBuilder;
-import org.jclouds.concurrent.Timeout;
+import org.jclouds.http.HttpRequest;
 import org.jclouds.http.IntegrationTestAsyncClient;
 import org.jclouds.http.IntegrationTestClient;
 import org.jclouds.predicates.validators.AllLowerCaseValidator;
 import org.jclouds.providers.AnonymousProviderMetadata;
+import org.jclouds.reflect.Invocation;
 import org.jclouds.rest.annotations.ParamValidators;
-import org.jclouds.rest.annotations.SkipEncoding;
 import org.jclouds.rest.internal.RestAnnotationProcessor;
 import org.testng.TestException;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.TypeLiteral;
-import com.google.inject.util.Types;
-
 @Test(groups = "unit")
 public class InputParamValidatorTest {
 
-   @Timeout(duration = 1000, timeUnit = TimeUnit.SECONDS)
-   @SkipEncoding('/')
-   class InputParamValidatorForm {
+   private static interface InputParamValidatorForm {
       @POST
-      @ParamValidators( { AllLowerCaseValidator.class })
-      public void allParamsValidated(@PathParam("param1") String param1, @PathParam("param2") String param2) {
-      }
+      @ParamValidators(AllLowerCaseValidator.class)
+      void allParamsValidated(@PathParam("param1") String param1, @PathParam("param2") String param2);
 
       @POST
-      public void oneParamValidated(@PathParam("param1") String param1,
-               @ParamValidators( { AllLowerCaseValidator.class }) @PathParam("param2") String param2) {
-      }
+      void oneParamValidated(@PathParam("param1") String param1,
+            @ParamValidators(AllLowerCaseValidator.class) @PathParam("param2") String param2);
    }
 
    /**
@@ -68,26 +62,25 @@ public class InputParamValidatorTest {
     */
    @Test
    public void testInputParamsValidation() throws Exception {
-      Method allParamsValidatedMethod = InputParamValidatorForm.class.getMethod("allParamsValidated", String.class,
-               String.class);
-      Method oneParamValidatedMethod = InputParamValidatorForm.class.getMethod("oneParamValidated", String.class,
-               String.class);
-      RestAnnotationProcessor<InputParamValidatorForm> restAnnotationProcessor = factory(InputParamValidatorForm.class);
-      restAnnotationProcessor.createRequest(allParamsValidatedMethod, "blah", "blah");
-      restAnnotationProcessor.createRequest(oneParamValidatedMethod, "blah", "blah");
+      Invokable<?, ?> allParamsValidatedMethod = method(InputParamValidatorForm.class, "allParamsValidated",
+            String.class, String.class);
+      Invokable<?, ?> oneParamValidatedMethod = method(InputParamValidatorForm.class, "oneParamValidated",
+            String.class, String.class);
+      restAnnotationProcessor.apply(Invocation.create(allParamsValidatedMethod, ImmutableList.<Object> of("blah", "blah")));
+      restAnnotationProcessor.apply(Invocation.create(oneParamValidatedMethod, ImmutableList.<Object> of("blah", "blah")));
 
       try {
-         restAnnotationProcessor.createRequest(allParamsValidatedMethod, "BLAH", "blah");
+         restAnnotationProcessor.apply(Invocation.create(allParamsValidatedMethod, ImmutableList.<Object> of("BLAH", "blah")));
          throw new TestException(
                   "AllLowerCaseValidator shouldn't have passed 'BLAH' as a parameter because it's uppercase.");
       } catch (IllegalArgumentException e) {
          // supposed to happen - continue
       }
 
-      restAnnotationProcessor.createRequest(oneParamValidatedMethod, "BLAH", "blah");
+      restAnnotationProcessor.apply(Invocation.create(oneParamValidatedMethod, ImmutableList.<Object> of("BLAH", "blah")));
 
       try {
-         restAnnotationProcessor.createRequest(oneParamValidatedMethod, "blah", "BLAH");
+         restAnnotationProcessor.apply(Invocation.create(oneParamValidatedMethod, ImmutableList.<Object> of("blah", "BLAH")));
          throw new TestException(
                   "AllLowerCaseValidator shouldn't have passed 'BLAH' as the second parameter because it's uppercase.");
       } catch (IllegalArgumentException e) {
@@ -100,41 +93,21 @@ public class InputParamValidatorTest {
       new AllLowerCaseValidator().validate(null);
    }
 
-   /**
-    * Tries to use Validator<String> on Integer parameter. Expected result: ClassCastException
-    * 
-    * @throws Exception
-    *            if method isn't found
-    */
-   @Test
-   public void testWrongPredicateTypeLiteral() throws Exception {
-      @Timeout(duration = 1000, timeUnit = TimeUnit.SECONDS)
-      @SkipEncoding('/')
-      class WrongValidator {
-         @SuppressWarnings("unused")
-         @POST
-         @ParamValidators( { AllLowerCaseValidator.class })
-         public void method(@PathParam("param1") Integer param1) {
-         }
-      }
-      WrongValidator validator = new WrongValidator();
-      Method method = validator.getClass().getMethod("method", Integer.class);
-
-      try {
-         new InputParamValidator(injector).validateMethodParametersOrThrow(method, 55);
-         throw new TestException("ClassCastException expected, but wasn't thrown");
-      } catch (ClassCastException e) {
-         // supposed to happen - continue
-      }
+   private static interface WrongValidator {
+      @POST
+      @ParamValidators(AllLowerCaseValidator.class)
+      void method(@PathParam("param1") Integer param1);
    }
 
-   @SuppressWarnings("unchecked")
-   private <T> RestAnnotationProcessor<T> factory(Class<T> clazz) {
-      return ((RestAnnotationProcessor<T>) injector.getInstance(Key.get(TypeLiteral.get(Types.newParameterizedType(
-               RestAnnotationProcessor.class, clazz)))));
+   @Test(expectedExceptions = ClassCastException.class)
+   public void testWrongPredicateTypeLiteral() throws Exception {
+      Invocation invocation = Invocation.create(method(WrongValidator.class, "method", Integer.class),
+            ImmutableList.<Object> of(55));
+      new InputParamValidator(injector).validateMethodParametersOrThrow(invocation);
    }
 
    Injector injector;
+   Function<Invocation, HttpRequest> restAnnotationProcessor;
 
    @BeforeClass
    void setupFactory() {
@@ -142,7 +115,6 @@ public class InputParamValidatorTest {
             .newBuilder(
                   AnonymousProviderMetadata.forClientMappedToAsyncClientOnEndpoint(IntegrationTestClient.class, IntegrationTestAsyncClient.class,
                         "http://localhost:9999")).buildInjector();
-
+      restAnnotationProcessor = injector.getInstance(RestAnnotationProcessor.class);
    }
-
 }

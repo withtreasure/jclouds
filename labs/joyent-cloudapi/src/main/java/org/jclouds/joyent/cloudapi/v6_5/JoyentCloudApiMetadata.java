@@ -17,6 +17,7 @@
  * under the License.
  */
 package org.jclouds.joyent.cloudapi.v6_5;
+import static org.jclouds.reflect.Reflection2.typeToken;
 
 import java.net.URI;
 import java.util.Properties;
@@ -42,6 +43,7 @@ import com.google.inject.Module;
 public class JoyentCloudApiMetadata extends BaseRestApiMetadata {
 
    public static final TypeToken<RestContext<JoyentCloudApi, JoyentCloudAsyncApi>> CONTEXT_TOKEN = new TypeToken<RestContext<JoyentCloudApi, JoyentCloudAsyncApi>>() {
+      private static final long serialVersionUID = 1L;
    };
 
    @Override
@@ -67,7 +69,7 @@ public class JoyentCloudApiMetadata extends BaseRestApiMetadata {
       return properties;
    }
 
-   public static class Builder extends BaseRestApiMetadata.Builder {
+   public static class Builder extends BaseRestApiMetadata.Builder<Builder> {
 
       protected Builder() {
          super(JoyentCloudApi.class, JoyentCloudAsyncApi.class);
@@ -79,7 +81,7 @@ public class JoyentCloudApiMetadata extends BaseRestApiMetadata {
          .version("~6.5")
          .defaultEndpoint("https://api.joyentcloud.com")
          .defaultProperties(JoyentCloudApiMetadata.defaultProperties())
-         .view(TypeToken.of(ComputeServiceContext.class))
+         .view(typeToken(ComputeServiceContext.class))
          .defaultModules(ImmutableSet.<Class<? extends Module>> of(DatacentersAreZonesModule.class, JoyentCloudRestClientModule.class, JoyentCloudComputeServiceContextModule.class));
       }
 
@@ -89,11 +91,8 @@ public class JoyentCloudApiMetadata extends BaseRestApiMetadata {
       }
 
       @Override
-      public Builder fromApiMetadata(ApiMetadata in) {
-         super.fromApiMetadata(in);
+      protected Builder self() {
          return this;
       }
-
    }
-
 }

@@ -18,6 +18,7 @@
  */
 package org.jclouds.openstack.nova.v2_0.extensions;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -27,19 +28,18 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.EmptyFluentIterableOnNotFoundOr404;
+import org.jclouds.Fallbacks.FalseOnNotFoundOr404;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.openstack.keystone.v2_0.filters.AuthenticateRequest;
 import org.jclouds.openstack.nova.v2_0.domain.VolumeAttachment;
 import org.jclouds.openstack.v2_0.ServiceType;
 import org.jclouds.openstack.v2_0.services.Extension;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.PayloadParam;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.SelectJson;
-import org.jclouds.rest.annotations.SkipEncoding;
 import org.jclouds.rest.annotations.WrapWith;
-import org.jclouds.rest.functions.ReturnEmptyFluentIterableOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnFalseOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.google.common.annotations.Beta;
 import com.google.common.collect.FluentIterable;
@@ -53,28 +53,29 @@ import com.google.common.util.concurrent.ListenableFuture;
  */
 @Beta
 @Extension(of = ServiceType.COMPUTE, namespace = ExtensionNamespaces.VOLUMES)
-@SkipEncoding({'/', '='})
 @RequestFilters(AuthenticateRequest.class)
 public interface VolumeAttachmentAsyncApi {
    /**
     * @see VolumeAttachmentApi#listAttachmentsOnServer(String)
     */
+   @Named("volumeattachment:list")
    @GET
    @Path("/servers/{server_id}/os-volume_attachments")
    @SelectJson("volumeAttachments")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnEmptyFluentIterableOnNotFoundOr404.class)
+   @Fallback(EmptyFluentIterableOnNotFoundOr404.class)
    ListenableFuture<? extends FluentIterable<? extends VolumeAttachment>> listAttachmentsOnServer(
          @PathParam("server_id") String serverId);
 
    /**
     * @see VolumeAttachmentApi#getAttachmentForVolumeOnServer(String, String)
     */
+   @Named("volumeattachment:get")
    @GET
    @Path("/servers/{server_id}/os-volume_attachments/{id}")
    @SelectJson("volumeAttachment")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<? extends VolumeAttachment> getAttachmentForVolumeOnServer(
          @PathParam("id") String volumeId,
          @PathParam("server_id") String serverId);
@@ -82,6 +83,7 @@ public interface VolumeAttachmentAsyncApi {
    /**
     * @see VolumeAttachmentApi#attachVolumeToServerAsDevice(String, String, String)
     */
+   @Named("volumeattachment:attach")
    @POST
    @Path("/servers/{server_id}/os-volume_attachments")
    @SelectJson("volumeAttachment")
@@ -96,10 +98,11 @@ public interface VolumeAttachmentAsyncApi {
    /**
     * @see VolumeAttachmentApi#detachVolumeFromServer(String, String)
     */
+   @Named("volumeattachment:detach")
    @DELETE
    @Path("/servers/{server_id}/os-volume_attachments/{id}")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnFalseOnNotFoundOr404.class)
+   @Fallback(FalseOnNotFoundOr404.class)
    ListenableFuture<Boolean> detachVolumeFromServer(
          @PathParam("id") String volumeId, 
          @PathParam("server_id") String serverId);

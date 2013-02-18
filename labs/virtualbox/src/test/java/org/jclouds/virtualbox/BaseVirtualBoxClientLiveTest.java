@@ -20,26 +20,27 @@
 package org.jclouds.virtualbox;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.util.concurrent.MoreExecutors.sameThreadExecutor;
 import static org.jclouds.virtualbox.config.VirtualBoxConstants.VIRTUALBOX_IMAGE_PREFIX;
-import static org.jclouds.virtualbox.config.VirtualBoxConstants.VIRTUALBOX_INSTALLATION_KEY_SEQUENCE;
 
 import java.io.File;
-import java.util.concurrent.ExecutorService;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.jclouds.compute.callables.RunScriptOnNode.Factory;
 import org.jclouds.compute.domain.Image;
 import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.Template;
 import org.jclouds.compute.internal.BaseComputeServiceContextLiveTest;
 import org.jclouds.compute.strategy.PrioritizeCredentialsFromTemplate;
-import org.jclouds.concurrent.MoreExecutors;
 import org.jclouds.concurrent.config.ExecutorServiceModule;
 import org.jclouds.config.ValueOfConfigurationKeyOrNull;
 import org.jclouds.rest.annotations.BuildVersion;
 import org.jclouds.sshj.config.SshjSshClientModule;
+import org.jclouds.util.Strings2;
 import org.jclouds.virtualbox.config.VirtualBoxConstants;
 import org.jclouds.virtualbox.domain.HardDisk;
 import org.jclouds.virtualbox.domain.IsoSpec;
@@ -50,22 +51,23 @@ import org.jclouds.virtualbox.domain.NetworkInterfaceCard;
 import org.jclouds.virtualbox.domain.NetworkSpec;
 import org.jclouds.virtualbox.domain.StorageController;
 import org.jclouds.virtualbox.domain.VmSpec;
+import org.jclouds.virtualbox.functions.HardcodedHostToHostNodeMetadata;
 import org.jclouds.virtualbox.functions.IMachineToVmSpec;
 import org.jclouds.virtualbox.functions.admin.UnregisterMachineIfExistsAndDeleteItsMedia;
+import org.jclouds.virtualbox.predicates.RetryIfSocketNotYetOpen;
 import org.jclouds.virtualbox.util.MachineController;
 import org.jclouds.virtualbox.util.MachineUtils;
 import org.jclouds.virtualbox.util.NetworkUtils;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.virtualbox_4_1.CleanupMode;
-import org.virtualbox_4_1.IMachine;
-import org.virtualbox_4_1.NetworkAttachmentType;
-import org.virtualbox_4_1.SessionState;
-import org.virtualbox_4_1.StorageBus;
-import org.virtualbox_4_1.VBoxException;
-import org.virtualbox_4_1.VirtualBoxManager;
+import org.virtualbox_4_2.CleanupMode;
+import org.virtualbox_4_2.IMachine;
+import org.virtualbox_4_2.NetworkAttachmentType;
+import org.virtualbox_4_2.SessionState;
+import org.virtualbox_4_2.StorageBus;
+import org.virtualbox_4_2.VBoxException;
+import org.virtualbox_4_2.VirtualBoxManager;
 
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
@@ -117,21 +119,21 @@ public class BaseVirtualBoxClientLiveTest extends BaseComputeServiceContextLiveT
    @Named(VirtualBoxConstants.VIRTUALBOX_WORKINGDIR)
    protected String workingDir;
    protected String isosDir;
-   @Inject
-   protected Supplier<NodeMetadata> host;
+   protected String keystrokeSequence;
+   @Inject protected Supplier<NodeMetadata> host;
+   @Inject protected Factory runScriptOnNodeFactory;
+   @Inject protected RetryIfSocketNotYetOpen socketTester;
+   @Inject protected HardcodedHostToHostNodeMetadata hardcodedHostToHostNodeMetadata;
    @Inject
    protected PrioritizeCredentialsFromTemplate prioritizeCredentialsFromTemplate;
    @Inject
    protected LoadingCache<Image, Master> mastersCache;
-
-   private final ExecutorService singleThreadExec = MoreExecutors.sameThreadExecutor();
-   private String masterName;
-   
+   private String masterName;   
 
    @Override
    protected Iterable<Module> setupModules() {
       return ImmutableSet.<Module> of(getLoggingModule(), credentialStoreModule, getSshModule(),  new ExecutorServiceModule(
-            singleThreadExec, singleThreadExec));
+            sameThreadExecutor(), sameThreadExecutor()));
    }
    
    @Override
@@ -148,9 +150,15 @@ public class BaseVirtualBoxClientLiveTest extends BaseComputeServiceContextLiveT
       masterName = VIRTUALBOX_IMAGE_PREFIX + template.getImage().getId();
       isosDir = workingDir + File.separator + "isos";
 
-      hostVersion = Iterables.get(Splitter.on('r').split(view.utils().injector().getInstance(Key.get(String.class, BuildVersion.class))), 0);
+      hostVersion = Iterables.get(Splitter.on('-').split(view.utils().injector().getInstance(Key.get(String.class, BuildVersion.class))), 0);
       operatingSystemIso = String.format("%s/%s.iso", isosDir, template.getImage().getName());
       guestAdditionsIso = String.format("%s/VBoxGuestAdditions_%s.iso", isosDir, hostVersion);
+      keystrokeSequence = "";
+      try {
+         keystrokeSequence = Strings2.toStringAndClose(getClass().getResourceAsStream("/default-keystroke-sequence"));
+      } catch (IOException e) {
+         throw new RuntimeException("error reading default-keystroke-sequence file");
+      }
    }
 
    protected void undoVm(String vmNameOrId) {
@@ -188,14 +196,10 @@ public class BaseVirtualBoxClientLiveTest extends BaseComputeServiceContextLiveT
       VmSpec sourceVmSpec = VmSpec.builder().id(masterName).name(masterName).osTypeId("").memoryMB(512)
                .cleanUpMode(CleanupMode.Full).controller(ideController).forceOverwrite(true).build();
 
-      Injector injector = view.utils().injector();
-      Function<String, String> configProperties = injector.getInstance(ValueOfConfigurationKeyOrNull.class);
       IsoSpec isoSpec = IsoSpec
                .builder()
                .sourcePath(operatingSystemIso)
-               .installationScript(
-                        configProperties.apply(VIRTUALBOX_INSTALLATION_KEY_SEQUENCE).replace("HOSTNAME",
-                                 sourceVmSpec.getVmName())).build();
+               .installationScript(keystrokeSequence).build();
 
       NetworkAdapter networkAdapter = NetworkAdapter.builder().networkAttachmentType(NetworkAttachmentType.NAT)
                .tcpRedirectRule("127.0.0.1", 2222, "", 22).build();
@@ -211,12 +215,6 @@ public class BaseVirtualBoxClientLiveTest extends BaseComputeServiceContextLiveT
       return new SshjSshClientModule();
    }
 
-   @AfterClass(groups = "live")
-   protected void tearDown() throws Exception {
-      if (view != null)
-         view.close();
-   }
-
    @AfterSuite
    protected void destroyMaster() {
       if (System.getProperty(DONT_DESTROY_MASTER) == null
@@ -224,5 +222,4 @@ public class BaseVirtualBoxClientLiveTest extends BaseComputeServiceContextLiveT
          undoVm(masterName);
       }
    }
-
 }

@@ -74,7 +74,7 @@
         <connection>scm:git:git://github.com/jclouds/jclouds.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/jclouds/jclouds.git</developerConnection>
         <url>http://github.com/jclouds/jclouds</url>
-      <tag>jclouds-multi-1.6.0-SNAPSHOT</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <repositories>
@@ -271,6 +271,11 @@
                 <artifactId>logback-core</artifactId>
                 <version>1.0.7</version>
             </dependency>
+            <dependency>
+                <groupId>com.google.mockwebserver</groupId>
+                <artifactId>mockwebserver</artifactId>
+                <version>20121111</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
@@ -385,6 +390,10 @@
                         <ignoredResource>test.jks</ignoredResource>
                         <ignoredResource>CreateInternetService-options-test.xml</ignoredResource>
                         <ignoredResource>.gitattributes</ignoredResource>
+                        <ignoredResource>OSGI-OPT/bnd.bnd</ignoredResource>
+                        <!-- For bouncycastle -->
+                        <ignoredResource>META-INF/BCKEY.DSA</ignoredResource>
+                        <ignoredResource>META-INF/BCKEY.SF</ignoredResource>
                     </ignoredResources>
                     <failBuildInCaseOfConflict>true</failBuildInCaseOfConflict>
                 </configuration>

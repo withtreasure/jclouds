@@ -18,10 +18,13 @@
  */
 package org.jclouds.glesys.compute.functions;
 
+import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.google.common.io.BaseEncoding.base16;
 import static org.jclouds.compute.util.ComputeServiceUtils.addMetadataAndParseTagsFromCommaDelimitedValue;
+import static org.jclouds.location.predicates.LocationPredicates.idEquals;
 
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -32,7 +35,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.jclouds.collect.FindResourceInSet;
 import org.jclouds.collect.Memoized;
 import org.jclouds.compute.domain.HardwareBuilder;
 import org.jclouds.compute.domain.Image;
@@ -45,20 +47,19 @@ import org.jclouds.compute.domain.Volume;
 import org.jclouds.compute.domain.internal.VolumeImpl;
 import org.jclouds.compute.functions.GroupNamingConvention;
 import org.jclouds.compute.reference.ComputeServiceConstants;
-import org.jclouds.crypto.CryptoStreams;
 import org.jclouds.domain.Location;
 import org.jclouds.glesys.domain.Ip;
 import org.jclouds.glesys.domain.ServerDetails;
 import org.jclouds.logging.Logger;
 import org.jclouds.util.InetAddresses2.IsPrivateIPAddress;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -78,7 +79,7 @@ public class ServerDetailsToNodeMetadata implements Function<ServerDetails, Node
          .put(ServerDetails.State.UNRECOGNIZED, Status.UNRECOGNIZED).build();
 
    protected final Supplier<Set<? extends Image>> images;
-   protected final FindLocationForServerDetails findLocationForServerDetails;
+   protected final Supplier<Set<? extends Location>> locations;
    protected final GroupNamingConvention nodeNamingConvention;
 
    private static class FindImageForServer implements Predicate<Image> {
@@ -95,11 +96,10 @@ public class ServerDetailsToNodeMetadata implements Function<ServerDetails, Node
    }
 
    @Inject
-   ServerDetailsToNodeMetadata(FindLocationForServerDetails findLocationForServerDetails,
-         @Memoized Supplier<Set<? extends Image>> images,
-         GroupNamingConvention.Factory namingConvention) {
+   ServerDetailsToNodeMetadata(@Memoized Supplier<Set<? extends Location>> locations,
+         @Memoized Supplier<Set<? extends Image>> images, GroupNamingConvention.Factory namingConvention) {
       this.nodeNamingConvention = checkNotNull(namingConvention, "namingConvention").createWithoutPrefix();
-      this.findLocationForServerDetails = checkNotNull(findLocationForServerDetails, "findLocationForServerDetails");
+      this.locations = checkNotNull(locations, "locations");
       this.images = checkNotNull(images, "images");
    }
 
@@ -109,16 +109,17 @@ public class ServerDetailsToNodeMetadata implements Function<ServerDetails, Node
       builder.ids(from.getId() + "");
       builder.name(from.getHostname());
       builder.hostname(from.getHostname());
-      Location location = findLocationForServerDetails.apply(from);
+      Location location = FluentIterable.from(locations.get()).firstMatch(idEquals(from.getDatacenter())).orNull();
       checkState(location != null, "no location matched ServerDetails %s", from);
       builder.group(nodeNamingConvention.groupInUniqueNameOrNull(from.getHostname()));
       
       // TODO: get glesys to stop stripping out equals and commas!
       if (!isNullOrEmpty(from.getDescription()) && from.getDescription().matches("^[0-9A-Fa-f]+$")) {
-         String decoded = new String(CryptoStreams.hex(from.getDescription()), Charsets.UTF_8);
+         String decoded = new String(base16().lowerCase().decode(from.getDescription()), UTF_8);
          addMetadataAndParseTagsFromCommaDelimitedValue(builder,
                   Splitter.on('\n').withKeyValueSeparator("=").split(decoded));
       }
+
       builder.imageId(from.getTemplateName() + "");
       builder.operatingSystem(parseOperatingSystem(from));
       builder.hardware(new HardwareBuilder().ids(from.getId() + "").ram(from.getMemorySizeMB())
@@ -146,19 +147,5 @@ public class ServerDetailsToNodeMetadata implements Function<ServerDetails, Node
          logger.debug("could not find a matching image for server %s", from);
       }
       return null;
-   }
-
-   @Singleton
-   public static class FindLocationForServerDetails extends FindResourceInSet<ServerDetails, Location> {
-
-      @Inject
-      public FindLocationForServerDetails(@Memoized Supplier<Set<? extends Location>> location) {
-         super(location);
-      }
-
-      @Override
-      public boolean matches(ServerDetails from, Location input) {
-         return input.getId().equals(from.getDatacenter());
-      }
    }
 }

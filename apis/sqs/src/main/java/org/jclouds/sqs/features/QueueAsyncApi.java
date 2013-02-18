@@ -24,23 +24,24 @@ import static org.jclouds.sqs.reference.SQSParameters.VERSION;
 import java.net.URI;
 import java.util.Map;
 
+import javax.inject.Named;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
 import org.jclouds.Constants;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
+import org.jclouds.Fallbacks.VoidOnNotFoundOr404;
 import org.jclouds.aws.filters.FormSigner;
 import org.jclouds.rest.annotations.BinderParam;
 import org.jclouds.rest.annotations.EndpointParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.FormParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.ResponseParser;
 import org.jclouds.rest.annotations.Transform;
 import org.jclouds.rest.annotations.VirtualHost;
 import org.jclouds.rest.annotations.XMLResponseParser;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnVoidOnNotFoundOr404;
 import org.jclouds.sqs.binders.BindAttributeNamesToIndexedFormParams;
 import org.jclouds.sqs.domain.QueueAttributes;
 import org.jclouds.sqs.functions.MapToQueueAttributes;
@@ -68,6 +69,7 @@ public interface QueueAsyncApi {
    /**
     * @see QueueApi#list
     */
+   @Named("ListQueues")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "ListQueues")
@@ -77,6 +79,7 @@ public interface QueueAsyncApi {
    /**
     * @see QueueApi#list(ListQueuesOptions)
     */
+   @Named("ListQueues")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "ListQueues")
@@ -86,27 +89,30 @@ public interface QueueAsyncApi {
    /**
     * @see QueueApi#get(String)
     */
+   @Named("GetQueueUrl")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "GetQueueUrl")
    @ResponseParser(RegexQueueHandler.class)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<URI> get(@FormParam("QueueName") String queueName);
 
    /**
     * @see QueueApi#getInAccount
     */
+   @Named("GetQueueUrl")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "GetQueueUrl")
    @ResponseParser(RegexQueueHandler.class)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<URI> getInAccount(@FormParam("QueueName") String queueName,
          @FormParam("QueueOwnerAWSAccountId") String accountId);
 
    /**
     * @see QueueApi#create
     */
+   @Named("CreateQueue")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "CreateQueue")
@@ -116,6 +122,7 @@ public interface QueueAsyncApi {
    /**
     * @see QueueApi#create
     */
+   @Named("CreateQueue")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "CreateQueue")
@@ -125,26 +132,29 @@ public interface QueueAsyncApi {
    /**
     * @see QueueApi#delete
     */
+   @Named("DeleteQueue")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "DeleteQueue")
-   @ExceptionParser(ReturnVoidOnNotFoundOr404.class)
+   @Fallback(VoidOnNotFoundOr404.class)
    ListenableFuture<Void> delete(@EndpointParam URI queue);
 
    /**
     * @see QueueApi#getAttributes(URI)
     */
+   @Named("GetQueueAttributes")
    @POST
    @Path("/")
    @FormParams(keys = { ACTION, "AttributeName.1" }, values = { "GetQueueAttributes", "All" })
    @Transform(MapToQueueAttributes.class)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    @XMLResponseParser(AttributesHandler.class)
    ListenableFuture<? extends QueueAttributes> getAttributes(@EndpointParam URI queue);
 
    /**
     * @see QueueApi#getAttributes(URI, Iterable)
     */
+   @Named("GetQueueAttributes")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "GetQueueAttributes")
@@ -155,6 +165,7 @@ public interface QueueAsyncApi {
    /**
     * @see QueueApi#getAttribute
     */
+   @Named("GetQueueAttributes")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "GetQueueAttributes")
@@ -164,6 +175,7 @@ public interface QueueAsyncApi {
    /**
     * @see QueueApi#setAttribute
     */
+   @Named("SetQueueAttributes")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "SetQueueAttributes")

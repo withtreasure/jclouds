@@ -71,14 +71,14 @@ public class CloudStackComputeServiceAdapterExpectTest extends BaseCloudStackCom
             .addQueryParam("response", "json")
             .addQueryParam("command", "deployVirtualMachine")
             .addQueryParam("zoneid", "1")
-            .addQueryParam("templateid", "4")
             .addQueryParam("serviceofferingid", "1")
+            .addQueryParam("templateid", "4")
             .addQueryParam("displayname", "test-e92")
             .addQueryParam("name", "test-e92")
             .addQueryParam("networkids", "204")
             .addQueryParam("keypair", "mykeypair")
             .addQueryParam("apiKey", "APIKEY")
-            .addQueryParam("signature", "hI%2FU4cWXdU6KTZKbJvzPCmOpGmU%3D")
+            .addQueryParam("signature", "hI/U4cWXdU6KTZKbJvzPCmOpGmU%3D")
             .addHeader("Accept", "application/json")
             .build(); 
   
@@ -114,8 +114,8 @@ public class CloudStackComputeServiceAdapterExpectTest extends BaseCloudStackCom
             .addQueryParam("response", "json")
             .addQueryParam("command", "deployVirtualMachine")
             .addQueryParam("zoneid", "1")
-            .addQueryParam("templateid", "4")
             .addQueryParam("serviceofferingid", "1")
+            .addQueryParam("templateid", "4")
             .addQueryParam("displayname", "test-e92")
             .addQueryParam("name", "test-e92")
             .addQueryParam("account", "account") //

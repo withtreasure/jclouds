@@ -38,7 +38,7 @@ import com.google.common.net.HttpHeaders;
  * @author Adrian Cole
  */
 @Test(groups = "unit", testName = "PasswordAuthenticationExpectTest")
-public class PasswordAuthenticationExpectTest extends BaseCloudStackExpectTest<CloudStackContext> {
+public class PasswordAuthenticationExpectTest extends BaseCloudStackExpectTest<AccountClient> {
 
    /**
     * this reflects the properties that a user would pass to createContext
@@ -52,11 +52,11 @@ public class PasswordAuthenticationExpectTest extends BaseCloudStackExpectTest<C
 
    public void testLoginWithPasswordSetsSessionKeyAndCookie() {
       
-      CloudStackContext context = requestsSendResponses(
+      AccountClient client = requestsSendResponses(
                login, loginResponse, 
          HttpRequest.builder()
             .method("GET")
-            .endpoint("http://localhost:8080/client/api?response=json&command=listAccounts&listAll=true&sessionkey=" + Strings2.urlEncode(sessionKey))
+            .endpoint("http://localhost:8080/client/api?response=json&command=listAccounts&listAll=true&sessionkey=" + Strings2.urlEncode(sessionKey, '/'))
             .addHeader("Accept", "application/json")
             .addHeader(HttpHeaders.COOKIE, "JSESSIONID=" + jSessionId)
             .build(),
@@ -65,16 +65,12 @@ public class PasswordAuthenticationExpectTest extends BaseCloudStackExpectTest<C
             .payload(payloadFromResource("/listaccountsresponse.json"))
             .build()
             ,logout, logoutResponse);
-
-      AccountClient client = context.getProviderSpecificContext().getApi().getAccountClient();
       
       assertNotNull(client.listAccounts());
-
-      context.close();
    }
 
    @Override
-   protected CloudStackContext clientFrom(CloudStackContext context) {
-      return context;
+   protected AccountClient clientFrom(CloudStackContext context) {
+      return context.unwrap(CloudStackApiMetadata.CONTEXT_TOKEN).getApi().getAccountClient();
    }
 }

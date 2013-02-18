@@ -20,25 +20,25 @@ package org.jclouds.cloudstack.features;
 
 import java.util.Set;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.cloudstack.domain.AsyncCreateResponse;
 import org.jclouds.cloudstack.domain.VirtualMachine;
 import org.jclouds.cloudstack.filters.AuthenticationFilter;
 import org.jclouds.cloudstack.options.AssignVirtualMachineOptions;
 import org.jclouds.cloudstack.options.DeployVirtualMachineOptions;
 import org.jclouds.cloudstack.options.ListVirtualMachinesOptions;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.OnlyElement;
 import org.jclouds.rest.annotations.QueryParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.SelectJson;
-import org.jclouds.rest.annotations.Unwrap;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -57,30 +57,33 @@ public interface VirtualMachineAsyncClient {
    /**
     * @see VirtualMachineClient#listVirtualMachines
     */
+   @Named("listVirtualMachines")
    @GET
    @QueryParams(keys = { "command", "listAll" }, values = { "listVirtualMachines", "true" })
    @SelectJson("virtualmachine")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnEmptySetOnNotFoundOr404.class)
+   @Fallback(EmptySetOnNotFoundOr404.class)
    ListenableFuture<Set<VirtualMachine>> listVirtualMachines(ListVirtualMachinesOptions... options);
 
    /**
     * @see VirtualMachineClient#getVirtualMachine
     */
+   @Named("listVirtualMachines")
    @GET
    @QueryParams(keys = { "command", "listAll" }, values = { "listVirtualMachines", "true" })
    @SelectJson("virtualmachine")
    @OnlyElement
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<VirtualMachine> getVirtualMachine(@QueryParam("id") String id);
 
    /**
     * @see VirtualMachineClient#deployVirtualMachineInZone
     */
+   @Named("deployVirtualMachine")
    @GET
    @QueryParams(keys = "command", values = "deployVirtualMachine")
-   @Unwrap
+   @SelectJson({ "deployvirtualmachine", "deployvirtualmachineresponse" })
    @Consumes(MediaType.APPLICATION_JSON)
    ListenableFuture<AsyncCreateResponse> deployVirtualMachineInZone(@QueryParam("zoneid") String zoneId,
          @QueryParam("serviceofferingid") String serviceOfferingId, @QueryParam("templateid") String templateId,
@@ -89,6 +92,7 @@ public interface VirtualMachineAsyncClient {
    /**
     * @see VirtualMachineClient#rebootVirtualMachine
     */
+   @Named("rebootVirtualMachine")
    @GET
    @QueryParams(keys = "command", values = "rebootVirtualMachine")
    @SelectJson("jobid")
@@ -98,6 +102,7 @@ public interface VirtualMachineAsyncClient {
    /**
     * @see VirtualMachineClient#startVirtualMachine
     */
+   @Named("startVirtualMachine")
    @GET
    @QueryParams(keys = "command", values = "startVirtualMachine")
    @SelectJson("jobid")
@@ -107,6 +112,7 @@ public interface VirtualMachineAsyncClient {
    /**
     * @see VirtualMachineClient#stopVirtualMachine
     */
+   @Named("stopVirtualMachine")
    @GET
    @QueryParams(keys = "command", values = "stopVirtualMachine")
    @SelectJson("jobid")
@@ -116,6 +122,7 @@ public interface VirtualMachineAsyncClient {
    /**
     * @see VirtualMachineClient#resetPasswordForVirtualMachine
     */
+   @Named("resetPasswordForVirtualMachine")
    @GET
    @QueryParams(keys = "command", values = "resetPasswordForVirtualMachine")
    @SelectJson("jobid")
@@ -125,6 +132,7 @@ public interface VirtualMachineAsyncClient {
    /**
     * @see VirtualMachineClient#getEncryptedPasswordForVirtualMachine
     */
+   @Named("getVMPassword")
    @GET
    @QueryParams(keys = "command", values = "getVMPassword")
    @SelectJson("encryptedpassword")
@@ -134,6 +142,7 @@ public interface VirtualMachineAsyncClient {
    /**
     * @see VirtualMachineClient#changeServiceForVirtualMachine
     */
+   @Named("changeServiceForVirtualMachine")
    @GET
    @QueryParams(keys = "command", values = "changeServiceForVirtualMachine")
    @SelectJson("jobid")
@@ -143,6 +152,7 @@ public interface VirtualMachineAsyncClient {
    /**
     * @see VirtualMachineClient#updateVirtualMachine
     */
+   @Named("updateVirtualMachine")
    @GET
    @QueryParams(keys = "command", values = "updateVirtualMachine")
    @SelectJson("jobid")
@@ -152,16 +162,18 @@ public interface VirtualMachineAsyncClient {
    /**
     * @see VirtualMachineClient#destroyVirtualMachine
     */
+   @Named("destroyVirtualMachine")
    @GET
    @QueryParams(keys = "command", values = "destroyVirtualMachine")
    @SelectJson("jobid")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<String> destroyVirtualMachine(@QueryParam("id") String id);
 
    /**
     * @see VirtualMachineClient#assinVirtualMachine
     */
+   @Named("assignVirtualMachine")
    @GET
    @QueryParams(keys = "command", values = "assignVirtualMachine")
    @SelectJson("jobid")

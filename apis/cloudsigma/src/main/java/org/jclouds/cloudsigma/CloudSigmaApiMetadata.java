@@ -17,9 +17,9 @@
  * under the License.
  */
 package org.jclouds.cloudsigma;
-
 import static org.jclouds.cloudsigma.reference.CloudSigmaConstants.PROPERTY_VNC_PASSWORD;
 import static org.jclouds.compute.config.ComputeServiceProperties.TEMPLATE;
+import static org.jclouds.reflect.Reflection2.typeToken;
 
 import java.net.URI;
 import java.util.Properties;
@@ -43,6 +43,7 @@ import com.google.inject.Module;
 public class CloudSigmaApiMetadata extends BaseRestApiMetadata {
 
    public static final TypeToken<RestContext<CloudSigmaClient, CloudSigmaAsyncClient>> CONTEXT_TOKEN = new TypeToken<RestContext<CloudSigmaClient, CloudSigmaAsyncClient>>() {
+      private static final long serialVersionUID = 1L;
    };
    
    @Override
@@ -69,7 +70,7 @@ public class CloudSigmaApiMetadata extends BaseRestApiMetadata {
       return properties;
    }
 
-   public static class Builder extends BaseRestApiMetadata.Builder {
+   public static class Builder extends BaseRestApiMetadata.Builder<Builder> {
 
       protected Builder() {
          super(CloudSigmaClient.class, CloudSigmaAsyncClient.class);
@@ -81,7 +82,7 @@ public class CloudSigmaApiMetadata extends BaseRestApiMetadata {
          .version("1.0")
          .defaultEndpoint("https://api.cloudsigma.com")
          .defaultProperties(CloudSigmaApiMetadata.defaultProperties())
-         .view(TypeToken.of(ComputeServiceContext.class))
+         .view(typeToken(ComputeServiceContext.class))
          .defaultModules(ImmutableSet.<Class<? extends Module>>of(CloudSigmaRestClientModule.class, CloudSigmaComputeServiceContextModule.class));
       }
 
@@ -91,11 +92,8 @@ public class CloudSigmaApiMetadata extends BaseRestApiMetadata {
       }
 
       @Override
-      public Builder fromApiMetadata(ApiMetadata in) {
-         super.fromApiMetadata(in);
+      protected Builder self() {
          return this;
       }
-
    }
-
 }

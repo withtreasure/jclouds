@@ -18,6 +18,9 @@
  */
 package org.jclouds.azure.management.suppliers;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Throwables.propagate;
+
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -31,42 +34,52 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
+import org.jclouds.domain.Credentials;
 import org.jclouds.http.HttpUtils;
 import org.jclouds.http.config.SSLModule.TrustAllCerts;
-import org.jclouds.rest.annotations.Credential;
+import org.jclouds.location.Provider;
 
 import com.google.common.base.Supplier;
 
 /**
- * 
- * TODO copied from FGCP, should be put in a common place
- * 
- * SSLContext supplier with a configured key manager to enable client authentication with
- * certificates.
- * 
- * @author Dies Koper
+ * TODO this code needs to be completely refactored. It needs to stop using KeyStore of at all possible and definitely
+ * the local filesystem. Please look at oauth for examples on how to do this via PEMs.
  */
+@Deprecated
 @Singleton
 public class SSLContextWithKeysSupplier implements Supplier<SSLContext> {
-   private SSLContext sc;
+   private final Supplier<KeyStore> keyStore;
+   private final TrustManager[] trustManager;
+   private final Supplier<Credentials> creds;
 
    @Inject
-   SSLContextWithKeysSupplier(KeyStore keyStore, @Credential String keyStorePassword, HttpUtils utils,
-            TrustAllCerts trustAllCerts) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException,
-            KeyManagementException {
-
-      TrustManager[] trustManager = null;
-      if (utils.trustAllCerts()) {
-         trustManager = new TrustManager[] { trustAllCerts };
-      }
-      KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-      kmf.init(keyStore, keyStorePassword.toCharArray());
-      sc = SSLContext.getInstance("TLS");
-      sc.init(kmf.getKeyManagers(), trustManager, new SecureRandom());
+   SSLContextWithKeysSupplier(Supplier<KeyStore> keyStore, @Provider Supplier<Credentials> creds, HttpUtils utils,
+         TrustAllCerts trustAllCerts) {
+      this.keyStore = keyStore;
+      this.trustManager = utils.trustAllCerts() ? new TrustManager[] { trustAllCerts } : null;
+      this.creds = creds;
    }
 
    @Override
    public SSLContext get() {
-      return sc;
+      Credentials currentCreds = checkNotNull(creds.get(), "credential supplier returned null");
+      String keyStorePassword = checkNotNull(currentCreds.credential,
+            "credential supplier returned null credential (should be keyStorePassword)");
+      KeyManagerFactory kmf;
+      try {
+         kmf = KeyManagerFactory.getInstance("SunX509");
+         kmf.init(keyStore.get(), keyStorePassword.toCharArray());
+         SSLContext sc = SSLContext.getInstance("TLS");
+         sc.init(kmf.getKeyManagers(), trustManager, new SecureRandom());
+         return sc;
+      } catch (NoSuchAlgorithmException e) {
+         throw propagate(e);
+      } catch (UnrecoverableKeyException e) {
+         throw propagate(e);
+      } catch (KeyStoreException e) {
+         throw propagate(e);
+      } catch (KeyManagementException e) {
+         throw propagate(e);
+      }
    }
 }

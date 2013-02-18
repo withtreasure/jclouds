@@ -18,12 +18,11 @@
  */
 package org.jclouds.openstack.v2_0.functions;
 
+import static org.jclouds.http.Uris.uriBuilder;
+
 import java.net.URI;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
 import javax.inject.Singleton;
-import javax.ws.rs.core.UriBuilder;
 
 import org.jclouds.openstack.v2_0.domain.Extension;
 
@@ -31,20 +30,14 @@ import com.google.common.base.Function;
 
 @Singleton
 public class ExtensionToNameSpace implements Function<Extension, URI> {
-   private final Provider<UriBuilder> uriBuilders;
-
-   @Inject
-   public ExtensionToNameSpace(Provider<UriBuilder> uriBuilders) {
-      this.uriBuilders = uriBuilders;
-   }
 
    @Override
    public URI apply(Extension input) {
-      return uriBuilders.get().uri(input.getNamespace()).scheme("http").build();
+      return uriBuilder(input.getNamespace()).scheme("http").build();
    }
 
    public String toString() {
-      return "extensionToURI()";
+      return "changeSchemeToHttp()";
    }
 
 }

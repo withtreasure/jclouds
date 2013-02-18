@@ -18,20 +18,21 @@
  */
 package org.jclouds.aws.ec2.services;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
+import static org.jclouds.reflect.Reflection2.method;
 
+import java.io.IOException;
+
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
+import org.jclouds.Fallbacks.VoidOnNotFoundOr404;
 import org.jclouds.aws.ec2.xml.DescribePlacementGroupsResponseHandler;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.http.functions.ParseSax;
 import org.jclouds.http.functions.ReleasePayloadAndReturn;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnVoidOnNotFoundOr404;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
-import com.google.inject.TypeLiteral;
-
+import com.google.common.collect.Lists;
+import com.google.common.reflect.Invokable;
 /**
  * Tests behavior of {@code PlacementGroupAsyncClient}
  * 
@@ -42,9 +43,9 @@ import com.google.inject.TypeLiteral;
 public class PlacementGroupAsyncClientTest extends BaseAWSEC2AsyncClientTest<PlacementGroupAsyncClient> {
 
    public void testDeletePlacementGroup() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PlacementGroupAsyncClient.class.getMethod("deletePlacementGroupInRegion", String.class,
+      Invokable<?, ?> method = method(PlacementGroupAsyncClient.class, "deletePlacementGroupInRegion", String.class,
                String.class);
-      HttpRequest request = processor.createRequest(method, null, "name");
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "name"));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -53,32 +54,47 @@ public class PlacementGroupAsyncClientTest extends BaseAWSEC2AsyncClientTest<Pla
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnVoidOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, VoidOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
-   public void testCreatePlacementGroup() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PlacementGroupAsyncClient.class.getMethod("createPlacementGroupInRegion", String.class,
-               String.class, String.class);
-      HttpRequest request = processor.createRequest(method, null, "name", "cluster");
+   HttpRequest createPlacementGroup = HttpRequest.builder().method("POST")
+                                                 .endpoint("https://ec2.us-east-1.amazonaws.com/")
+                                                 .addHeader("Host", "ec2.us-east-1.amazonaws.com")
+                                                 .addFormParam("Action", "CreatePlacementGroup")
+                                                 .addFormParam("GroupName", "name")
+                                                 .addFormParam("Signature", "V3o3tjvFQfI1zdP4iZJLnlusP3dSpPFx7bJVJlJbs2w=")
+                                                 .addFormParam("SignatureMethod", "HmacSHA256")
+                                                 .addFormParam("SignatureVersion", "2")
+                                                 .addFormParam("Strategy", "cluster")
+                                                 .addFormParam("Timestamp", "2009-11-08T15%3A54%3A08.897Z")
+                                                 .addFormParam("Version", "2011-05-15")
+                                                 .addFormParam("AWSAccessKeyId", "identity").build();
 
+   public void testCreatePlacementGroup() throws SecurityException, NoSuchMethodException, IOException {
+      Invokable<?, ?> method = method(PlacementGroupAsyncClient.class, "createPlacementGroupInRegion", String.class,
+               String.class, String.class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "name", "cluster"));
+
+      request = (GeneratedHttpRequest) request.getFilters().get(0).filter(request);
+      
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
-      assertPayloadEquals(request, "Action=CreatePlacementGroup&Strategy=cluster&GroupName=name",
-               "application/x-www-form-urlencoded", false);
+      assertPayloadEquals(request, createPlacementGroup.getPayload().getRawContent().toString(),
+            "application/x-www-form-urlencoded", false);
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testCreatePlacementGroupDefault() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PlacementGroupAsyncClient.class.getMethod("createPlacementGroupInRegion", String.class,
+      Invokable<?, ?> method = method(PlacementGroupAsyncClient.class, "createPlacementGroupInRegion", String.class,
                String.class);
-      HttpRequest request = processor.createRequest(method, null, "name");
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "name"));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -87,15 +103,15 @@ public class PlacementGroupAsyncClientTest extends BaseAWSEC2AsyncClientTest<Pla
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDescribePlacementGroups() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PlacementGroupAsyncClient.class.getMethod("describePlacementGroupsInRegion", String.class,
+      Invokable<?, ?> method = method(PlacementGroupAsyncClient.class, "describePlacementGroupsInRegion", String.class,
                String[].class);
-      HttpRequest request = processor.createRequest(method, (String) null);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList((String) null));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -104,15 +120,15 @@ public class PlacementGroupAsyncClientTest extends BaseAWSEC2AsyncClientTest<Pla
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, DescribePlacementGroupsResponseHandler.class);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testDescribePlacementGroupsArgs() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PlacementGroupAsyncClient.class.getMethod("describePlacementGroupsInRegion", String.class,
+      Invokable<?, ?> method = method(PlacementGroupAsyncClient.class, "describePlacementGroupsInRegion", String.class,
                String[].class);
-      HttpRequest request = processor.createRequest(method, null, "1", "2");
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1", "2"));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -121,15 +137,8 @@ public class PlacementGroupAsyncClientTest extends BaseAWSEC2AsyncClientTest<Pla
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, DescribePlacementGroupsResponseHandler.class);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(request);
    }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<PlacementGroupAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<PlacementGroupAsyncClient>>() {
-      };
-   }
-
 }

@@ -95,7 +95,7 @@ public class LocationIdToURIFromAccessForTypeAndVersion implements Supplier<Map<
    @Override
    public Map<String, Supplier<URI>> get() {
       FluentIterable<Service> services = FluentIterable.from(access.get()).filter(apiTypeEquals);
-      if (services.toImmutableSet().size() == 0)
+      if (services.toSet().size() == 0)
          throw new NoSuchElementException(String.format("apiType %s not found in catalog %s", apiType, services));
 
       Iterable<Endpoint> endpoints = concat(services);
@@ -125,8 +125,9 @@ public class LocationIdToURIFromAccessForTypeAndVersion implements Supplier<Map<
    @VisibleForTesting
    Map<String, Endpoint> firstEndpointInLocation(Multimap<String, Endpoint> locationToEndpoints) {
       Builder<String, Endpoint> locationToEndpointBuilder = ImmutableMap.<String, Endpoint> builder();
-      for (String locationId : locationToEndpoints.keySet()) {
-         Collection<Endpoint> endpoints = locationToEndpoints.get(locationId);
+      for (Map.Entry<String, Collection<Endpoint>> entry : locationToEndpoints.asMap().entrySet()) {
+         String locationId = entry.getKey();
+         Collection<Endpoint> endpoints = entry.getValue();
          switch (endpoints.size()) {
          case 0:
             logNoEndpointsInLocation(locationId);
@@ -141,8 +142,9 @@ public class LocationIdToURIFromAccessForTypeAndVersion implements Supplier<Map<
    @VisibleForTesting
    Map<String, Endpoint> refineToVersionSpecificEndpoint(Multimap<String, Endpoint> locationToEndpoints) {
       Builder<String, Endpoint> locationToEndpointBuilder = ImmutableMap.<String, Endpoint> builder();
-      for (String locationId : locationToEndpoints.keySet()) {
-         Collection<Endpoint> endpoints = locationToEndpoints.get(locationId);
+      for (Map.Entry<String, Collection<Endpoint>> entry : locationToEndpoints.asMap().entrySet()) {
+         String locationId = entry.getKey();
+         Collection<Endpoint> endpoints = entry.getValue();
          switch (endpoints.size()) {
          case 0:
             logNoEndpointsInLocation(locationId);

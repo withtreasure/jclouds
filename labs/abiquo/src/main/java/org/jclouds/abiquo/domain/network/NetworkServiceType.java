@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.jclouds.abiquo.domain.network;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -31,24 +32,13 @@ import org.jclouds.rest.RestContext;
 import com.abiquo.server.core.infrastructure.network.NetworkServiceTypeDto;
 
 /**
- * <pre>
+ * Network Service Type defines a network service.
  * 
- * Network Service Type defines a network service. 
+ * The network Service Type is used to select the network interface of the
+ * target host where a NIC in the virtual machine will be attached.
  * 
- * It is used to determine to which {@link NetworkInterface} will be attached 
- * to a {@link Nic} when it (the Nic) is used by an {@link Ip} that belong to 
- * a {@link Network}. 
- * 
- * It executes the same role in the Network configuration as the {@link Tier} does in 
- * the Storage Configuration: a way to classify and name different kind of services
- * that are configured in the 'real' world.
- * 
- * It only needs a name just to be identified. 
- * 
- * They are defined at {@link Datacenter} level: Two {@link NetworkServiceType} can have the 
- * same name if they belong to a different {@link Datacenter}
- * 
- * </pre>
+ * They are scoped at {@link Datacenter} level: two {@link NetworkServiceType}
+ * can have the same name if they belong to a different {@link Datacenter}
  * 
  * @author Jaume Devesa
  */
@@ -86,7 +76,7 @@ public class NetworkServiceType extends DomainWrapper<NetworkServiceTypeDto> {
       }
 
       public Builder name(final String name) {
-         this.name = name;
+         this.name = checkNotNull(name, ValidationErrors.MISSING_REQUIRED_FIELD + name);
          return this;
       }
    }

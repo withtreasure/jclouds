@@ -19,13 +19,12 @@
 package org.jclouds.fujitsu.fgcp.services;
 
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.MediaType;
 
-import org.jclouds.concurrent.Timeout;
 import org.jclouds.fujitsu.fgcp.FGCPAsyncApi;
 import org.jclouds.fujitsu.fgcp.compute.functions.SingleElementResponseToElement;
 import org.jclouds.fujitsu.fgcp.domain.Rule;
@@ -49,9 +48,9 @@ import com.google.common.util.concurrent.ListenableFuture;
 @QueryParams(keys = RequestParameters.VERSION, values = FGCPAsyncApi.VERSION)
 @PayloadParams(keys = RequestParameters.VERSION, values = FGCPAsyncApi.VERSION)
 @Consumes(MediaType.TEXT_XML)
-@Timeout(duration = 60, timeUnit = TimeUnit.SECONDS)
 public interface FirewallAsyncApi extends BuiltinServerAsyncApi {
 
+   @Named("GetEFMConfiguration")
    @POST
    @JAXBResponseParser
    @QueryParams(keys = "Action", values = "GetEFMConfiguration")

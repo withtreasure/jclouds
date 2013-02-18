@@ -18,14 +18,13 @@
  */
 package org.jclouds.gae.config;
 
-import org.jclouds.concurrent.MoreExecutors;
+import static com.google.common.util.concurrent.MoreExecutors.sameThreadExecutor;
+
 import org.jclouds.concurrent.SingleThreaded;
 import org.jclouds.concurrent.config.ConfiguresExecutorService;
 import org.jclouds.concurrent.config.ExecutorServiceModule;
 import org.jclouds.gae.GaeHttpCommandExecutorService;
 import org.jclouds.http.HttpCommandExecutorService;
-import org.jclouds.http.TransformingHttpCommandExecutorService;
-import org.jclouds.http.TransformingHttpCommandExecutorServiceImpl;
 import org.jclouds.http.config.ConfiguresHttpCommandExecutorService;
 import org.jclouds.predicates.SocketOpen;
 import org.jclouds.predicates.SocketOpenUnsupported;
@@ -48,10 +47,10 @@ import com.google.inject.Scopes;
 @ConfiguresExecutorService
 @SingleThreaded
 public class GoogleAppEngineConfigurationModule extends AbstractModule {
-   private final Module executorServiceModule;
+   private final Module userExecutorModule;
 
    public GoogleAppEngineConfigurationModule() {
-      this(new ExecutorServiceModule(MoreExecutors.sameThreadExecutor(), MoreExecutors.sameThreadExecutor()));
+      this(new ExecutorServiceModule(sameThreadExecutor(), sameThreadExecutor()));
    }
 
    /**
@@ -60,8 +59,8 @@ public class GoogleAppEngineConfigurationModule extends AbstractModule {
     * @param currentRequestExecutorService
     * @see CurrentRequestExecutorServiceModule#currentRequestExecutorService
     */
-   public GoogleAppEngineConfigurationModule(Module executorServiceModule) {
-      this.executorServiceModule = executorServiceModule;
+   public GoogleAppEngineConfigurationModule(Module userExecutorModule) {
+      this.userExecutorModule = userExecutorModule;
    }
 
    /**
@@ -71,13 +70,12 @@ public class GoogleAppEngineConfigurationModule extends AbstractModule {
     * @see CurrentRequestExecutorServiceModule#memoizedCurrentRequestExecutorService
     */
    public GoogleAppEngineConfigurationModule(Supplier<ListeningExecutorService> memoizedCurrentRequestExecutorService) {
-      this.executorServiceModule = new CurrentRequestExecutorServiceModule(memoizedCurrentRequestExecutorService);
+      this.userExecutorModule = new CurrentRequestExecutorServiceModule(memoizedCurrentRequestExecutorService);
    }
 
    @Override
    protected void configure() {
-      install(executorServiceModule);
-      bind(TransformingHttpCommandExecutorService.class).to(TransformingHttpCommandExecutorServiceImpl.class);
+      install(userExecutorModule);
       bind(SocketOpen.class).to(SocketOpenUnsupported.class).in(Scopes.SINGLETON);
       bindHttpCommandExecutorService();
    }

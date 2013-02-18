@@ -18,6 +18,7 @@
  */
 package org.jclouds.glesys.features;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -26,15 +27,15 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.EmptyFluentIterableOnNotFoundOr404;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.glesys.domain.IpDetails;
 import org.jclouds.glesys.options.ListIpOptions;
 import org.jclouds.http.filters.BasicAuthentication;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.FormParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.SelectJson;
-import org.jclouds.rest.functions.ReturnEmptyFluentIterableOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.google.common.collect.FluentIterable;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -45,18 +46,19 @@ import com.google.common.util.concurrent.ListenableFuture;
  *
  * @author Adrian Cole, Mattias Holmqvist, Adam Lowe
  * @see IpApi
- * @see <a href="https://customer.glesys.com/api.php" />
+ * @see <a href="https://github.com/GleSYS/API/wiki/API-Documentation" />
  */
 @RequestFilters(BasicAuthentication.class)
 public interface IpAsyncApi {
    /**
     * @see IpApi#listFree
     */
+   @Named("ip:listfree")
    @GET
    @Path("/ip/listfree/ipversion/{ipversion}/datacenter/{datacenter}/platform/{platform}/format/json")
    @Consumes(MediaType.APPLICATION_JSON)
    @SelectJson("ipaddresses")
-   @ExceptionParser(ReturnEmptyFluentIterableOnNotFoundOr404.class)
+   @Fallback(EmptyFluentIterableOnNotFoundOr404.class)
    ListenableFuture<FluentIterable<String>> listFree(@PathParam("ipversion") int ipversion,
                                           @PathParam("datacenter") String datacenter,
                                           @PathParam("platform") String platform);
@@ -64,6 +66,7 @@ public interface IpAsyncApi {
    /**
     * @see IpApi#take
     */
+   @Named("ip:take")
    @POST
    @Path("/ip/take/format/json")
    @SelectJson("details")
@@ -73,6 +76,7 @@ public interface IpAsyncApi {
    /**
     * @see IpApi#release
     */
+   @Named("ip:release")
    @POST
    @Path("/ip/release/format/json")
    @SelectJson("details")
@@ -82,26 +86,29 @@ public interface IpAsyncApi {
    /**
     * @see IpApi#list
     */
+   @Named("ip:listown")
    @GET
    @Path("/ip/listown/format/json")
    @Consumes(MediaType.APPLICATION_JSON)
    @SelectJson("iplist")
-   @ExceptionParser(ReturnEmptyFluentIterableOnNotFoundOr404.class)
+   @Fallback(EmptyFluentIterableOnNotFoundOr404.class)
    ListenableFuture<FluentIterable<IpDetails>> list(ListIpOptions... options);
 
    /**
     * @see IpApi#get
     */
+   @Named("ip:details")
    @GET
    @Path("/ip/details/ipaddress/{ipaddress}/format/json")
    @SelectJson("details")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<IpDetails> get(@PathParam("ipaddress") String ipAddress);
 
    /**
     * @see IpApi#addToServer
     */
+   @Named("ip:add")
    @POST
    @Path("/ip/add/format/json")
    @SelectJson("details")
@@ -112,6 +119,7 @@ public interface IpAsyncApi {
    /**
     * @see IpApi#removeFromServer
     */
+   @Named("ip:remove")
    @POST
    @Path("/ip/remove/format/json")
    @SelectJson("details")
@@ -122,6 +130,7 @@ public interface IpAsyncApi {
    /**
     * @see IpApi#removeFromServer
     */
+   @Named("ip:remove:release")
    @POST
    @FormParams(keys = "release", values = "true")
    @Path("/ip/remove/format/json")
@@ -133,6 +142,7 @@ public interface IpAsyncApi {
    /**
     * @see IpApi#setPtr
     */
+   @Named("ip:setptr")
    @POST
    @Path("/ip/setptr/format/json")
    @SelectJson("details")
@@ -143,6 +153,7 @@ public interface IpAsyncApi {
    /**
     * @see IpApi#resetPtr
     */
+   @Named("ip:resetptr")
    @POST
    @Path("/ip/resetptr/format/json")
    @SelectJson("details")

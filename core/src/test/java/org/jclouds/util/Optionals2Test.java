@@ -17,16 +17,15 @@
  * under the License.
  */
 package org.jclouds.util;
-
+import static org.jclouds.reflect.Reflection2.method;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-import java.lang.reflect.Method;
-
 import org.testng.annotations.Test;
 
 import com.google.common.base.Optional;
+import com.google.common.reflect.Invokable;
 
 /**
  * @author Adrian Cole
@@ -41,26 +40,26 @@ public class Optionals2Test {
    }
 
    public void testReturnTypeOrTypeOfOptionalWhenOptional() throws SecurityException, NoSuchMethodException {
-      Method method = Test.class.getMethod("getOptional");
+      Invokable<?, ?> invoked = method(Test.class, "getOptional");
 
-      assertEquals(Optionals2.returnTypeOrTypeOfOptional(method), String.class);
+      assertEquals(Optionals2.unwrapIfOptional(invoked.getReturnType()), String.class);
    }
 
    public void testReturnTypeOrTypeOfOptionalWhenNotOptional() throws SecurityException, NoSuchMethodException {
-      Method method = Test.class.getMethod("getNotOptional");
+      Invokable<?, ?> invoked = method(Test.class, "getNotOptional");
 
-      assertEquals(Optionals2.returnTypeOrTypeOfOptional(method), String.class);
+      assertEquals(Optionals2.unwrapIfOptional(invoked.getReturnType()), String.class);
    }
 
    public void testIsReturnTypeOptionalWhenOptional() throws SecurityException, NoSuchMethodException {
-      Method method = Test.class.getMethod("getOptional");
+      Invokable<?, ?> invoked = method(Test.class, "getOptional");
 
-      assertTrue(Optionals2.isReturnTypeOptional(method));
+      assertTrue(Optionals2.isReturnTypeOptional(invoked));
    }
 
    public void testIsReturnTypeOptionalWhenNotOptional() throws SecurityException, NoSuchMethodException {
-      Method method = Test.class.getMethod("getNotOptional");
+      Invokable<?, ?> invoked = method(Test.class, "getNotOptional");
 
-      assertFalse(Optionals2.isReturnTypeOptional(method));
+      assertFalse(Optionals2.isReturnTypeOptional(invoked));
    }
 }

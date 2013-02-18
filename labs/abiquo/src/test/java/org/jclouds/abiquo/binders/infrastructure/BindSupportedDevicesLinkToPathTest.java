@@ -18,21 +18,22 @@
  */
 
 package org.jclouds.abiquo.binders.infrastructure;
-
+import static org.jclouds.reflect.Reflection2.method;
 import static org.testng.Assert.assertEquals;
 
-import java.lang.reflect.Method;
 import java.net.URI;
 
 import javax.ws.rs.HttpMethod;
 
 import org.jclouds.abiquo.features.InfrastructureAsyncApi;
+import org.jclouds.reflect.Invocation;
 import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.server.core.infrastructure.DatacenterDto;
 import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 
 /**
  * Unit tests for the {@link BindSupportedDevicesLinkToPath} class.
@@ -59,11 +60,12 @@ public class BindSupportedDevicesLinkToPathTest {
 
       BindSupportedDevicesLinkToPath binder = new BindSupportedDevicesLinkToPath();
 
-      Method withEndpointLink = InfrastructureAsyncApi.class.getMethod("listSupportedStorageDevices",
+      Invokable<?, ?> withEndpointLink = method(InfrastructureAsyncApi.class, "listSupportedStorageDevices",
             DatacenterDto.class);
 
-      GeneratedHttpRequest request = GeneratedHttpRequest.builder().declaring(InfrastructureAsyncApi.class)
-            .javaMethod(withEndpointLink).args(ImmutableList.<Object> of(datacenter)).method(HttpMethod.GET)
+      GeneratedHttpRequest request = GeneratedHttpRequest.builder()
+            .invocation(Invocation.create(withEndpointLink, ImmutableList.<Object> of(datacenter)))
+            .method(HttpMethod.GET)
             .endpoint(URI.create("http://foo/bar")).build();
 
       assertEquals(binder.getNewEndpoint(request, datacenter), "http://foo/bar/action/supported");
@@ -75,11 +77,12 @@ public class BindSupportedDevicesLinkToPathTest {
 
       BindSupportedDevicesLinkToPath binder = new BindSupportedDevicesLinkToPath();
 
-      Method withEndpointLink = InfrastructureAsyncApi.class.getMethod("listSupportedStorageDevices",
+      Invokable<?, ?> withEndpointLink = method(InfrastructureAsyncApi.class, "listSupportedStorageDevices",
             DatacenterDto.class);
 
-      GeneratedHttpRequest request = GeneratedHttpRequest.builder().declaring(InfrastructureAsyncApi.class)
-            .javaMethod(withEndpointLink).args(ImmutableList.<Object> of(datacenter)).method(HttpMethod.GET)
+      GeneratedHttpRequest request = GeneratedHttpRequest.builder()
+            .invocation(Invocation.create(withEndpointLink, ImmutableList.<Object> of(datacenter)))
+            .method(HttpMethod.GET)
             .endpoint(URI.create("http://foo/bar")).build();
 
       assertEquals(binder.getNewEndpoint(request, datacenter), "http://foo/bar/action/supported");

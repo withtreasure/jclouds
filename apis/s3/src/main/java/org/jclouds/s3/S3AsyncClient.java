@@ -21,7 +21,9 @@ package org.jclouds.s3;
 import static org.jclouds.blobstore.attr.BlobScopes.CONTAINER;
 
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
+import javax.inject.Named;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
@@ -31,29 +33,29 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.VoidOnNotFoundOr404;
+import org.jclouds.blobstore.BlobStoreFallbacks.FalseOnContainerNotFound;
+import org.jclouds.blobstore.BlobStoreFallbacks.FalseOnKeyNotFound;
+import org.jclouds.blobstore.BlobStoreFallbacks.NullOnKeyNotFound;
+import org.jclouds.blobstore.BlobStoreFallbacks.ThrowContainerNotFoundOn404;
+import org.jclouds.blobstore.BlobStoreFallbacks.ThrowKeyNotFoundOn404;
 import org.jclouds.blobstore.attr.BlobScope;
-import org.jclouds.blobstore.functions.ReturnFalseOnContainerNotFound;
-import org.jclouds.blobstore.functions.ReturnFalseOnKeyNotFound;
-import org.jclouds.blobstore.functions.ReturnNullOnKeyNotFound;
-import org.jclouds.blobstore.functions.ThrowContainerNotFoundOn404;
-import org.jclouds.blobstore.functions.ThrowKeyNotFoundOn404;
 import org.jclouds.http.functions.ParseETagHeader;
 import org.jclouds.http.options.GetOptions;
 import org.jclouds.javax.annotation.Nullable;
 import org.jclouds.rest.annotations.BinderParam;
 import org.jclouds.rest.annotations.Endpoint;
 import org.jclouds.rest.annotations.EndpointParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.Headers;
 import org.jclouds.rest.annotations.ParamParser;
 import org.jclouds.rest.annotations.ParamValidators;
 import org.jclouds.rest.annotations.QueryParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.ResponseParser;
-import org.jclouds.rest.annotations.SkipEncoding;
 import org.jclouds.rest.annotations.VirtualHost;
 import org.jclouds.rest.annotations.XMLResponseParser;
-import org.jclouds.rest.functions.ReturnVoidOnNotFoundOr404;
+import org.jclouds.s3.S3Fallbacks.TrueOn404OrNotFoundFalseOnIllegalState;
 import org.jclouds.s3.binders.BindACLToXMLPayload;
 import org.jclouds.s3.binders.BindAsHostPrefixIfConfigured;
 import org.jclouds.s3.binders.BindBucketLoggingToXmlPayload;
@@ -67,6 +69,7 @@ import org.jclouds.s3.domain.ListBucketResponse;
 import org.jclouds.s3.domain.ObjectMetadata;
 import org.jclouds.s3.domain.Payer;
 import org.jclouds.s3.domain.S3Object;
+import org.jclouds.s3.fallbacks.FalseIfBucketAlreadyOwnedByYouOrOperationAbortedWhenBucketExists;
 import org.jclouds.s3.filters.RequestAuthorizeSignature;
 import org.jclouds.s3.functions.AssignCorrectHostnameForBucket;
 import org.jclouds.s3.functions.BindRegionToXmlPayload;
@@ -74,8 +77,6 @@ import org.jclouds.s3.functions.DefaultEndpointThenInvalidateRegion;
 import org.jclouds.s3.functions.ObjectKey;
 import org.jclouds.s3.functions.ParseObjectFromHeadersAndHttpContent;
 import org.jclouds.s3.functions.ParseObjectMetadataFromHeaders;
-import org.jclouds.s3.functions.ReturnFalseIfBucketAlreadyOwnedByYouOrOperationAbortedWhenBucketExists;
-import org.jclouds.s3.functions.ReturnTrueOn404OrNotFoundFalseOnIllegalState;
 import org.jclouds.s3.options.CopyObjectOptions;
 import org.jclouds.s3.options.ListBucketOptions;
 import org.jclouds.s3.options.PutBucketOptions;
@@ -104,7 +105,6 @@ import com.google.inject.Provides;
  * @see S3Client
  * @see <a href="http://docs.amazonwebservices.com/AmazonS3/2006-03-01/RESTAPI.html" />
  */
-@SkipEncoding('/')
 @RequestFilters(RequestAuthorizeSignature.class)
 @BlobScope(CONTAINER)
 public interface S3AsyncClient {
@@ -119,9 +119,10 @@ public interface S3AsyncClient {
    /**
     * @see S3Client#getObject
     */
+   @Named("GetObject")
    @GET
    @Path("/{key}")
-   @ExceptionParser(ReturnNullOnKeyNotFound.class)
+   @Fallback(NullOnKeyNotFound.class)
    @ResponseParser(ParseObjectFromHeadersAndHttpContent.class)
    ListenableFuture<S3Object> getObject(
             @Bucket @EndpointParam(parser = AssignCorrectHostnameForBucket.class) @BinderParam(BindAsHostPrefixIfConfigured.class) @ParamValidators(BucketNameValidator.class) String bucketName,
@@ -130,9 +131,10 @@ public interface S3AsyncClient {
    /**
     * @see S3Client#headObject
     */
+   @Named("GetObject")
    @HEAD
    @Path("/{key}")
-   @ExceptionParser(ReturnNullOnKeyNotFound.class)
+   @Fallback(NullOnKeyNotFound.class)
    @ResponseParser(ParseObjectMetadataFromHeaders.class)
    ListenableFuture<ObjectMetadata> headObject(
             @Bucket @EndpointParam(parser = AssignCorrectHostnameForBucket.class) @BinderParam(BindAsHostPrefixIfConfigured.class) @ParamValidators(BucketNameValidator.class) String bucketName,
@@ -141,9 +143,10 @@ public interface S3AsyncClient {
    /**
     * @see S3Client#objectExists
     */
+   @Named("GetObject")
    @HEAD
    @Path("/{key}")
-   @ExceptionParser(ReturnFalseOnKeyNotFound.class)
+   @Fallback(FalseOnKeyNotFound.class)
    ListenableFuture<Boolean> objectExists(
             @Bucket @EndpointParam(parser = AssignCorrectHostnameForBucket.class) @BinderParam(BindAsHostPrefixIfConfigured.class) @ParamValidators(BucketNameValidator.class) String bucketName,
             @PathParam("key") String key);
@@ -151,9 +154,10 @@ public interface S3AsyncClient {
    /**
     * @see S3Client#deleteObject
     */
+   @Named("DeleteObject")
    @DELETE
    @Path("/{key}")
-   @ExceptionParser(ReturnVoidOnNotFoundOr404.class)
+   @Fallback(VoidOnNotFoundOr404.class)
    ListenableFuture<Void> deleteObject(
             @Bucket @EndpointParam(parser = AssignCorrectHostnameForBucket.class) @BinderParam(BindAsHostPrefixIfConfigured.class) @ParamValidators(BucketNameValidator.class) String bucketName,
             @PathParam("key") String key);
@@ -161,6 +165,7 @@ public interface S3AsyncClient {
    /**
     * @see S3Client#putObject
     */
+   @Named("PutObject")
    @PUT
    @Path("/{key}")
    @ResponseParser(ParseETagHeader.class)
@@ -172,10 +177,11 @@ public interface S3AsyncClient {
    /**
     * @see S3Client#putBucketInRegion
     */
+   @Named("CreateBucket")
    @PUT
    @Path("/")
    @Endpoint(Bucket.class)
-   @ExceptionParser(ReturnFalseIfBucketAlreadyOwnedByYouOrOperationAbortedWhenBucketExists.class)
+   @Fallback(FalseIfBucketAlreadyOwnedByYouOrOperationAbortedWhenBucketExists.class)
    ListenableFuture<Boolean> putBucketInRegion(
             @BinderParam(BindRegionToXmlPayload.class) @Nullable String region,
             @Bucket @BinderParam(BindAsHostPrefixIfConfigured.class) @ParamValidators(BucketNameValidator.class) String bucketName,
@@ -184,19 +190,21 @@ public interface S3AsyncClient {
    /**
     * @see S3Client#deleteBucketIfEmpty
     */
+   @Named("DeleteBucket")
    @DELETE
    @Path("/")
-   @ExceptionParser(ReturnTrueOn404OrNotFoundFalseOnIllegalState.class)
+   @Fallback(TrueOn404OrNotFoundFalseOnIllegalState.class)
    ListenableFuture<Boolean> deleteBucketIfEmpty(
             @Bucket @EndpointParam(parser = DefaultEndpointThenInvalidateRegion.class) @BinderParam(BindAsHostPrefixIfConfigured.class) @ParamValidators(BucketNameValidator.class) String bucketName);
 
    /**
     * @see S3Client#bucketExists
     */
-   @HEAD
+   @Named("ListBucket")
+   @GET
    @Path("/")
    @QueryParams(keys = "max-keys", values = "0")
-   @ExceptionParser(ReturnFalseOnContainerNotFound.class)
+   @Fallback(FalseOnContainerNotFound.class)
    ListenableFuture<Boolean> bucketExists(
             @Bucket @EndpointParam(parser = AssignCorrectHostnameForBucket.class) @BinderParam(BindAsHostPrefixIfConfigured.class) @ParamValidators(BucketNameValidator.class) String bucketName);
 
@@ -204,6 +212,7 @@ public interface S3AsyncClient {
    /**
     * @see S3Client#getBucketLocation
     */
+   @Named("GetBucketLocation")
    @GET
    @QueryParams(keys = "location")
    @Path("/")
@@ -215,6 +224,7 @@ public interface S3AsyncClient {
    /**
     * @see S3Client#getBucketPayer
     */
+   @Named("GetBucketRequestPayment")
    @GET
    @QueryParams(keys = "requestPayment")
    @Path("/")
@@ -225,6 +235,7 @@ public interface S3AsyncClient {
    /**
     * @see S3Client#setBucketPayer
     */
+   @Named("PutBucketRequestPayment")
    @PUT
    @QueryParams(keys = "requestPayment")
    @Path("/")
@@ -235,6 +246,7 @@ public interface S3AsyncClient {
    /**
     * @see S3Client#listBucket
     */
+   @Named("ListBucket")
    @GET
    @Path("/")
    @XMLResponseParser(ListBucketHandler.class)
@@ -245,6 +257,7 @@ public interface S3AsyncClient {
    /**
     * @see S3Client#listOwnedBuckets
     */
+   @Named("ListAllMyBuckets")
    @GET
    @XMLResponseParser(ListAllMyBucketsHandler.class)
    @Path("/")
@@ -254,6 +267,7 @@ public interface S3AsyncClient {
    /**
     * @see S3Client#copyObject
     */
+   @Named("PutObject")
    @PUT
    @Path("/{destinationObject}")
    @Headers(keys = "x-amz-copy-source", values = "/{sourceBucket}/{sourceObject}")
@@ -267,10 +281,11 @@ public interface S3AsyncClient {
    /**
     * @see S3Client#getBucketACL
     */
+   @Named("GetBucketAcl")
    @GET
    @QueryParams(keys = "acl")
    @XMLResponseParser(AccessControlListHandler.class)
-   @ExceptionParser(ThrowContainerNotFoundOn404.class)
+   @Fallback(ThrowContainerNotFoundOn404.class)
    @Path("/")
    ListenableFuture<AccessControlList> getBucketACL(
             @Bucket @EndpointParam(parser = AssignCorrectHostnameForBucket.class) @BinderParam(BindAsHostPrefixIfConfigured.class) @ParamValidators(BucketNameValidator.class) String bucketName);
@@ -278,6 +293,7 @@ public interface S3AsyncClient {
    /**
     * @see S3Client#putBucketACL
     */
+   @Named("PutBucketAcl")
    @PUT
    @Path("/")
    @QueryParams(keys = "acl")
@@ -288,11 +304,12 @@ public interface S3AsyncClient {
    /**
     * @see S3Client#getObjectACL
     */
+   @Named("GetObjectAcl")
    @GET
    @QueryParams(keys = "acl")
    @Path("/{key}")
    @XMLResponseParser(AccessControlListHandler.class)
-   @ExceptionParser(ThrowKeyNotFoundOn404.class)
+   @Fallback(ThrowKeyNotFoundOn404.class)
    ListenableFuture<AccessControlList> getObjectACL(
             @Bucket @EndpointParam(parser = AssignCorrectHostnameForBucket.class) @BinderParam(BindAsHostPrefixIfConfigured.class) @ParamValidators(BucketNameValidator.class) String bucketName,
             @PathParam("key") String key);
@@ -300,6 +317,7 @@ public interface S3AsyncClient {
    /**
     * @see S3Client#putObjectACL
     */
+   @Named("PutObjectAcl")
    @PUT
    @QueryParams(keys = "acl")
    @Path("/{key}")
@@ -310,10 +328,11 @@ public interface S3AsyncClient {
    /**
     * @see S3Client#getBucketLogging
     */
+   @Named("GetBucketLogging")
    @GET
    @QueryParams(keys = "logging")
    @XMLResponseParser(BucketLoggingHandler.class)
-   @ExceptionParser(ThrowContainerNotFoundOn404.class)
+   @Fallback(ThrowContainerNotFoundOn404.class)
    @Path("/")
    ListenableFuture<BucketLogging> getBucketLogging(
             @Bucket @EndpointParam(parser = AssignCorrectHostnameForBucket.class) @BinderParam(BindAsHostPrefixIfConfigured.class) @ParamValidators(BucketNameValidator.class) String bucketName);
@@ -321,6 +340,7 @@ public interface S3AsyncClient {
    /**
     * @see S3Client#enableBucketLogging
     */
+   @Named("PutBucketLogging")
    @PUT
    @Path("/")
    @QueryParams(keys = "logging")
@@ -331,6 +351,7 @@ public interface S3AsyncClient {
    /**
     * @see S3Client#putBucketLogging
     */
+   @Named("PutBucketLogging")
    @PUT
    @Path("/")
    @QueryParams(keys = "logging")

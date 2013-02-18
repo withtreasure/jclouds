@@ -20,9 +20,6 @@ package org.jclouds.vcloud.functions;
 
 import static org.jclouds.concurrent.FutureIterables.transformParallel;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-
 import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -30,13 +27,14 @@ import javax.inject.Singleton;
 
 import org.jclouds.Constants;
 import org.jclouds.logging.Logger;
-import org.jclouds.util.Iterables2;
 import org.jclouds.vcloud.VCloudAsyncClient;
 import org.jclouds.vcloud.domain.Org;
 import org.jclouds.vcloud.domain.ReferenceType;
 import org.jclouds.vcloud.domain.network.OrgNetwork;
 
 import com.google.common.base.Function;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 
 /**
  * @author Adrian Cole
@@ -47,26 +45,21 @@ public class NetworksInOrg implements Function<Org, Iterable<OrgNetwork>> {
    public Logger logger = Logger.NULL;
 
    private final VCloudAsyncClient aclient;
-   private final ExecutorService executor;
+   private final ListeningExecutorService userExecutor;
 
    @Inject
-   NetworksInOrg(VCloudAsyncClient aclient, @Named(Constants.PROPERTY_USER_THREADS) ExecutorService executor) {
+   NetworksInOrg(VCloudAsyncClient aclient, @Named(Constants.PROPERTY_USER_THREADS) ListeningExecutorService userExecutor) {
       this.aclient = aclient;
-      this.executor = executor;
+      this.userExecutor = userExecutor;
    }
 
    @Override
    public Iterable<OrgNetwork> apply(final Org org) {
-
-      Iterable<OrgNetwork> networkItems = transformParallel(org.getNetworks().values(),
-            new Function<ReferenceType, Future<? extends OrgNetwork>>() {
-               @Override
-               public Future<? extends OrgNetwork> apply(ReferenceType from) {
-                  return  aclient.getNetworkClient().getNetwork(from.getHref());
-               }
-
-            }, executor, null, logger, "OrgNetworks in org " + org.getName());
-      return Iterables2.concreteCopy(networkItems);
+      return transformParallel(org.getNetworks().values(), new Function<ReferenceType, ListenableFuture<? extends OrgNetwork>>() {
+         public ListenableFuture<? extends OrgNetwork> apply(ReferenceType from) {
+            return aclient.getNetworkClient().getNetwork(from.getHref());
+         }
+      }, userExecutor, null, logger, "OrgNetworks in org " + org.getName());
    }
 
 }

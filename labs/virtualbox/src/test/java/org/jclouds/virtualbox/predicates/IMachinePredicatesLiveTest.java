@@ -20,7 +20,6 @@
 package org.jclouds.virtualbox.predicates;
 
 import static org.jclouds.virtualbox.config.VirtualBoxConstants.VIRTUALBOX_IMAGE_PREFIX;
-import static org.jclouds.virtualbox.config.VirtualBoxConstants.VIRTUALBOX_INSTALLATION_KEY_SEQUENCE;
 import static org.jclouds.virtualbox.predicates.IMachinePredicates.isLinkedClone;
 import static org.testng.Assert.assertTrue;
 
@@ -37,13 +36,13 @@ import org.jclouds.virtualbox.domain.StorageController;
 import org.jclouds.virtualbox.domain.VmSpec;
 import org.jclouds.virtualbox.functions.CloneAndRegisterMachineFromIMachineIfNotAlreadyExists;
 import org.jclouds.virtualbox.functions.CreateAndInstallVm;
-import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterGroups;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.virtualbox_4_1.CleanupMode;
-import org.virtualbox_4_1.IMachine;
-import org.virtualbox_4_1.NetworkAttachmentType;
-import org.virtualbox_4_1.StorageBus;
+import org.virtualbox_4_2.CleanupMode;
+import org.virtualbox_4_2.IMachine;
+import org.virtualbox_4_2.NetworkAttachmentType;
+import org.virtualbox_4_2.StorageBus;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Function;
@@ -80,13 +79,10 @@ public class IMachinePredicatesLiveTest extends BaseVirtualBoxClientLiveTest {
                .cleanUpMode(CleanupMode.Full).controller(ideController).forceOverwrite(true).build();
 
       Injector injector = view.utils().injector();
-      Function<String, String> configProperties = injector.getInstance(ValueOfConfigurationKeyOrNull.class);
       IsoSpec isoSpec = IsoSpec
                .builder()
                .sourcePath(operatingSystemIso)
-               .installationScript(
-                        configProperties.apply(VIRTUALBOX_INSTALLATION_KEY_SEQUENCE).replace("HOSTNAME",
-                                 instanceVmSpec.getVmName())).build();
+               .installationScript(keystrokeSequence).build();
 
       NetworkAdapter networkAdapter = NetworkAdapter.builder().networkAttachmentType(NetworkAttachmentType.NAT)
                .tcpRedirectRule("127.0.0.1", 2222, "", 22).build();
@@ -119,12 +115,12 @@ public class IMachinePredicatesLiveTest extends BaseVirtualBoxClientLiveTest {
       }
    }
    
+   @AfterGroups(groups = "live")
    @Override
-   @AfterClass(groups = "live")
-   protected void tearDown() throws Exception {
+   protected void tearDownContext() {
       for (String vmName : ImmutableSet.of(instanceName)) {
          undoVm(vmName);
       }
-      super.tearDown();
+      super.tearDownContext();
    }
 }

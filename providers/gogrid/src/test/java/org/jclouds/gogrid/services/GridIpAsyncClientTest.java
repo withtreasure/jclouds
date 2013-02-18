@@ -18,19 +18,19 @@
  */
 package org.jclouds.gogrid.services;
 
+import static org.jclouds.reflect.Reflection2.method;
+
 import java.io.IOException;
-import java.lang.reflect.Method;
 
 import org.jclouds.gogrid.domain.IpType;
 import org.jclouds.gogrid.functions.ParseIpListFromJsonResponse;
 import org.jclouds.gogrid.options.GetIpListOptions;
-import org.jclouds.http.HttpRequest;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.inject.TypeLiteral;
-
+import com.google.common.reflect.Invokable;
 /**
  * Tests behavior of {@code GridIpAsyncClient}
  * 
@@ -42,9 +42,9 @@ public class GridIpAsyncClientTest extends BaseGoGridAsyncClientTest<GridIpAsync
 
    @Test
    public void testGetIpListWithOptions() throws NoSuchMethodException, IOException {
-      Method method = GridIpAsyncClient.class.getMethod("getIpList", GetIpListOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method, new GetIpListOptions()
-            .onlyUnassigned().onlyWithType(IpType.PUBLIC));
+      Invokable<?, ?> method = method(GridIpAsyncClient.class, "getIpList", GetIpListOptions[].class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(new GetIpListOptions()
+            .onlyUnassigned().onlyWithType(IpType.PUBLIC)));
 
       assertRequestLineEquals(httpRequest, "GET https://api.gogrid.com/api/grid/ip/list?v=1.5&ip.state=Unassigned&"
             + "ip.type=Public HTTP/1.1");
@@ -53,10 +53,10 @@ public class GridIpAsyncClientTest extends BaseGoGridAsyncClientTest<GridIpAsync
 
       assertResponseParserClassEquals(method, httpRequest, ParseIpListFromJsonResponse.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(httpRequest);
-      httpRequest = Iterables.getOnlyElement(httpRequest.getFilters()).filter(httpRequest);
+      httpRequest = (GeneratedHttpRequest) Iterables.getOnlyElement(httpRequest.getFilters()).filter(httpRequest);
 
       assertRequestLineEquals(httpRequest, "GET https://api.gogrid.com/api/grid/ip/list?v=1.5&ip.state=Unassigned&"
             + "ip.type=Public&sig=e9aafd0a5d4c69bb24536be4bce8a528&api_key=identity " + "HTTP/1.1");
@@ -66,8 +66,8 @@ public class GridIpAsyncClientTest extends BaseGoGridAsyncClientTest<GridIpAsync
 
    @Test
    public void testGetAssignedIpList() throws NoSuchMethodException, IOException {
-      Method method = GridIpAsyncClient.class.getMethod("getAssignedIpList");
-      HttpRequest httpRequest = processor.createRequest(method);
+      Invokable<?, ?> method = method(GridIpAsyncClient.class, "getAssignedIpList");
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.of());
 
       assertRequestLineEquals(httpRequest,
             "GET https://api.gogrid.com/api/grid/ip/list?v=1.5&ip.state=Assigned HTTP/1.1");
@@ -76,20 +76,14 @@ public class GridIpAsyncClientTest extends BaseGoGridAsyncClientTest<GridIpAsync
 
       assertResponseParserClassEquals(method, httpRequest, ParseIpListFromJsonResponse.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(httpRequest);
-      httpRequest = Iterables.getOnlyElement(httpRequest.getFilters()).filter(httpRequest);
+      httpRequest = (GeneratedHttpRequest) Iterables.getOnlyElement(httpRequest.getFilters()).filter(httpRequest);
 
       assertRequestLineEquals(httpRequest, "GET https://api.gogrid.com/api/grid/ip/list?v=1.5&ip.state=Assigned&"
             + "sig=e9aafd0a5d4c69bb24536be4bce8a528&api_key=identity " + "HTTP/1.1");
       assertNonPayloadHeadersEqual(httpRequest, "");
       assertPayloadEquals(httpRequest, null, null, false);
-   }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<GridIpAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<GridIpAsyncClient>>() {
-      };
    }
 }

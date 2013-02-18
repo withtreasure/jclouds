@@ -20,6 +20,7 @@ package org.jclouds.jenkins.v1.features;
 
 import java.util.Map;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -29,16 +30,16 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
+import org.jclouds.jenkins.v1.JenkinsFallbacks.VoidOn302Or404;
 import org.jclouds.jenkins.v1.binders.BindMapToOptionalParams;
 import org.jclouds.jenkins.v1.domain.JobDetails;
 import org.jclouds.jenkins.v1.domain.LastBuild;
 import org.jclouds.jenkins.v1.filters.BasicAuthenticationUnlessAnonymous;
-import org.jclouds.jenkins.v1.functions.ReturnVoidOn302Or404;
 import org.jclouds.rest.annotations.BinderParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.binders.BindToStringPayload;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -55,6 +56,7 @@ public interface JobAsyncApi {
    /**
     * @see JobApi#createFromXML
     */
+   @Named("CreateItem")
    @POST
    @Path("/createItem")
    @Produces(MediaType.TEXT_XML)
@@ -63,51 +65,57 @@ public interface JobAsyncApi {
    /**
     * @see JobApi#get
     */
+   @Named("GetJob")
    @GET
    @Path("/job/{displayName}/api/json")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<JobDetails> get(@PathParam("displayName") String displayName);
    
    /**
     * @see JobApi#delete
     */
+   @Named("DeleteJob")
    @POST
    @Path("/job/{displayName}/doDelete")
-   @ExceptionParser(ReturnVoidOn302Or404.class)
+   @Fallback(VoidOn302Or404.class)
    ListenableFuture<Void> delete(@PathParam("displayName") String displayName);
    
    /**
     * @see JobApi#buildJob
     */
+   @Named("Build")
    @POST
    @Path("/job/{displayName}/build")
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<Void> build(@PathParam("displayName") String displayName);
    
    /**
     * @see JobApi#buildJobWithParameters
     */
+   @Named("BuildWithParameters")
    @POST
    @Path("/job/{displayName}/buildWithParameters")
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<Void> buildWithParameters(@PathParam("displayName") String displayName,
             @BinderParam(BindMapToOptionalParams.class) Map<String, String> parameters);
    
    /**
     * @see JobApi#fetchConfigXML
     */
+   @Named("GetConfigXML")
    @GET
    @Path("/job/{displayName}/config.xml")
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<String> fetchConfigXML(@PathParam("displayName") String displayName);
    
    /**
     * @see JobApi#lastBuild
     */
+   @Named("GetLastBuild")
    @GET
    @Path("/job/{displayName}/lastBuild/api/json")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<LastBuild> lastBuild(@PathParam("displayName") String displayName);
 }

@@ -115,7 +115,13 @@ function ensure_netutils_yum() {
 # most network services require that the hostname is in
 # the /etc/hosts file, or they won't operate
 function ensure_hostname_in_hosts() {
-  egrep -q `hostname` /etc/hosts || awk -v hostname=`hostname` 'END { print $1" "hostname }' /proc/net/arp >> /etc/hosts
+  [ -n "$SSH_CONNECTION" ] && {
+    local ipaddr=`echo $SSH_CONNECTION | awk '{print $3}'`
+  } || {
+    local ipaddr=`hostname -i`
+  }
+  # NOTE: we blindly trust existing hostname settings in /etc/hosts
+  egrep -q `hostname` /etc/hosts || echo "$ipaddr `hostname`" >> /etc/hosts
 }
 
 # download locations for many services are at public dns
@@ -222,7 +228,7 @@ END_OF_JCLOUDS_SCRIPT
 	iptables -I INPUT 1 -p tcp --dport 8080 -j ACCEPT
 	iptables-save
 	mkdir /tmp/$$
-	curl -q -s -S -L --connect-timeout 10 --max-time 600 --retry 20 -X GET  http://download.eclipse.org/jetty/8.1.5.v20120716/dist/jetty-distribution-8.1.5.v20120716.tar.gz |(mkdir -p /tmp/$$ &&cd /tmp/$$ &&tar -xpzf -)
+	curl -q -s -S -L --connect-timeout 10 --max-time 600 --retry 20 -X GET  http://download.eclipse.org/jetty/8.1.8.v20121106/dist/jetty-distribution-8.1.8.v20121106.tar.gz |(mkdir -p /tmp/$$ &&cd /tmp/$$ &&tar -xpzf -)
 	mkdir -p /usr/local/jetty
 	mv /tmp/$$/*/* /usr/local/jetty
 	rm -rf /tmp/$$

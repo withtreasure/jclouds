@@ -23,10 +23,9 @@ import java.util.Map;
 
 import javax.inject.Singleton;
 
-import org.jclouds.rest.annotations.Identity;
 import org.jclouds.trmk.vcloud_0_8.domain.Catalog;
 import org.jclouds.trmk.vcloud_0_8.domain.ReferenceType;
-import org.jclouds.util.Suppliers2;
+import org.jclouds.trmk.vcloud_0_8.endpoints.Org;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -38,6 +37,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
 import com.google.inject.Provides;
+import com.google.inject.TypeLiteral;
 
 /**
  * 
@@ -47,15 +47,8 @@ public class DefaultVCloudReferencesModule extends AbstractModule {
 
    @Override
    protected void configure() {
-
-   }
-
-   @Provides
-   @org.jclouds.trmk.vcloud_0_8.endpoints.Org
-   @Singleton
-   protected Supplier<ReferenceType> provideDefaultOrg(DefaultOrgForUser defaultOrgURIForUser,
-         @Identity String user) {
-      return defaultOrgURIForUser.apply(user);
+      bind(new TypeLiteral<Supplier<ReferenceType>>() {
+      }).annotatedWith(Org.class).to(DefaultOrgForUser.class);
    }
 
    @Provides
@@ -70,7 +63,7 @@ public class DefaultVCloudReferencesModule extends AbstractModule {
    @Singleton
    protected Supplier<ReferenceType> provideDefaultTasksList(DefaultTasksListForOrg defaultTasksListURIForOrg,
          @org.jclouds.trmk.vcloud_0_8.endpoints.Org Supplier<ReferenceType> defaultOrg) {
-      return Suppliers2.compose(defaultTasksListURIForOrg, defaultOrg);
+      return Suppliers.compose(defaultTasksListURIForOrg, defaultOrg);
    }
 
    @Provides
@@ -85,7 +78,7 @@ public class DefaultVCloudReferencesModule extends AbstractModule {
    @Singleton
    protected Supplier<ReferenceType> provideDefaultCatalog(DefaultCatalogForOrg defaultCatalogURIForOrg,
          @org.jclouds.trmk.vcloud_0_8.endpoints.Org Supplier<ReferenceType> defaultOrg) {
-      return Suppliers2.compose(defaultCatalogURIForOrg, defaultOrg);
+      return Suppliers.compose(defaultCatalogURIForOrg, defaultOrg);
    }
 
    @Provides
@@ -122,7 +115,7 @@ public class DefaultVCloudReferencesModule extends AbstractModule {
    @Singleton
    protected Supplier<ReferenceType> provideDefaultVDC(DefaultVDCForOrg defaultVDCURIForOrg,
          @org.jclouds.trmk.vcloud_0_8.endpoints.Org Supplier<ReferenceType> defaultOrg) {
-      return Suppliers2.compose(defaultVDCURIForOrg, defaultOrg);
+      return Suppliers.compose(defaultVDCURIForOrg, defaultOrg);
    }
 
    @Provides
@@ -137,7 +130,7 @@ public class DefaultVCloudReferencesModule extends AbstractModule {
    @Singleton
    protected Supplier<ReferenceType> provideDefaultNetwork(DefaultNetworkForVDC defaultNetworkURIForVDC,
          @org.jclouds.trmk.vcloud_0_8.endpoints.VDC Supplier<ReferenceType> defaultVDC) {
-      return Suppliers2.compose(defaultNetworkURIForVDC, defaultVDC);
+      return Suppliers.compose(defaultNetworkURIForVDC, defaultVDC);
    }
 
    @Provides

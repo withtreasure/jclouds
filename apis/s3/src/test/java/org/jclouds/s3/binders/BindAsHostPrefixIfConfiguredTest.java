@@ -18,23 +18,22 @@
  */
 package org.jclouds.s3.binders;
 
+import static org.jclouds.reflect.Reflection2.method;
 import static org.jclouds.s3.reference.S3Constants.PROPERTY_S3_SERVICE_PATH;
 import static org.jclouds.s3.reference.S3Constants.PROPERTY_S3_VIRTUAL_HOST_BUCKETS;
 import static org.testng.Assert.assertEquals;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Properties;
 
 import org.jclouds.http.HttpRequest;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
 import org.jclouds.s3.S3AsyncClient;
 import org.jclouds.s3.internal.BaseS3AsyncClientTest;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import com.google.inject.TypeLiteral;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 /**
  * Tests behavior of {@code BindAsHostPrefixIfConfigured}
  * 
@@ -43,12 +42,6 @@ import com.google.inject.TypeLiteral;
 // NOTE:without testName, this will not call @Before* and fail w/NPE during surefire
 @Test(groups = "unit", testName = "BindAsHostPrefixIfConfiguredTest")
 public class BindAsHostPrefixIfConfiguredTest extends BaseS3AsyncClientTest<S3AsyncClient> {
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<S3AsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<S3AsyncClient>>() {
-      };
-   }
 
    public void testBucket() throws IOException {
 
@@ -68,8 +61,8 @@ public class BindAsHostPrefixIfConfiguredTest extends BaseS3AsyncClientTest<S3As
       request = binder.bindToRequest(request, "testbucket.example.com");
       assertEquals(request.getRequestLine(), "GET http://euc/services/Walrus/testbucket.example.com HTTP/1.1");
 
-      Method method = S3AsyncClient.class.getMethod("deleteObject", String.class, String.class);
-      request = processor.createRequest(method, "testbucket.example.com", "test.jpg");
+      Invokable<?, ?> method = method(S3AsyncClient.class, "deleteObject", String.class, String.class);
+      request = processor.createRequest(method, ImmutableList.<Object> of("testbucket.example.com", "test.jpg"));
 
       assertRequestLineEquals(request, "DELETE http://euc/services/Walrus/testbucket.example.com/test.jpg HTTP/1.1");
    }

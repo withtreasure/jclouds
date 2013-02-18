@@ -31,8 +31,9 @@ import org.jclouds.rest.AuthorizationException;
 import org.jclouds.rest.InsufficientResourcesException;
 import org.jclouds.rest.ResourceNotFoundException;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
-import com.google.common.base.Throwables;
+import com.google.common.reflect.TypeToken;
 import com.google.inject.CreationException;
 import com.google.inject.ProvisionException;
 import com.google.inject.spi.Message;
@@ -73,7 +74,8 @@ public class Throwables2 {
       }
    }
 
-   public static <T extends Throwable> T getFirstThrowableOfType(TransformParallelException e, Class<T> clazz) {
+   @VisibleForTesting
+   static <T extends Throwable> T getFirstThrowableOfType(TransformParallelException e, Class<T> clazz) {
       for (Exception exception : e.getFromToException().values()) {
          T cause = getFirstThrowableOfType(exception, clazz);
          if (cause != null)
@@ -82,7 +84,8 @@ public class Throwables2 {
       return null;
    }
 
-   public static <T extends Throwable> T getFirstThrowableOfType(ProvisionException e, Class<T> clazz) {
+   @VisibleForTesting
+   static <T extends Throwable> T getFirstThrowableOfType(ProvisionException e, Class<T> clazz) {
       for (Message message : e.getErrorMessages()) {
          if (message.getCause() != null) {
             T cause = getFirstThrowableOfType(message.getCause(), clazz);
@@ -98,7 +101,8 @@ public class Throwables2 {
       return null;
    }
 
-   public static <T extends Throwable> T getFirstThrowableOfType(CreationException e, Class<T> clazz) {
+   @VisibleForTesting
+   static <T extends Throwable> T getFirstThrowableOfType(CreationException e, Class<T> clazz) {
       for (Message message : e.getErrorMessages()) {
          if (message.getCause() != null) {
             T cause = getFirstThrowableOfType(message.getCause(), clazz);
@@ -112,32 +116,6 @@ public class Throwables2 {
          }
       }
       return null;
-   }
-
-   // Note this needs to be kept up-to-date with all top-level exceptions jclouds works against
-   @SuppressWarnings( { "unchecked", "rawtypes" })
-   public static Exception returnFirstExceptionIfInListOrThrowStandardExceptionOrCause(Class[] exceptionTypes,
-            Exception exception) throws Exception {
-      for (Class type : exceptionTypes) {
-         Throwable throwable = getFirstThrowableOfType(exception, type);
-         if (throwable != null) {
-            return (Exception) throwable;
-         }
-      }
-      for (Class<Exception> propagatableExceptionType : new Class[] { IllegalStateException.class,
-               AssertionError.class, UnsupportedOperationException.class, IllegalArgumentException.class,
-               AuthorizationException.class, ResourceNotFoundException.class, InsufficientResourcesException.class,
-               HttpResponseException.class }) {
-         Throwable throwable = getFirstThrowableOfType(exception, propagatableExceptionType);
-         if (throwable != null) {
-            if (throwable instanceof AssertionError)
-               throw (AssertionError) throwable;
-            else
-               throw (Exception) throwable;
-         }
-      }
-      Throwables.propagateIfPossible(exception.getCause(), Exception.class);
-      throw exception;
    }
 
    public static <T> T propagateAuthorizationOrOriginalException(Exception e) {
@@ -149,4 +127,24 @@ public class Throwables2 {
       return null;
    }
 
+   // Note this needs to be kept up-to-date with all top-level exceptions jclouds works against
+   @SuppressWarnings("unchecked")
+   public static void propagateIfPossible(Throwable exception, Iterable<TypeToken<? extends Throwable>> throwables)
+         throws Throwable {
+      for (TypeToken<? extends Throwable> type : throwables) {
+         Throwable throwable = Throwables2.getFirstThrowableOfType(exception, (Class<Throwable>) type.getRawType());
+         if (throwable != null) {
+            throw throwable;
+         }
+      }
+      for (Class<Exception> propagatableExceptionType : new Class[] { IllegalStateException.class,
+            AssertionError.class, UnsupportedOperationException.class, IllegalArgumentException.class,
+            AuthorizationException.class, ResourceNotFoundException.class, InsufficientResourcesException.class,
+            HttpResponseException.class }) {
+         Throwable throwable = Throwables2.getFirstThrowableOfType(exception, propagatableExceptionType);
+         if (throwable != null) {
+            throw throwable;
+         }
+      }
+   }
 }

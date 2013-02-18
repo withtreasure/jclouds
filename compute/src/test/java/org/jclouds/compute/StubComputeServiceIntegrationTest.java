@@ -17,12 +17,13 @@
  * under the License.
  */
 package org.jclouds.compute;
-
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.reportMatcher;
+import static org.jclouds.util.Predicates2.retry;
 import static org.testng.Assert.assertEquals;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.easymock.IArgumentMatcher;
+import org.jclouds.compute.config.AdminAccessConfiguration;
 import org.jclouds.compute.domain.ExecResponse;
 import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.internal.BaseComputeServiceLiveTest;
@@ -39,11 +41,8 @@ import org.jclouds.compute.util.OpenSocketFinder;
 import org.jclouds.crypto.Pems;
 import org.jclouds.domain.LoginCredentials;
 import org.jclouds.io.Payload;
-import org.jclouds.predicates.RetryablePredicate;
 import org.jclouds.predicates.SocketOpen;
 import org.jclouds.rest.AuthorizationException;
-import org.jclouds.scriptbuilder.statements.login.AdminAccess;
-import org.jclouds.scriptbuilder.statements.login.AdminAccess.Configuration;
 import org.jclouds.ssh.SshClient;
 import org.jclouds.util.Strings2;
 import org.testng.annotations.Test;
@@ -84,7 +83,7 @@ public class StubComputeServiceIntegrationTest extends BaseComputeServiceLiveTes
 
       replay(socketOpen);
 
-      socketTester = new RetryablePredicate<HostAndPort>(socketOpen, 1, 1, TimeUnit.MILLISECONDS);
+      socketTester = retry(socketOpen, 1, 1, MILLISECONDS);
       
       openSocketFinder = new OpenSocketFinder(){
 
@@ -104,34 +103,26 @@ public class StubComputeServiceIntegrationTest extends BaseComputeServiceLiveTes
    @Override
    protected Module getSshModule() {
       return new AbstractModule() {
-
          @Override
          protected void configure() {
-            bind(AdminAccess.Configuration.class).toInstance(new Configuration() {
-
-               @Override
+            bind(AdminAccessConfiguration.class).toInstance(new AdminAccessConfiguration() {
                public Supplier<String> defaultAdminUsername() {
                   return Suppliers.ofInstance("defaultAdminUsername");
                }
 
-               @Override
                public Supplier<Map<String, String>> defaultAdminSshKeys() {
                   return Suppliers.<Map<String, String>> ofInstance(ImmutableMap.of("public", "publicKey", "private",
                         Pems.PRIVATE_PKCS1_MARKER));
                }
-
-               @Override
+               
                public Function<String, String> cryptFunction() {
                   return new Function<String, String>() {
-
-                     @Override
                      public String apply(String input) {
                         return String.format("crypt(%s)", input);
                      }
-
                   };
                }
-
+               
                public Supplier<String> passwordGenerator() {
                   return Suppliers.ofInstance("randompassword");
                }
@@ -319,8 +310,13 @@ public class StubComputeServiceIntegrationTest extends BaseComputeServiceLiveTes
                expect(clientNew.exec("java -fullversion\n")).andReturn(EXEC_GOOD);
                clientNew.disconnect();
 
+               String startJetty = new StringBuilder()
+                  .append("cd /usr/local/jetty").append('\n')
+                  .append("nohup java -jar start.jar jetty.port=8080 > start.out 2> start.err < /dev/null &").append('\n')
+                  .append("test $? && sleep 1").append('\n').toString();
+
                clientNew.connect();
-               expect(clientNew.exec("cd /usr/local/jetty\n./bin/jetty.sh start\n")).andReturn(EXEC_GOOD);
+               expect(clientNew.exec(startJetty)).andReturn(EXEC_GOOD);
                clientNew.disconnect();
 
                clientNew.connect();
@@ -328,7 +324,7 @@ public class StubComputeServiceIntegrationTest extends BaseComputeServiceLiveTes
                clientNew.disconnect();
 
                clientNew.connect();
-               expect(clientNew.exec("cd /usr/local/jetty\n./bin/jetty.sh start\n")).andReturn(EXEC_GOOD);
+               expect(clientNew.exec(startJetty)).andReturn(EXEC_GOOD);
                clientNew.disconnect();
 
             } catch (IOException e) {

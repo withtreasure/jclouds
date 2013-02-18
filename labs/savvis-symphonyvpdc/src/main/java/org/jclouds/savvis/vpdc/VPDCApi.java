@@ -19,16 +19,17 @@
 package org.jclouds.savvis.vpdc;
 
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.jclouds.compute.domain.CIMOperatingSystem;
-import org.jclouds.concurrent.Timeout;
 import org.jclouds.rest.annotations.Delegate;
 import org.jclouds.savvis.vpdc.domain.Resource;
 import org.jclouds.savvis.vpdc.features.BrowsingApi;
 import org.jclouds.savvis.vpdc.features.FirewallApi;
 import org.jclouds.savvis.vpdc.features.ServiceManagementApi;
 import org.jclouds.savvis.vpdc.features.VMApi;
+import org.jclouds.savvis.vpdc.internal.Org;
+
+import com.google.inject.Provides;
 
 /**
  * Provides synchronous access to VPDC.
@@ -38,7 +39,6 @@ import org.jclouds.savvis.vpdc.features.VMApi;
  * @see <a href="https://api.sandbox.savvis.net/doc/spec/api/index.html" />
  * @author Adrian Cole
  */
-@Timeout(duration = 60, timeUnit = TimeUnit.SECONDS)
 public interface VPDCApi {
 
    /**
@@ -69,6 +69,8 @@ public interface VPDCApi {
     * 
     * @return a listing of all orgs that the current user has access to.
     */
+   @Provides
+   @Org
    Set<Resource> listOrgs();
 
    /**
@@ -78,5 +80,6 @@ public interface VPDCApi {
     * @return the operating systems that are predefined in the provider
     * @see <a href="https://api.sandbox.savvis.net/doc/spec/api/addSingleVM.html" />
     */
+   @Provides
    Set<CIMOperatingSystem> listPredefinedOperatingSystems();
 }

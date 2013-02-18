@@ -26,18 +26,20 @@ import org.jclouds.openstack.swift.reference.SwiftHeaders;
 import org.jclouds.rest.annotations.Endpoint;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.ResponseParser;
-import org.jclouds.rest.annotations.SkipEncoding;
 
+import javax.inject.Named;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.core.MediaType;
 
 /**
  * @author Andrei Savu
  * @see TemporaryUrlKeyApi
+ * @see <a href="http://docs.openstack.org/trunk/openstack-object-storage/admin/content/swift-tempurl.html">docs</a>
  */
-@SkipEncoding('/')
 @RequestFilters(AuthenticateRequest.class)
 @Endpoint(Storage.class)
 public interface TemporaryUrlKeyAsyncApi {
@@ -45,14 +47,17 @@ public interface TemporaryUrlKeyAsyncApi {
    /**
     * @see TemporaryUrlKeyApi#getTemporaryUrlKey
     */
+   @Named("GetAccountMetadata")
    @HEAD
    @Path("/")
+   @Consumes(MediaType.WILDCARD)
    @ResponseParser(ParseTemporaryUrlKeyFromHeaders.class)
    ListenableFuture<String> getTemporaryUrlKey();
 
    /**
     * @see TemporaryUrlKeyApi#setTemporaryUrlKey
     */
+   @Named("UpdateAccountMetadata")
    @POST
    @Path("/")
    ListenableFuture<Void> setTemporaryUrlKey(@HeaderParam(SwiftHeaders.ACCOUNT_TEMPORARY_URL_KEY) String key);

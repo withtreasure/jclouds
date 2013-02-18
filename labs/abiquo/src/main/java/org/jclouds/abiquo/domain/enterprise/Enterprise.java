@@ -71,17 +71,17 @@ import com.abiquo.server.core.infrastructure.network.VLANNetworksDto;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.inject.TypeLiteral;
 
 /**
- * Adds high level functionality to {@link EnterpriseDto}.
+ * Represents a tenant.
+ * <p>
+ * Each tenant has a set of available locations, and a set of compute,
+ * networking and storage resources that can be consumed in the assigned
+ * locations.
  * 
  * @author Ignasi Barrera
  * @author Francesc Montserrat
- * @see API: <a
- *      href="http://community.abiquo.com/display/ABI20/EnterpriseResource">
- *      http://community.abiquo.com/display/ABI20/EnterpriseResource</a>
  */
 public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
    /** The default value for the reservation restricted flag. */
@@ -164,7 +164,7 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     * @return Filtered list of virtual datacenters in this enterprise.
     */
    public List<VirtualDatacenter> listVirtualDatacenters(final Predicate<VirtualDatacenter> filter) {
-      return Lists.newLinkedList(filter(listVirtualDatacenters(), filter));
+      return ImmutableList.copyOf(filter(listVirtualDatacenters(), filter));
    }
 
    /**
@@ -214,7 +214,7 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     * @return Filtered list of template definition lists of the enterprise.
     */
    public List<TemplateDefinitionList> listTemplateDefinitionLists(final Predicate<TemplateDefinitionList> filter) {
-      return Lists.newLinkedList(filter(listTemplateDefinitionLists(), filter));
+      return ImmutableList.copyOf(filter(listTemplateDefinitionLists(), filter));
    }
 
    /**
@@ -280,7 +280,7 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     * @return Filtered list of datacenter limits by enterprise.
     */
    public List<Limits> listLimits(final Predicate<Limits> filter) {
-      return Lists.newLinkedList(filter(listLimits(), filter));
+      return ImmutableList.copyOf(filter(listLimits(), filter));
    }
 
    /**
@@ -353,7 +353,7 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     * @return Filtered list of users of this enterprise.
     */
    public List<User> listUsers(final Predicate<User> filter) {
-      return Lists.newLinkedList(filter(listUsers(), filter));
+      return ImmutableList.copyOf(filter(listUsers(), filter));
    }
 
    /**
@@ -408,7 +408,7 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     * @return Filtered list of roles by this enterprise.
     */
    public List<Role> listRoles(final Predicate<Role> filter) {
-      return Lists.newLinkedList(filter(listRoles(), filter));
+      return ImmutableList.copyOf(filter(listRoles(), filter));
    }
 
    /**
@@ -452,7 +452,7 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     */
    public List<VirtualMachineTemplate> listTemplatesInRepository(final Datacenter datacenter,
          final Predicate<VirtualMachineTemplate> filter) {
-      return Lists.newLinkedList(filter(listTemplatesInRepository(datacenter), filter));
+      return ImmutableList.copyOf(filter(listTemplatesInRepository(datacenter), filter));
    }
 
    /**
@@ -492,13 +492,13 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
    public List<VirtualMachineTemplate> listTemplates() {
       ListVirtualMachineTemplates strategy = context.getUtils().getInjector()
             .getInstance(ListVirtualMachineTemplates.class);
-      return Lists.newLinkedList(strategy.execute(this));
+      return ImmutableList.copyOf(strategy.execute(this));
    }
 
    public List<VirtualMachineTemplate> listTemplates(final Predicate<VirtualMachineTemplate> filter) {
       ListVirtualMachineTemplates strategy = context.getUtils().getInjector()
             .getInstance(ListVirtualMachineTemplates.class);
-      return Lists.newLinkedList(strategy.execute(this, filter));
+      return ImmutableList.copyOf(strategy.execute(this, filter));
    }
 
    public VirtualMachineTemplate findTemplate(final Predicate<VirtualMachineTemplate> filter) {
@@ -513,7 +513,7 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
    }
 
    public List<Datacenter> listAllowedDatacenters(final Predicate<Datacenter> filter) {
-      return Lists.newLinkedList(filter(listAllowedDatacenters(), filter));
+      return ImmutableList.copyOf(filter(listAllowedDatacenters(), filter));
    }
 
    public Datacenter findAllowedDatacenter(final Predicate<Datacenter> filter) {
@@ -542,7 +542,7 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
    @EnterpriseEdition
    public List<ExternalNetwork> listExternalNetworks(final Datacenter datacenter,
          final Predicate<Network<ExternalIp>> filter) {
-      return Lists.newLinkedList(filter(listExternalNetworks(datacenter), filter));
+      return ImmutableList.copyOf(filter(listExternalNetworks(datacenter), filter));
    }
 
    @EnterpriseEdition
@@ -568,7 +568,7 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
    @EnterpriseEdition
    public List<UnmanagedNetwork> listUnmanagedNetworks(final Datacenter datacenter,
          final Predicate<Network<UnmanagedIp>> filter) {
-      return Lists.newLinkedList(filter(listUnmanagedNetworks(datacenter), filter));
+      return ImmutableList.copyOf(filter(listUnmanagedNetworks(datacenter), filter));
    }
 
    @EnterpriseEdition
@@ -605,7 +605,7 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     * @return Filtered list of virtual appliances by this enterprise.
     */
    public List<VirtualAppliance> listVirtualAppliances(final Predicate<VirtualAppliance> filter) {
-      return Lists.newLinkedList(filter(listVirtualAppliances(), filter));
+      return ImmutableList.copyOf(filter(listVirtualAppliances(), filter));
    }
 
    /**
@@ -652,7 +652,7 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
     * @return Filtered list of virtual machines by this enterprise.
     */
    public List<VirtualMachine> listVirtualMachines(final Predicate<VirtualMachine> filter) {
-      return Lists.newLinkedList(filter(listVirtualMachines(), filter));
+      return ImmutableList.copyOf(filter(listVirtualMachines(), filter));
    }
 
    /**
@@ -678,7 +678,7 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
    }
 
    public List<VirtualMachine> listReservedMachines(final Predicate<VirtualMachine> filter) {
-      return Lists.newLinkedList(filter(listVirtualMachines(), filter));
+      return ImmutableList.copyOf(filter(listVirtualMachines(), filter));
    }
 
    public VirtualMachine findReservedMachine(final Predicate<VirtualMachine> filter) {

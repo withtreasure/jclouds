@@ -30,7 +30,6 @@ import org.jclouds.abiquo.domain.network.options.IpOptions;
 import org.jclouds.abiquo.domain.network.options.NetworkOptions;
 import org.jclouds.abiquo.domain.options.search.FilterOptions;
 import org.jclouds.abiquo.reference.annotations.EnterpriseEdition;
-import org.jclouds.concurrent.Timeout;
 
 import com.abiquo.model.enumerator.HypervisorType;
 import com.abiquo.model.enumerator.RemoteServiceType;
@@ -86,7 +85,6 @@ import com.abiquo.server.core.infrastructure.storage.TiersDto;
  * @author Ignasi Barrera
  * @author Francesc Montserrat
  */
-@Timeout(duration = 30, timeUnit = TimeUnit.SECONDS)
 public interface InfrastructureApi {
    /*********************** Datacenter ***********************/
 
@@ -152,7 +150,6 @@ public interface InfrastructureApi {
     *           Password to authenticate.
     * @return The physical machine.
     */
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    MachineDto discoverSingleMachine(DatacenterDto datacenter, String ip, HypervisorType hypervisorType, String user,
          String password);
 
@@ -178,7 +175,6 @@ public interface InfrastructureApi {
     *           Optional query params.
     * @return The physical machine.
     */
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    MachineDto discoverSingleMachine(DatacenterDto datacenter, String ip, HypervisorType hypervisorType, String user,
          String password, MachineOptions options);
 
@@ -204,7 +200,6 @@ public interface InfrastructureApi {
     *           Password to authenticate.
     * @return The physical machine list.
     */
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    MachinesDto discoverMultipleMachines(final DatacenterDto datacenter, final String ipFrom, final String ipTo,
          final HypervisorType hypervisorType, final String user, final String password);
 
@@ -232,7 +227,6 @@ public interface InfrastructureApi {
     *           Optional query params.
     * @return The physical machine list.
     */
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    MachinesDto discoverMultipleMachines(final DatacenterDto datacenter, final String ipFrom, final String ipTo,
          final HypervisorType hypervisorType, final String user, final String password, final MachineOptions options);
 
@@ -404,7 +398,6 @@ public interface InfrastructureApi {
     * @return The list of managed racks for the datacenter.
     */
    @EnterpriseEdition
-   @Timeout(duration = 60, timeUnit = TimeUnit.SECONDS)
    UcsRacksDto listManagedRacks(DatacenterDto datacenter);
 
    /**
@@ -417,7 +410,6 @@ public interface InfrastructureApi {
     * @return The created rack.
     */
    @EnterpriseEdition
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    UcsRackDto createManagedRack(final DatacenterDto datacenter, final UcsRackDto rack);
 
    /**
@@ -430,7 +422,6 @@ public interface InfrastructureApi {
     * @return The rack or <code>null</code> if it does not exist.
     */
    @EnterpriseEdition
-   @Timeout(duration = 60, timeUnit = TimeUnit.SECONDS)
    UcsRackDto getManagedRack(DatacenterDto datacenter, Integer rackId);
 
    /**
@@ -441,7 +432,6 @@ public interface InfrastructureApi {
     * @return The updated rack.
     */
    @EnterpriseEdition
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    UcsRackDto updateManagedRack(final UcsRackDto rack);
 
    /**
@@ -452,7 +442,6 @@ public interface InfrastructureApi {
     * @return The list of service profiles for the rack.
     */
    @EnterpriseEdition
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    LogicServersDto listServiceProfiles(UcsRackDto rack);
 
    /**
@@ -465,7 +454,6 @@ public interface InfrastructureApi {
     * @return The list of service profiles for the rack.
     */
    @EnterpriseEdition
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    LogicServersDto listServiceProfiles(UcsRackDto rack, FilterOptions options);
 
    /**
@@ -476,7 +464,6 @@ public interface InfrastructureApi {
     * @return The list of service profile templates for the rack.
     */
    @EnterpriseEdition
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    LogicServersDto listServiceProfileTemplates(UcsRackDto rack);
 
    /**
@@ -489,7 +476,6 @@ public interface InfrastructureApi {
     * @return The list of service profile templates for the rack.
     */
    @EnterpriseEdition
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    LogicServersDto listServiceProfileTemplates(UcsRackDto rack, FilterOptions options);
 
    /**
@@ -500,7 +486,6 @@ public interface InfrastructureApi {
     * @return The list of organizations for the rack.
     */
    @EnterpriseEdition
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    OrganizationsDto listOrganizations(UcsRackDto rack);
 
    /**
@@ -513,7 +498,6 @@ public interface InfrastructureApi {
     * @return The list of organizations for the rack.
     */
    @EnterpriseEdition
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    OrganizationsDto listOrganizations(UcsRackDto rack, FilterOptions options);
 
    /**
@@ -529,7 +513,6 @@ public interface InfrastructureApi {
     *           The name of the new service profile.
     */
    @EnterpriseEdition
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    void cloneLogicServer(UcsRackDto rack, LogicServerDto logicServer, OrganizationDto organization, String newName);
 
    /**
@@ -541,7 +524,6 @@ public interface InfrastructureApi {
     *           The original logic server.
     */
    @EnterpriseEdition
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    void deleteLogicServer(UcsRackDto rack, LogicServerDto logicServer);
 
    /**
@@ -557,7 +539,6 @@ public interface InfrastructureApi {
     *           The name of the blade.
     */
    @EnterpriseEdition
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    void associateLogicServer(UcsRackDto rack, LogicServerDto logicServer, OrganizationDto organization, String bladeName);
 
    /**
@@ -576,7 +557,6 @@ public interface InfrastructureApi {
     *           The name of the blade.
     */
    @EnterpriseEdition
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    void associateTemplate(UcsRackDto rack, LogicServerDto logicServer, OrganizationDto organization, String newName,
          String bladeName);
 
@@ -595,7 +575,6 @@ public interface InfrastructureApi {
     *           The name of the blade.
     */
    @EnterpriseEdition
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    void cloneAndAssociateLogicServer(UcsRackDto rack, LogicServerDto logicServer, OrganizationDto organization,
          String newName, String bladeName);
 
@@ -608,7 +587,6 @@ public interface InfrastructureApi {
     *           The logic server.
     */
    @EnterpriseEdition
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    void dissociateLogicServer(UcsRackDto rack, LogicServerDto logicServer);
 
    /**
@@ -622,7 +600,6 @@ public interface InfrastructureApi {
     *           The fsm.
     */
    @EnterpriseEdition
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    FsmsDto listFsms(UcsRackDto rack, String dn);
 
    /*********************** Remote Service ********************** */
@@ -767,7 +744,7 @@ public interface InfrastructureApi {
     * @param machine
     *           The machine to release.
     */
-   Void cancelReservation(EnterpriseDto enterprise, MachineDto machine);
+   void cancelReservation(EnterpriseDto enterprise, MachineDto machine);
 
    /**
     * List all machines racks for a rack.

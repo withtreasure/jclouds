@@ -40,16 +40,15 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.dmtf.ovf.NetworkSection;
 import org.jclouds.dmtf.ovf.StartupSection;
 import org.jclouds.rest.annotations.BinderParam;
-import org.jclouds.rest.annotations.Delegate;
 import org.jclouds.rest.annotations.EndpointParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.JAXBResponseParser;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.binders.BindToXMLPayload;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 import org.jclouds.vcloud.director.v1_5.domain.Owner;
 import org.jclouds.vcloud.director.v1_5.domain.ProductSectionList;
 import org.jclouds.vcloud.director.v1_5.domain.Task;
@@ -61,7 +60,7 @@ import org.jclouds.vcloud.director.v1_5.domain.params.UndeployVAppParams;
 import org.jclouds.vcloud.director.v1_5.domain.section.LeaseSettingsSection;
 import org.jclouds.vcloud.director.v1_5.domain.section.NetworkConfigSection;
 import org.jclouds.vcloud.director.v1_5.filters.AddVCloudAuthorizationAndCookieToRequest;
-import org.jclouds.vcloud.director.v1_5.functions.href.VAppURNToHref;
+import org.jclouds.vcloud.director.v1_5.functions.URNToHref;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -78,8 +77,8 @@ public interface VAppAsyncApi {
    @GET
    @Consumes(VAPP)
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
-   ListenableFuture<VApp> get(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn);
+   @Fallback(NullOnNotFoundOr404.class)
+   ListenableFuture<VApp> get(@EndpointParam(parser = URNToHref.class) String vAppUrn);
 
    /**
     * @see VAppApi#edit(String, VApp)
@@ -88,7 +87,7 @@ public interface VAppAsyncApi {
    @Produces(VAPP)
    @Consumes(TASK)
    @JAXBResponseParser
-   ListenableFuture<Task> edit(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn,
+   ListenableFuture<Task> edit(@EndpointParam(parser = URNToHref.class) String vAppUrn,
             @BinderParam(BindToXMLPayload.class) VApp vApp);
 
    /**
@@ -97,7 +96,7 @@ public interface VAppAsyncApi {
    @DELETE
    @Consumes(TASK)
    @JAXBResponseParser
-   ListenableFuture<Task> remove(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn);
+   ListenableFuture<Task> remove(@EndpointParam(parser = URNToHref.class) String vAppUrn);
 
    /**
     * @see VAppApi#editControlAccess(String, ControlAccessParams)
@@ -107,7 +106,7 @@ public interface VAppAsyncApi {
    @Produces(CONTROL_ACCESS)
    @Consumes(CONTROL_ACCESS)
    @JAXBResponseParser
-   ListenableFuture<ControlAccessParams> editControlAccess(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn,
+   ListenableFuture<ControlAccessParams> editControlAccess(@EndpointParam(parser = URNToHref.class) String vAppUrn,
             @BinderParam(BindToXMLPayload.class) ControlAccessParams params);
 
    /**
@@ -118,7 +117,7 @@ public interface VAppAsyncApi {
    @Produces(DEPLOY_VAPP_PARAMS)
    @Consumes(TASK)
    @JAXBResponseParser
-   ListenableFuture<Task> deploy(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn,
+   ListenableFuture<Task> deploy(@EndpointParam(parser = URNToHref.class) String vAppUrn,
             @BinderParam(BindToXMLPayload.class) DeployVAppParams params);
 
    /**
@@ -128,7 +127,7 @@ public interface VAppAsyncApi {
    @Path("/action/discardSuspendedState")
    @Consumes(TASK)
    @JAXBResponseParser
-   ListenableFuture<Task> discardSuspendedState(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn);
+   ListenableFuture<Task> discardSuspendedState(@EndpointParam(parser = URNToHref.class) String vAppUrn);
 
    /**
     * @see VAppApi#enterMaintenanceMode(String)
@@ -137,7 +136,7 @@ public interface VAppAsyncApi {
    @Path("/action/enterMaintenanceMode")
    @Consumes
    @JAXBResponseParser
-   ListenableFuture<Void> enterMaintenanceMode(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn);
+   ListenableFuture<Void> enterMaintenanceMode(@EndpointParam(parser = URNToHref.class) String vAppUrn);
 
    /**
     * @see VAppApi#exitMaintenanceMode(String)
@@ -146,7 +145,7 @@ public interface VAppAsyncApi {
    @Path("/action/exitMaintenanceMode")
    @Consumes
    @JAXBResponseParser
-   ListenableFuture<Void> exitMaintenanceMode(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn);
+   ListenableFuture<Void> exitMaintenanceMode(@EndpointParam(parser = URNToHref.class) String vAppUrn);
 
    /**
     * @see VAppApi#recompose(String, RecomposeVAppParams)
@@ -156,7 +155,7 @@ public interface VAppAsyncApi {
    @Produces(RECOMPOSE_VAPP_PARAMS)
    @Consumes(TASK)
    @JAXBResponseParser
-   ListenableFuture<Task> recompose(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn,
+   ListenableFuture<Task> recompose(@EndpointParam(parser = URNToHref.class) String vAppUrn,
             @BinderParam(BindToXMLPayload.class) RecomposeVAppParams params);
 
    /**
@@ -167,7 +166,7 @@ public interface VAppAsyncApi {
    @Produces(UNDEPLOY_VAPP_PARAMS)
    @Consumes(TASK)
    @JAXBResponseParser
-   ListenableFuture<Task> undeploy(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn,
+   ListenableFuture<Task> undeploy(@EndpointParam(parser = URNToHref.class) String vAppUrn,
             @BinderParam(BindToXMLPayload.class) UndeployVAppParams params);
 
    /**
@@ -177,8 +176,8 @@ public interface VAppAsyncApi {
    @Path("/controlAccess")
    @Consumes(CONTROL_ACCESS)
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
-   ListenableFuture<ControlAccessParams> getAccessControl(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn);
+   @Fallback(NullOnNotFoundOr404.class)
+   ListenableFuture<ControlAccessParams> getAccessControl(@EndpointParam(parser = URNToHref.class) String vAppUrn);
 
    /**
     * @see VAppApi#powerOff(String)
@@ -187,7 +186,7 @@ public interface VAppAsyncApi {
    @Path("/power/action/powerOff")
    @Consumes(TASK)
    @JAXBResponseParser
-   ListenableFuture<Task> powerOff(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn);
+   ListenableFuture<Task> powerOff(@EndpointParam(parser = URNToHref.class) String vAppUrn);
 
    /**
     * @see VAppApi#powerOn(String)
@@ -196,7 +195,7 @@ public interface VAppAsyncApi {
    @Path("/power/action/powerOn")
    @Consumes(TASK)
    @JAXBResponseParser
-   ListenableFuture<Task> powerOn(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn);
+   ListenableFuture<Task> powerOn(@EndpointParam(parser = URNToHref.class) String vAppUrn);
 
    /**
     * @see VAppApi#reboot(String)
@@ -205,7 +204,7 @@ public interface VAppAsyncApi {
    @Path("/power/action/reboot")
    @Consumes(TASK)
    @JAXBResponseParser
-   ListenableFuture<Task> reboot(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn);
+   ListenableFuture<Task> reboot(@EndpointParam(parser = URNToHref.class) String vAppUrn);
 
    /**
     * @see VAppApi#reset(String)
@@ -214,7 +213,7 @@ public interface VAppAsyncApi {
    @Path("/power/action/reset")
    @Consumes(TASK)
    @JAXBResponseParser
-   ListenableFuture<Task> reset(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn);
+   ListenableFuture<Task> reset(@EndpointParam(parser = URNToHref.class) String vAppUrn);
 
    /**
     * @see VAppApi#shutdown(String)
@@ -223,7 +222,7 @@ public interface VAppAsyncApi {
    @Path("/power/action/shutdown")
    @Consumes(TASK)
    @JAXBResponseParser
-   ListenableFuture<Task> shutdown(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn);
+   ListenableFuture<Task> shutdown(@EndpointParam(parser = URNToHref.class) String vAppUrn);
 
    /**
     * @see VAppApi#suspend(String)
@@ -232,7 +231,7 @@ public interface VAppAsyncApi {
    @Path("/power/action/suspend")
    @Consumes(TASK)
    @JAXBResponseParser
-   ListenableFuture<Task> suspend(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn);
+   ListenableFuture<Task> suspend(@EndpointParam(parser = URNToHref.class) String vAppUrn);
 
    /**
     * @see VAppApi#getLeaseSettingsSection(String)
@@ -241,9 +240,9 @@ public interface VAppAsyncApi {
    @Path("/leaseSettingsSection")
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<LeaseSettingsSection> getLeaseSettingsSection(
-            @EndpointParam(parser = VAppURNToHref.class) String vAppUrn);
+            @EndpointParam(parser = URNToHref.class) String vAppUrn);
 
    /**
     * @see VAppApi#editLeaseSettingsSection(String, LeaseSettingsSection)
@@ -253,7 +252,7 @@ public interface VAppAsyncApi {
    @Produces(LEASE_SETTINGS_SECTION)
    @Consumes(TASK)
    @JAXBResponseParser
-   ListenableFuture<Task> editLeaseSettingsSection(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn,
+   ListenableFuture<Task> editLeaseSettingsSection(@EndpointParam(parser = URNToHref.class) String vAppUrn,
             @BinderParam(BindToXMLPayload.class) LeaseSettingsSection section);
 
    /**
@@ -263,9 +262,9 @@ public interface VAppAsyncApi {
    @Path("/networkConfigSection")
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<NetworkConfigSection> getNetworkConfigSection(
-            @EndpointParam(parser = VAppURNToHref.class) String vAppUrn);
+            @EndpointParam(parser = URNToHref.class) String vAppUrn);
 
    /**
     * @see VAppApi#editNetworkConfigSection(String, NetworkConfigSection)
@@ -275,7 +274,7 @@ public interface VAppAsyncApi {
    @Produces(NETWORK_CONFIG_SECTION)
    @Consumes(TASK)
    @JAXBResponseParser
-   ListenableFuture<Task> editNetworkConfigSection(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn,
+   ListenableFuture<Task> editNetworkConfigSection(@EndpointParam(parser = URNToHref.class) String vAppUrn,
             @BinderParam(BindToXMLPayload.class) NetworkConfigSection section);
 
    /**
@@ -285,8 +284,8 @@ public interface VAppAsyncApi {
    @Path("/networkSection")
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
-   ListenableFuture<NetworkSection> getNetworkSection(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn);
+   @Fallback(NullOnNotFoundOr404.class)
+   ListenableFuture<NetworkSection> getNetworkSection(@EndpointParam(parser = URNToHref.class) String vAppUrn);
 
    /**
     * @see VAppApi#getOwner(String)
@@ -295,8 +294,8 @@ public interface VAppAsyncApi {
    @Path("/owner")
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
-   ListenableFuture<Owner> getOwner(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn);
+   @Fallback(NullOnNotFoundOr404.class)
+   ListenableFuture<Owner> getOwner(@EndpointParam(parser = URNToHref.class) String vAppUrn);
 
    /**
     * @see VAppApi#editOwner(String, Owner)
@@ -306,7 +305,7 @@ public interface VAppAsyncApi {
    @Produces(OWNER)
    @Consumes(TASK)
    @JAXBResponseParser
-   ListenableFuture<Void> editOwner(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn,
+   ListenableFuture<Void> editOwner(@EndpointParam(parser = URNToHref.class) String vAppUrn,
             @BinderParam(BindToXMLPayload.class) Owner owner);
 
    /**
@@ -316,8 +315,8 @@ public interface VAppAsyncApi {
    @Path("/productSections")
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
-   ListenableFuture<ProductSectionList> getProductSections(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn);
+   @Fallback(NullOnNotFoundOr404.class)
+   ListenableFuture<ProductSectionList> getProductSections(@EndpointParam(parser = URNToHref.class) String vAppUrn);
 
    /**
     * @see VAppApi#editProductSections(String, ProductSectionList)
@@ -327,7 +326,7 @@ public interface VAppAsyncApi {
    @Produces(PRODUCT_SECTION_LIST)
    @Consumes(TASK)
    @JAXBResponseParser
-   ListenableFuture<Task> editProductSections(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn,
+   ListenableFuture<Task> editProductSections(@EndpointParam(parser = URNToHref.class) String vAppUrn,
             @BinderParam(BindToXMLPayload.class) ProductSectionList sectionList);
 
    /**
@@ -337,8 +336,8 @@ public interface VAppAsyncApi {
    @Path("/startupSection")
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
-   ListenableFuture<StartupSection> getStartupSection(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn);
+   @Fallback(NullOnNotFoundOr404.class)
+   ListenableFuture<StartupSection> getStartupSection(@EndpointParam(parser = URNToHref.class) String vAppUrn);
 
    /**
     * @see VAppApi#editStartupSection(String, StartupSection)
@@ -348,7 +347,7 @@ public interface VAppAsyncApi {
    @Produces(STARTUP_SECTION)
    @Consumes(TASK)
    @JAXBResponseParser
-   ListenableFuture<Task> editStartupSection(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn,
+   ListenableFuture<Task> editStartupSection(@EndpointParam(parser = URNToHref.class) String vAppUrn,
             @BinderParam(BindToXMLPayload.class) StartupSection section);
 
    /**
@@ -357,7 +356,7 @@ public interface VAppAsyncApi {
    @GET
    @Consumes(VAPP)
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<VApp> get(@EndpointParam URI vAppHref);
 
    /**
@@ -455,7 +454,7 @@ public interface VAppAsyncApi {
    @Path("/controlAccess")
    @Consumes(CONTROL_ACCESS)
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<ControlAccessParams> getAccessControl(@EndpointParam URI vAppHref);
 
    /**
@@ -519,7 +518,7 @@ public interface VAppAsyncApi {
    @Path("/leaseSettingsSection")
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<LeaseSettingsSection> getLeaseSettingsSection(@EndpointParam URI vAppHref);
 
    /**
@@ -540,7 +539,7 @@ public interface VAppAsyncApi {
    @Path("/networkConfigSection")
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<NetworkConfigSection> getNetworkConfigSection(@EndpointParam URI vAppHref);
 
    /**
@@ -561,7 +560,7 @@ public interface VAppAsyncApi {
    @Path("/networkSection")
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<NetworkSection> getNetworkSection(@EndpointParam URI vAppHref);
 
    /**
@@ -571,7 +570,7 @@ public interface VAppAsyncApi {
    @Path("/owner")
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<Owner> getOwner(@EndpointParam URI vAppHref);
 
    /**
@@ -591,7 +590,7 @@ public interface VAppAsyncApi {
    @Path("/productSections")
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<ProductSectionList> getProductSections(@EndpointParam URI vAppHref);
 
    /**
@@ -612,7 +611,7 @@ public interface VAppAsyncApi {
    @Path("/startupSection")
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<StartupSection> getStartupSection(@EndpointParam URI vAppHref);
 
    /**
@@ -625,14 +624,4 @@ public interface VAppAsyncApi {
    @JAXBResponseParser
    ListenableFuture<Task> editStartupSection(@EndpointParam URI vAppHref,
             @BinderParam(BindToXMLPayload.class) StartupSection section);
-
-   /**
-    * Asynchronous access to {@link VApp} {@link Metadata} features
-    */
-   @Delegate
-   MetadataAsyncApi.Writeable getMetadataApi(@EndpointParam(parser = VAppURNToHref.class) String vAppUrn);
-
-   @Delegate
-   MetadataAsyncApi.Writeable getMetadataApi(@EndpointParam URI vAppHref);
-
 }

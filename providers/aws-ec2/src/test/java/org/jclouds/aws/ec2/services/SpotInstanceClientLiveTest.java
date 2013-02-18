@@ -20,8 +20,10 @@ package org.jclouds.aws.ec2.services;
 
 import static com.google.common.base.Predicates.in;
 import static com.google.common.collect.Iterables.getOnlyElement;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jclouds.aws.ec2.options.DescribeSpotPriceHistoryOptions.Builder.from;
 import static org.jclouds.aws.ec2.options.RequestSpotInstancesOptions.Builder.launchGroup;
+import static org.jclouds.util.Predicates2.retry;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
@@ -40,11 +42,11 @@ import org.jclouds.aws.ec2.domain.SpotInstanceRequest;
 import org.jclouds.aws.ec2.predicates.SpotInstanceRequestActive;
 import org.jclouds.compute.internal.BaseComputeServiceContextLiveTest;
 import org.jclouds.ec2.domain.InstanceType;
-import org.jclouds.predicates.RetryablePredicate;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 
@@ -61,7 +63,7 @@ public class SpotInstanceClientLiveTest  extends BaseComputeServiceContextLiveTe
 
    private static final int SPOT_DELAY_SECONDS = 600;
    private AWSEC2Client client;
-   private RetryablePredicate<SpotInstanceRequest> activeTester;
+   private Predicate<SpotInstanceRequest> activeTester;
    private Set<SpotInstanceRequest> requests;
    private AWSRunningInstance instance;
    private long start;
@@ -71,8 +73,7 @@ public class SpotInstanceClientLiveTest  extends BaseComputeServiceContextLiveTe
    public void setupContext() {
       super.setupContext();
       client = view.unwrap(AWSEC2ApiMetadata.CONTEXT_TOKEN).getApi();
-      activeTester = new RetryablePredicate<SpotInstanceRequest>(new SpotInstanceRequestActive(client),
-               SPOT_DELAY_SECONDS, 1, 1, TimeUnit.SECONDS);
+      activeTester = retry(new SpotInstanceRequestActive(client), SPOT_DELAY_SECONDS, 1, 1, SECONDS);
    }
 
    @Test
@@ -107,7 +108,8 @@ public class SpotInstanceClientLiveTest  extends BaseComputeServiceContextLiveTe
                               "Windows", "Windows (Amazon VPC)")).apply(spot.getProductDescription()) : spot;
             assert in(
                      ImmutableSet.of("c1.medium", "c1.xlarge", "cc1.4xlarge", "cg1.4xlarge", "cc2.8xlarge", "m1.large",
-                              "m1.small", "m1.medium", "m1.xlarge", "m2.2xlarge", "m2.4xlarge", "m2.xlarge", "t1.micro")).apply(
+                              "m1.small", "m1.medium", "m1.xlarge", "m2.2xlarge", "m2.4xlarge", "m2.xlarge", "m3.xlarge", 
+                              "m3.2xlarge", "t1.micro")).apply(
                      spot.getInstanceType()) : spot;
 
          }

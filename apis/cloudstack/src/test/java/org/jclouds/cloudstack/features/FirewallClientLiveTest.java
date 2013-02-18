@@ -80,7 +80,7 @@ public class FirewallClientLiveTest extends BaseCloudStackClientLiveTest {
             defaultTemplateOrPreferredInZone(defaultTemplate, client, network.getZoneId()),
             client, jobComplete, virtualMachineRunning);
 
-         if (vm.getPassword() != null && !loginCredentials.hasPasswordOption())
+         if (vm.getPassword() != null && loginCredentials.getOptionalPassword() == null)
             loginCredentials = loginCredentials.toBuilder().password(vm.getPassword()).build();
 
       } catch (NoSuchElementException e) {
@@ -154,7 +154,8 @@ public class FirewallClientLiveTest extends BaseCloudStackClientLiveTest {
    }
 
    @AfterGroups(groups = "live")
-   protected void tearDown() {
+   @Override
+   protected void tearDownContext() {
       if (firewallRule != null) {
          client.getFirewallClient().deleteFirewallRule(firewallRule.getId());
       }
@@ -167,7 +168,7 @@ public class FirewallClientLiveTest extends BaseCloudStackClientLiveTest {
       if (ip != null) {
          client.getAddressClient().disassociateIPAddress(ip.getId());
       }
-      super.tearDown();
+      super.tearDownContext();
    }
 
    protected void checkFirewallRule(FirewallRule rule) {

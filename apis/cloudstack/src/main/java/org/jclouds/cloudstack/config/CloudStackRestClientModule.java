@@ -18,11 +18,9 @@
  */
 package org.jclouds.cloudstack.config;
 
-import static com.google.common.base.Throwables.propagate;
-import static org.jclouds.rest.config.BinderUtils.bindClientAndAsyncClient;
+import static org.jclouds.rest.config.BinderUtils.bindHttpApi;
 
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.jclouds.Constants;
@@ -116,10 +114,9 @@ import org.jclouds.cloudstack.features.ZoneClient;
 import org.jclouds.cloudstack.filters.AddSessionKeyAndJSessionIdToRequest;
 import org.jclouds.cloudstack.filters.AuthenticationFilter;
 import org.jclouds.cloudstack.filters.QuerySigner;
-import org.jclouds.cloudstack.functions.LoginWithPasswordCredentials;
 import org.jclouds.cloudstack.handlers.CloudStackErrorHandler;
 import org.jclouds.cloudstack.handlers.InvalidateSessionAndRetryOn401AndLogoutOnClose;
-import org.jclouds.concurrent.RetryOnTimeOutExceptionFunction;
+import org.jclouds.cloudstack.loaders.LoginWithPasswordCredentials;
 import org.jclouds.domain.Credentials;
 import org.jclouds.http.HttpErrorHandler;
 import org.jclouds.http.HttpRetryHandler;
@@ -131,14 +128,11 @@ import org.jclouds.location.suppliers.ImplicitLocationSupplier;
 import org.jclouds.location.suppliers.implicit.OnlyLocationOrFirstZone;
 import org.jclouds.rest.ConfiguresRestClient;
 import org.jclouds.rest.RestContext;
-import org.jclouds.rest.config.BinderUtils;
 import org.jclouds.rest.config.RestClientModule;
 import org.jclouds.rest.internal.RestContextImpl;
 
-import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
@@ -199,26 +193,6 @@ public class CloudStackRestClientModule extends RestClientModule<CloudStackClien
             .put(SessionClient.class, SessionAsyncClient.class)//
             .build();
 
-   @Override
-   protected void bindAsyncClient() {
-      // bind the user client (default)
-      super.bindAsyncClient();
-      // bind the domain admin client
-      BinderUtils.bindAsyncClient(binder(), CloudStackDomainAsyncClient.class);
-      // bind the global admin client
-      BinderUtils.bindAsyncClient(binder(), CloudStackGlobalAsyncClient.class);
-   }
-
-   @Override
-   protected void bindClient() {
-      // bind the user client (default)
-      super.bindClient();
-      // bind the domain admin client
-      BinderUtils.bindClient(binder(), CloudStackDomainClient.class, CloudStackDomainAsyncClient.class, DELEGATE_MAP);
-      // bind the domain admin client
-      BinderUtils.bindClient(binder(), CloudStackGlobalClient.class, CloudStackGlobalAsyncClient.class, DELEGATE_MAP);
-   }
-
    public CloudStackRestClientModule() {
       super(DELEGATE_MAP);
    }
@@ -232,9 +206,10 @@ public class CloudStackRestClientModule extends RestClientModule<CloudStackClien
       }).to(new TypeLiteral<RestContextImpl<CloudStackGlobalClient, CloudStackGlobalAsyncClient>>() {
       });
       bind(CredentialType.class).toProvider(CredentialTypeFromPropertyOrDefault.class);
-      
       // session client is used directly for filters and retry handlers, so let's bind it explicitly
-      bindClientAndAsyncClient(binder(), SessionClient.class, SessionAsyncClient.class);
+      bindHttpApi(binder(), SessionClient.class, SessionAsyncClient.class);
+      bindHttpApi(binder(), CloudStackDomainClient.class, CloudStackDomainAsyncClient.class);
+      bindHttpApi(binder(), CloudStackGlobalClient.class, CloudStackGlobalAsyncClient.class);
       bind(HttpRetryHandler.class).annotatedWith(ClientError.class).to(InvalidateSessionAndRetryOn401AndLogoutOnClose.class);
       
       super.configure();
@@ -289,24 +264,13 @@ public class CloudStackRestClientModule extends RestClientModule<CloudStackClien
       }
    }
 
-   @Provides
-   @Singleton
-   protected Function<Credentials, LoginResponse> makeSureFilterRetriesOnTimeout(
-            LoginWithPasswordCredentials loginWithPasswordCredentials) {
-      // we should retry on timeout exception logging in.
-      return new RetryOnTimeOutExceptionFunction<Credentials, LoginResponse>(loginWithPasswordCredentials);
-   }
-
-   // TODO: not sure we can action the timeout from loginresponse without extra code? modify default
-   // accordingly
    // PROPERTY_SESSION_INTERVAL is default to 60 seconds
    @Provides
    @Singleton
-   public LoadingCache<Credentials, LoginResponse> provideLoginResponseCache(
-            Function<Credentials, LoginResponse> getLoginResponse,
+   protected LoadingCache<Credentials, LoginResponse> provideLoginResponseCache(
+            LoginWithPasswordCredentials getLoginResponse,
             @Named(Constants.PROPERTY_SESSION_INTERVAL) int seconds) {
-      return CacheBuilder.newBuilder().expireAfterWrite(seconds, TimeUnit.SECONDS).build(
-               CacheLoader.from(getLoginResponse));
+      return CacheBuilder.newBuilder().expireAfterWrite(seconds, TimeUnit.SECONDS).build(getLoginResponse);
    }
 
    // Temporary conversion of a cache to a supplier until there is a single-element cache
@@ -314,15 +278,11 @@ public class CloudStackRestClientModule extends RestClientModule<CloudStackClien
    @Provides
    @Singleton
    protected Supplier<LoginResponse> provideLoginResponseSupplier(final LoadingCache<Credentials, LoginResponse> cache,
-            @Provider final Credentials creds) {
+         @Provider final Supplier<Credentials> creds) {
       return new Supplier<LoginResponse>() {
          @Override
          public LoginResponse get() {
-            try {
-               return cache.get(creds);
-            } catch (ExecutionException e) {
-               throw propagate(e.getCause());
-            }
+            return cache.getUnchecked(creds.get());
          }
       };
    }

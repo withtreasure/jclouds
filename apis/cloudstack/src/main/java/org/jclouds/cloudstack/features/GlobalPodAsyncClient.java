@@ -20,24 +20,25 @@ package org.jclouds.cloudstack.features;
 
 import java.util.Set;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
+import org.jclouds.Fallbacks.VoidOnNotFoundOr404;
 import org.jclouds.cloudstack.domain.Pod;
 import org.jclouds.cloudstack.filters.AuthenticationFilter;
 import org.jclouds.cloudstack.options.CreatePodOptions;
 import org.jclouds.cloudstack.options.ListPodsOptions;
 import org.jclouds.cloudstack.options.UpdatePodOptions;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.OnlyElement;
 import org.jclouds.rest.annotations.QueryParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.SelectJson;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnVoidOnNotFoundOr404;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -57,22 +58,24 @@ public interface GlobalPodAsyncClient {
    /**
     * @see PodClient#listPods
     */
+   @Named("listPods")
    @GET
    @QueryParams(keys = { "command", "listAll" }, values = { "listPods", "true" })
    @SelectJson("pod")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnEmptySetOnNotFoundOr404.class)
+   @Fallback(EmptySetOnNotFoundOr404.class)
    ListenableFuture<Set<Pod>> listPods(ListPodsOptions... options);
 
    /**
     * @see PodClient#getPod
     */
+   @Named("listPods")
    @GET
    @QueryParams(keys = { "command", "listAll" }, values = { "listPods", "true" })
    @SelectJson("pod")
    @OnlyElement
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<Pod> getPod(@QueryParam("id") String id);
 
    /**
@@ -87,11 +90,12 @@ public interface GlobalPodAsyncClient {
     * @param createPodOptions optional arguments
     * @return the new Pod
     */
+   @Named("createPod")
    @GET
    @QueryParams(keys = "command", values = "createPod")
    @SelectJson("pod")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<Pod> createPod(@QueryParam("name") String name, @QueryParam("zoneid") String zoneId, @QueryParam("startip") String startIp, @QueryParam("endip") String endIp, @QueryParam("gateway") String gateway, @QueryParam("netmask") String netmask, CreatePodOptions... createPodOptions);
 
    /**
@@ -105,21 +109,23 @@ public interface GlobalPodAsyncClient {
     * @param createPodOptions optional arguments
     * @return the new Pod
     */
+   @Named("createPod")
    @GET
    @QueryParams(keys = "command", values = "createPod")
    @SelectJson("pod")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<Pod> createPod(@QueryParam("name") String name, @QueryParam("zoneid") String zoneId, @QueryParam("startip") String startIp, @QueryParam("gateway") String gateway, @QueryParam("netmask") String netmask, CreatePodOptions... createPodOptions);
 
    /**
     * Deletes a Pod.
     * @param id the ID of the Pod
     */
+   @Named("deletePod")
    @GET
    @QueryParams(keys = "command", values = "deletePod")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnVoidOnNotFoundOr404.class)
+   @Fallback(VoidOnNotFoundOr404.class)
    ListenableFuture<Void> deletePod(@QueryParam("id") String id);
 
    /**
@@ -128,11 +134,12 @@ public interface GlobalPodAsyncClient {
     * @param updatePodOptions optional arguments
     * @return the updated pod
     */
+   @Named("updatePod")
    @GET
    @QueryParams(keys = "command", values = "updatePod")
    @SelectJson("pod")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<Pod> updatePod(@QueryParam("id") String id, UpdatePodOptions... updatePodOptions);
 
 }

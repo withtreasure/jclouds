@@ -18,11 +18,12 @@
  */
 package org.jclouds.aws.ec2.services;
 
+import static org.jclouds.reflect.Reflection2.method;
+
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
 import java.util.Map;
 
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
 import org.jclouds.aws.ec2.options.AWSRunInstancesOptions;
 import org.jclouds.aws.ec2.xml.AWSDescribeInstancesResponseHandler;
 import org.jclouds.aws.ec2.xml.AWSRunInstancesResponseHandler;
@@ -40,13 +41,12 @@ import org.jclouds.ec2.xml.UnencodeStringValueHandler;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.http.functions.ParseSax;
 import org.jclouds.http.functions.ReleasePayloadAndReturn;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.inject.TypeLiteral;
-
+import com.google.common.reflect.Invokable;
 /**
  * Tests behavior of {@code AWSInstanceAsyncClient}
  * 
@@ -57,8 +57,8 @@ import com.google.inject.TypeLiteral;
 @Test(groups = "unit", testName = "AWSInstanceAsyncClientTest")
 public class AWSInstanceAsyncClientTest extends BaseAWSEC2AsyncClientTest<AWSInstanceAsyncClient> {
    public void testDescribeInstances() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("describeInstancesInRegion", String.class, String[].class);
-      HttpRequest request = processor.createRequest(method, (String) null);
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "describeInstancesInRegion", String.class, String[].class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList((String) null));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -67,14 +67,14 @@ public class AWSInstanceAsyncClientTest extends BaseAWSEC2AsyncClientTest<AWSIns
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, AWSDescribeInstancesResponseHandler.class);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testDescribeInstancesArgs() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("describeInstancesInRegion", String.class, String[].class);
-      HttpRequest request = processor.createRequest(method, null, "1", "2");
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "describeInstancesInRegion", String.class, String[].class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1", "2"));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -83,15 +83,14 @@ public class AWSInstanceAsyncClientTest extends BaseAWSEC2AsyncClientTest<AWSIns
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, AWSDescribeInstancesResponseHandler.class);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testTerminateInstances() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("terminateInstancesInRegion", String.class, Array
-            .newInstance(String.class, 0).getClass());
-      HttpRequest request = processor.createRequest(method, null, "1", "2");
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "terminateInstancesInRegion", String.class, String[].class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1", "2"));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -100,71 +99,57 @@ public class AWSInstanceAsyncClientTest extends BaseAWSEC2AsyncClientTest<AWSIns
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, InstanceStateChangeHandler.class);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testRunInstances() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("runInstancesInRegion", String.class, String.class,
-            String.class, int.class, int.class, Array.newInstance(RunInstancesOptions.class, 0).getClass());
-      HttpRequest request = processor.createRequest(method, null, null, "ami-voo", 1, 1);
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "runInstancesInRegion", String.class, String.class,
+            String.class, int.class, int.class, RunInstancesOptions[].class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, null, "ami-voo", 1, 1));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
-      try {
-         assertPayloadEquals(request, "Action=RunInstances&ImageId=ami-voo&MinCount=1&MaxCount=1",
-               "application/x-www-form-urlencoded", false);
-      } catch (AssertionError e) {
-         // mvn 3.0 osx 10.6.5 somehow sorts differently
-         assertPayloadEquals(request, "Action=RunInstances&ImageId=ami-voo&MaxCount=1&MinCount=1",
-               "application/x-www-form-urlencoded", false);
-      }
+      assertPayloadEquals(request, "Action=RunInstances&ImageId=ami-voo&MinCount=1&MaxCount=1",
+            "application/x-www-form-urlencoded", false);
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, AWSRunInstancesResponseHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testRunInstancesOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("runInstancesInRegion", String.class, String.class,
-            String.class, int.class, int.class, Array.newInstance(RunInstancesOptions.class, 0).getClass());
-      HttpRequest request = processor.createRequest(
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "runInstancesInRegion", String.class, String.class,
+            String.class, int.class, int.class, RunInstancesOptions[].class);
+      GeneratedHttpRequest request = processor.createRequest(
             method,
-            "us-east-1",
+            Lists.<Object> newArrayList("us-east-1",
             "us-east-1a",
             "ami-voo",
             1,
             5,
             new AWSRunInstancesOptions().withKernelId("kernelId").enableMonitoring()
-                  .withSecurityGroups("group1", "group2"));
+                  .withSecurityGroups("group1", "group2")));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
-      try {
-         assertPayloadEquals(
-               request,
-               "Action=RunInstances&ImageId=ami-voo&MinCount=1&MaxCount=5&KernelId=kernelId&Monitoring.Enabled=true&SecurityGroup.1=group1&SecurityGroup.2=group2&Placement.AvailabilityZone=us-east-1a",
-               "application/x-www-form-urlencoded", false);
-      } catch (AssertionError e) {
-         // mvn 3.0 osx 10.6.5 somehow sorts differently
-         assertPayloadEquals(
-               request,
-               "Action=RunInstances&ImageId=ami-voo&MaxCount=5&MinCount=1&KernelId=kernelId&Monitoring.Enabled=true&SecurityGroup.1=group1&SecurityGroup.2=group2&Placement.AvailabilityZone=us-east-1a",
-               "application/x-www-form-urlencoded", false);
-      }
+      assertPayloadEquals(
+            request,
+            "Action=RunInstances&ImageId=ami-voo&MinCount=1&MaxCount=5&KernelId=kernelId&Monitoring.Enabled=true&SecurityGroup.1=group1&SecurityGroup.2=group2&Placement.AvailabilityZone=us-east-1a",
+            "application/x-www-form-urlencoded", false);
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, AWSRunInstancesResponseHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testStopInstances() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("stopInstancesInRegion", String.class, boolean.class,
-            Array.newInstance(String.class, 0).getClass());
-      HttpRequest request = processor.createRequest(method, null, true, "1", "2");
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "stopInstancesInRegion", String.class, boolean.class,
+            String[].class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, true, "1", "2"));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -173,15 +158,15 @@ public class AWSInstanceAsyncClientTest extends BaseAWSEC2AsyncClientTest<AWSIns
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, InstanceStateChangeHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testRebootInstances() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("rebootInstancesInRegion", String.class, Array
-            .newInstance(String.class, 0).getClass());
-      HttpRequest request = processor.createRequest(method, null, "1", "2");
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "rebootInstancesInRegion", String.class,
+            String[].class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1", "2"));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -190,15 +175,15 @@ public class AWSInstanceAsyncClientTest extends BaseAWSEC2AsyncClientTest<AWSIns
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testStartInstances() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("startInstancesInRegion", String.class,
-            Array.newInstance(String.class, 0).getClass());
-      HttpRequest request = processor.createRequest(method, null, "1", "2");
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "startInstancesInRegion", String.class,
+            String[].class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1", "2"));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -207,15 +192,15 @@ public class AWSInstanceAsyncClientTest extends BaseAWSEC2AsyncClientTest<AWSIns
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, InstanceStateChangeHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetUserDataForInstanceInRegion() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("getUserDataForInstanceInRegion", String.class,
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "getUserDataForInstanceInRegion", String.class,
             String.class);
-      HttpRequest request = processor.createRequest(method, null, "1");
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1"));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -225,15 +210,15 @@ public class AWSInstanceAsyncClientTest extends BaseAWSEC2AsyncClientTest<AWSIns
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, UnencodeStringValueHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetRootDeviceNameForInstanceInRegion() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("getRootDeviceNameForInstanceInRegion", String.class,
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "getRootDeviceNameForInstanceInRegion", String.class,
             String.class);
-      HttpRequest request = processor.createRequest(method, null, "1");
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1"));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -243,15 +228,15 @@ public class AWSInstanceAsyncClientTest extends BaseAWSEC2AsyncClientTest<AWSIns
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, StringValueHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetRamdiskForInstanceInRegion() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("getRamdiskForInstanceInRegion", String.class,
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "getRamdiskForInstanceInRegion", String.class,
             String.class);
-      HttpRequest request = processor.createRequest(method, null, "1");
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1"));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -261,16 +246,16 @@ public class AWSInstanceAsyncClientTest extends BaseAWSEC2AsyncClientTest<AWSIns
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, StringValueHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetDisableApiTerminationForInstanceInRegion() throws SecurityException, NoSuchMethodException,
          IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("isApiTerminationDisabledForInstanceInRegion",
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "isApiTerminationDisabledForInstanceInRegion",
             String.class, String.class);
-      HttpRequest request = processor.createRequest(method, null, "1");
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1"));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -280,15 +265,14 @@ public class AWSInstanceAsyncClientTest extends BaseAWSEC2AsyncClientTest<AWSIns
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, BooleanValueHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetKernelForInstanceInRegion() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSInstanceAsyncClient.class
-            .getMethod("getKernelForInstanceInRegion", String.class, String.class);
-      HttpRequest request = processor.createRequest(method, null, "1");
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "getKernelForInstanceInRegion", String.class, String.class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1"));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -297,15 +281,15 @@ public class AWSInstanceAsyncClientTest extends BaseAWSEC2AsyncClientTest<AWSIns
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, StringValueHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetInstanceTypeForInstanceInRegion() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("getInstanceTypeForInstanceInRegion", String.class,
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "getInstanceTypeForInstanceInRegion", String.class,
             String.class);
-      HttpRequest request = processor.createRequest(method, null, "1");
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1"));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -315,16 +299,16 @@ public class AWSInstanceAsyncClientTest extends BaseAWSEC2AsyncClientTest<AWSIns
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, InstanceTypeHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetInstanceInitiatedShutdownBehaviorForInstanceInRegion() throws SecurityException,
          NoSuchMethodException, IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("getInstanceInitiatedShutdownBehaviorForInstanceInRegion",
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "getInstanceInitiatedShutdownBehaviorForInstanceInRegion",
             String.class, String.class);
-      HttpRequest request = processor.createRequest(method, null, "1");
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1"));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -335,16 +319,16 @@ public class AWSInstanceAsyncClientTest extends BaseAWSEC2AsyncClientTest<AWSIns
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, InstanceInitiatedShutdownBehaviorHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetBlockDeviceMappingForInstanceInRegion() throws SecurityException, NoSuchMethodException,
          IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("getBlockDeviceMappingForInstanceInRegion", String.class,
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "getBlockDeviceMappingForInstanceInRegion", String.class,
             String.class);
-      HttpRequest request = processor.createRequest(method, null, "1");
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1"));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -354,156 +338,233 @@ public class AWSInstanceAsyncClientTest extends BaseAWSEC2AsyncClientTest<AWSIns
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, BlockDeviceMappingHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
+
+   HttpRequest setUserDataForInstance = HttpRequest.builder().method("POST")
+                                                   .endpoint("https://ec2.us-east-1.amazonaws.com/")
+                                                   .addHeader("Host", "ec2.us-east-1.amazonaws.com")
+                                                   .addFormParam("Action", "ModifyInstanceAttribute")
+                                                   .addFormParam("Attribute", "userData")
+                                                   .addFormParam("InstanceId", "1")
+                                                   .addFormParam("Signature", "nArJlrtyAfgqDnXxv%2B2y0r9O%2BIfUcitpQMjfQR0oeRM=")
+                                                   .addFormParam("SignatureMethod", "HmacSHA256")
+                                                   .addFormParam("SignatureVersion", "2")
+                                                   .addFormParam("Timestamp", "2009-11-08T15%3A54%3A08.897Z")
+                                                   .addFormParam("Value", "dGVzdA%3D%3D")
+                                                   .addFormParam("Version", "2011-05-15")
+                                                   .addFormParam("AWSAccessKeyId", "identity").build();
 
    public void testSetUserDataForInstanceInRegion() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("setUserDataForInstanceInRegion", String.class,
-            String.class, Array.newInstance(byte.class, 0).getClass());
-      HttpRequest request = processor.createRequest(method, null, "1", "test".getBytes());
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "setUserDataForInstanceInRegion", String.class, String.class,
+               byte[].class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1", "test".getBytes()));
+
+      request = (GeneratedHttpRequest) request.getFilters().get(0).filter(request);
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
-      assertPayloadEquals(request,
-            "Action=ModifyInstanceAttribute&Attribute=userData&Value=dGVzdA%3D%3D&InstanceId=1",
+      assertPayloadEquals(request, setUserDataForInstance.getPayload().getRawContent().toString(),
             "application/x-www-form-urlencoded", false);
-      filter.filter(request);// ensure encoding worked properly
-      assertPayloadEquals(
-            request,
-            "Action=ModifyInstanceAttribute&Attribute=userData&InstanceId=1&Signature=nArJlrtyAfgqDnXxv%2B2y0r9O%2BIfUcitpQMjfQR0oeRM%3D&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2009-11-08T15%3A54%3A08.897Z&Value=dGVzdA%3D%3D&Version=2011-05-15&AWSAccessKeyId=identity",
-            "application/x-www-form-urlencoded", false);
+
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
+
+   HttpRequest setRamdiskForInstance = HttpRequest.builder().method("POST")
+                                                  .endpoint("https://ec2.us-east-1.amazonaws.com/")
+                                                  .addHeader("Host", "ec2.us-east-1.amazonaws.com")
+                                                  .addFormParam("Action", "ModifyInstanceAttribute")
+                                                  .addFormParam("Attribute", "ramdisk")
+                                                  .addFormParam("InstanceId", "1")
+                                                  .addFormParam("Signature", "y9xr294R57Pjzzafq90Xi2LMi0JKj/Jwy5HL%2BYWyTvo=")
+                                                  .addFormParam("SignatureMethod", "HmacSHA256")
+                                                  .addFormParam("SignatureVersion", "2")
+                                                  .addFormParam("Timestamp", "2009-11-08T15%3A54%3A08.897Z")
+                                                  .addFormParam("Value", "test")
+                                                  .addFormParam("Version", "2011-05-15")
+                                                  .addFormParam("AWSAccessKeyId", "identity").build();
 
    public void testSetRamdiskForInstanceInRegion() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("setRamdiskForInstanceInRegion", String.class,
-            String.class, String.class);
-      HttpRequest request = processor.createRequest(method, null, "1", "test");
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "setRamdiskForInstanceInRegion", String.class, String.class,
+               String.class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1", "test"));
+
+      request = (GeneratedHttpRequest) request.getFilters().get(0).filter(request);
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
-      assertPayloadEquals(request,
-            "Action=ModifyInstanceAttribute&Attribute=ramdisk&Value=test&InstanceId=1",
+      assertPayloadEquals(request, setRamdiskForInstance.getPayload().getRawContent().toString(),
             "application/x-www-form-urlencoded", false);
+
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
+
+   HttpRequest setKernelForInstance = HttpRequest.builder().method("POST")
+                                                 .endpoint("https://ec2.us-east-1.amazonaws.com/")
+                                                 .addHeader("Host", "ec2.us-east-1.amazonaws.com")
+                                                 .addFormParam("Action", "ModifyInstanceAttribute")
+                                                 .addFormParam("Attribute", "kernel")
+                                                 .addFormParam("InstanceId", "1")
+                                                 .addFormParam("Signature", "vqAuTOcX6i8UfiVGAO/2yz2HHTqZyayiy/SiEU4ySws=")
+                                                 .addFormParam("SignatureMethod", "HmacSHA256")
+                                                 .addFormParam("SignatureVersion", "2")
+                                                 .addFormParam("Timestamp", "2009-11-08T15%3A54%3A08.897Z")
+                                                 .addFormParam("Value", "test")
+                                                 .addFormParam("Version", "2011-05-15")
+                                                 .addFormParam("AWSAccessKeyId", "identity").build();
 
    public void testSetKernelForInstanceInRegion() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("setKernelForInstanceInRegion", String.class,
-            String.class, String.class);
-      HttpRequest request = processor.createRequest(method, null, "1", "test");
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "setKernelForInstanceInRegion", String.class, String.class,
+               String.class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1", "test"));
+
+      request = (GeneratedHttpRequest) request.getFilters().get(0).filter(request);
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
-      assertPayloadEquals(request,
-            "Action=ModifyInstanceAttribute&Attribute=kernel&Value=test&InstanceId=1",
+      assertPayloadEquals(request, setKernelForInstance.getPayload().getRawContent().toString(),
             "application/x-www-form-urlencoded", false);
+
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
+
+   HttpRequest setApiTerminationDisabled = HttpRequest.builder().method("POST")
+                                                      .endpoint("https://ec2.us-east-1.amazonaws.com/")
+                                                      .addHeader("Host", "ec2.us-east-1.amazonaws.com")
+                                                      .addFormParam("Action", "ModifyInstanceAttribute")
+                                                      .addFormParam("Attribute", "disableApiTermination")
+                                                      .addFormParam("InstanceId", "1")
+                                                      .addFormParam("Signature", "tOgWZ2rJ2KDgV55oMEa3RXKHvroiuqZfGfugBCV7ZLk=")
+                                                      .addFormParam("SignatureMethod", "HmacSHA256")
+                                                      .addFormParam("SignatureVersion", "2")
+                                                      .addFormParam("Timestamp", "2009-11-08T15%3A54%3A08.897Z")
+                                                      .addFormParam("Value", "true")
+                                                      .addFormParam("Version", "2011-05-15")
+                                                      .addFormParam("AWSAccessKeyId", "identity").build();
 
    public void testSetApiTerminationDisabledForInstanceInRegion() throws SecurityException, NoSuchMethodException,
-         IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("setApiTerminationDisabledForInstanceInRegion",
-            String.class, String.class, boolean.class);
-      HttpRequest request = processor.createRequest(method, null, "1", true);
+            IOException {
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "setApiTerminationDisabledForInstanceInRegion", String.class,
+               String.class, boolean.class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1", true));
+
+      request = (GeneratedHttpRequest) request.getFilters().get(0).filter(request);
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
-      assertPayloadEquals(
-            request,
-            "Action=ModifyInstanceAttribute&Attribute=disableApiTermination&Value=true&InstanceId=1",
+      assertPayloadEquals(request, setApiTerminationDisabled.getPayload().getRawContent().toString(),
             "application/x-www-form-urlencoded", false);
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
+
+   HttpRequest instanceTypeForInstance = HttpRequest.builder().method("POST")
+                                                    .endpoint("https://ec2.us-east-1.amazonaws.com/")
+                                                    .addHeader("Host", "ec2.us-east-1.amazonaws.com")
+                                                    .addFormParam("Action", "ModifyInstanceAttribute")
+                                                    .addFormParam("Attribute", "instanceType")
+                                                    .addFormParam("InstanceId", "1")
+                                                    .addFormParam("Signature", "DC1r80OrSLCVcVt/y3gUPWxRWrPK8T96FXjNfmCMwRY=")
+                                                    .addFormParam("SignatureMethod", "HmacSHA256")
+                                                    .addFormParam("SignatureVersion", "2")
+                                                    .addFormParam("Timestamp", "2009-11-08T15%3A54%3A08.897Z")
+                                                    .addFormParam("Value", "c1.medium")
+                                                    .addFormParam("Version", "2011-05-15")
+                                                    .addFormParam("AWSAccessKeyId", "identity").build();
 
    public void testSetInstanceTypeForInstanceInRegion() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("setInstanceTypeForInstanceInRegion", String.class,
-            String.class, String.class);
-      HttpRequest request = processor.createRequest(method, null, "1", InstanceType.C1_MEDIUM);
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "setInstanceTypeForInstanceInRegion", String.class,
+               String.class, String.class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1", InstanceType.C1_MEDIUM));
+
+      request = (GeneratedHttpRequest) request.getFilters().get(0).filter(request);
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
-      assertPayloadEquals(request,
-            "Action=ModifyInstanceAttribute&Attribute=instanceType&Value=c1.medium&InstanceId=1",
+      assertPayloadEquals(request, instanceTypeForInstance.getPayload().getRawContent().toString(),
             "application/x-www-form-urlencoded", false);
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
+   HttpRequest setInstanceInitiatedShutdownBehavior = HttpRequest.builder().method("POST")
+                                                                 .endpoint("https://ec2.us-east-1.amazonaws.com/")
+                                                                 .addHeader("Host", "ec2.us-east-1.amazonaws.com")
+                                                                 .addFormParam("Action", "ModifyInstanceAttribute")
+                                                                 .addFormParam("Attribute", "instanceInitiatedShutdownBehavior")
+                                                                 .addFormParam("InstanceId", "1")
+                                                                 .addFormParam("Signature", "HLu0ufuCEUPUrNzjMsmFvjqEFbdawad/7Hufdg9flbc=")
+                                                                 .addFormParam("SignatureMethod", "HmacSHA256")
+                                                                 .addFormParam("SignatureVersion", "2")
+                                                                 .addFormParam("Timestamp", "2009-11-08T15%3A54%3A08.897Z")
+                                                                 .addFormParam("Value", "terminate")
+                                                                 .addFormParam("Version", "2011-05-15")
+                                                                 .addFormParam("AWSAccessKeyId", "identity").build();
+
    public void testSetInstanceInitiatedShutdownBehaviorForInstanceInRegion() throws SecurityException,
-         NoSuchMethodException, IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("setInstanceInitiatedShutdownBehaviorForInstanceInRegion",
-            String.class, String.class, InstanceInitiatedShutdownBehavior.class);
-      HttpRequest request = processor.createRequest(method, null, "1", InstanceInitiatedShutdownBehavior.TERMINATE);
+            NoSuchMethodException, IOException {
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "setInstanceInitiatedShutdownBehaviorForInstanceInRegion",
+               String.class, String.class, InstanceInitiatedShutdownBehavior.class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1", InstanceInitiatedShutdownBehavior.TERMINATE));
+
+      request = (GeneratedHttpRequest) request.getFilters().get(0).filter(request);
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
-      assertPayloadEquals(
-            request,
-            "Action=ModifyInstanceAttribute&Attribute=instanceInitiatedShutdownBehavior&Value=terminate&InstanceId=1",
+      assertPayloadEquals(request, setInstanceInitiatedShutdownBehavior.getPayload().getRawContent().toString(),
             "application/x-www-form-urlencoded", false);
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testSetBlockDeviceMappingForInstanceInRegion() throws SecurityException, NoSuchMethodException,
          IOException {
-      Method method = AWSInstanceAsyncClient.class.getMethod("setBlockDeviceMappingForInstanceInRegion", String.class,
+      Invokable<?, ?> method = method(AWSInstanceAsyncClient.class, "setBlockDeviceMappingForInstanceInRegion", String.class,
             String.class, Map.class);
 
       Map<String, BlockDevice> mapping = Maps.newLinkedHashMap();
       mapping.put("/dev/sda1", new BlockDevice("vol-test1", true));
-      HttpRequest request = processor.createRequest(method, null, "1", mapping);
-
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1", mapping));
+      
+      filter.filter(request);
+      
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
       assertPayloadEquals(
             request,
-            "Action=ModifyInstanceAttribute&InstanceId=1&BlockDeviceMapping.1.Ebs.VolumeId=vol-test1&BlockDeviceMapping.1.DeviceName=%2Fdev%2Fsda1&BlockDeviceMapping.1.Ebs.DeleteOnTermination=true",
+            "Action=ModifyInstanceAttribute&BlockDeviceMapping.1.DeviceName=/dev/sda1&BlockDeviceMapping.1.Ebs.DeleteOnTermination=true&BlockDeviceMapping.1.Ebs.VolumeId=vol-test1&InstanceId=1&Signature=qqJpPk8UmhPY9Jica0JSADEZiY3eHf9WETm%2B5tLT0NE%3D&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2009-11-08T15%3A54%3A08.897Z&Version=2011-05-15&AWSAccessKeyId=identity",
             "application/x-www-form-urlencoded", false);
-      filter.filter(request);// ensure encoding worked properly
-      assertPayloadEquals(
-            request,
-            "Action=ModifyInstanceAttribute&BlockDeviceMapping.1.DeviceName=%2Fdev%2Fsda1&BlockDeviceMapping.1.Ebs.DeleteOnTermination=true&BlockDeviceMapping.1.Ebs.VolumeId=vol-test1&InstanceId=1&Signature=qqJpPk8UmhPY9Jica0JSADEZiY3eHf9WETm%2B5tLT0NE%3D&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2009-11-08T15%3A54%3A08.897Z&Version=2011-05-15&AWSAccessKeyId=identity",
-            "application/x-www-form-urlencoded", false);
+
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<AWSInstanceAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<AWSInstanceAsyncClient>>() {
-      };
-   }
-
 }

@@ -30,24 +30,21 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.rest.annotations.BinderParam;
-import org.jclouds.rest.annotations.Delegate;
 import org.jclouds.rest.annotations.EndpointParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.JAXBResponseParser;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.binders.BindToXMLPayload;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 import org.jclouds.vcloud.director.v1_5.VCloudDirectorMediaType;
 import org.jclouds.vcloud.director.v1_5.domain.AdminCatalog;
 import org.jclouds.vcloud.director.v1_5.domain.Owner;
 import org.jclouds.vcloud.director.v1_5.domain.params.ControlAccessParams;
 import org.jclouds.vcloud.director.v1_5.domain.params.PublishCatalogParams;
 import org.jclouds.vcloud.director.v1_5.features.CatalogAsyncApi;
-import org.jclouds.vcloud.director.v1_5.features.MetadataAsyncApi;
 import org.jclouds.vcloud.director.v1_5.filters.AddVCloudAuthorizationAndCookieToRequest;
-import org.jclouds.vcloud.director.v1_5.functions.href.CatalogURNToAdminHref;
-import org.jclouds.vcloud.director.v1_5.functions.href.OrgURNToAdminHref;
+import org.jclouds.vcloud.director.v1_5.functions.URNToAdminHref;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -67,7 +64,7 @@ public interface AdminCatalogAsyncApi extends CatalogAsyncApi {
    @Produces(VCloudDirectorMediaType.ADMIN_CATALOG)
    @JAXBResponseParser
    ListenableFuture<AdminCatalog> addCatalogToOrg(@BinderParam(BindToXMLPayload.class) AdminCatalog catalog,
-            @EndpointParam(parser = OrgURNToAdminHref.class) String orgUrn);
+            @EndpointParam(parser = URNToAdminHref.class) String orgUrn);
 
    /**
     * @see AdminCatalogApi#addCatalogToOrg(AdminCatalog, URI)
@@ -87,8 +84,8 @@ public interface AdminCatalogAsyncApi extends CatalogAsyncApi {
    @GET
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
-   ListenableFuture<AdminCatalog> get(@EndpointParam(parser = CatalogURNToAdminHref.class) String catalogUrn);
+   @Fallback(NullOnNotFoundOr404.class)
+   ListenableFuture<AdminCatalog> get(@EndpointParam(parser = URNToAdminHref.class) String catalogUrn);
 
    /**
     * @see AdminCatalogApi#get(URI)
@@ -97,7 +94,7 @@ public interface AdminCatalogAsyncApi extends CatalogAsyncApi {
    @GET
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<AdminCatalog> get(@EndpointParam URI orgHref);
 
    /**
@@ -107,7 +104,7 @@ public interface AdminCatalogAsyncApi extends CatalogAsyncApi {
    @Consumes(VCloudDirectorMediaType.ADMIN_CATALOG)
    @Produces(VCloudDirectorMediaType.ADMIN_CATALOG)
    @JAXBResponseParser
-   ListenableFuture<AdminCatalog> edit(@EndpointParam(parser = CatalogURNToAdminHref.class) String catalogUrn,
+   ListenableFuture<AdminCatalog> edit(@EndpointParam(parser = URNToAdminHref.class) String catalogUrn,
             @BinderParam(BindToXMLPayload.class) AdminCatalog catalog);
 
    /**
@@ -126,7 +123,7 @@ public interface AdminCatalogAsyncApi extends CatalogAsyncApi {
    @DELETE
    @Consumes
    @JAXBResponseParser
-   ListenableFuture<Void> remove(@EndpointParam(parser = CatalogURNToAdminHref.class) String catalogUrn);
+   ListenableFuture<Void> remove(@EndpointParam(parser = URNToAdminHref.class) String catalogUrn);
 
    /**
     * @see AdminCatalogApi#remove(URI)
@@ -143,8 +140,8 @@ public interface AdminCatalogAsyncApi extends CatalogAsyncApi {
    @Path("/owner")
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
-   ListenableFuture<Owner> getOwner(@EndpointParam(parser = CatalogURNToAdminHref.class) String catalogUrn);
+   @Fallback(NullOnNotFoundOr404.class)
+   ListenableFuture<Owner> getOwner(@EndpointParam(parser = URNToAdminHref.class) String catalogUrn);
 
    /**
     * @see AdminCatalogApi#getOwner(URI)
@@ -153,7 +150,7 @@ public interface AdminCatalogAsyncApi extends CatalogAsyncApi {
    @Path("/owner")
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<Owner> getOwner(@EndpointParam URI catalogAdminHref);
 
    /**
@@ -164,7 +161,7 @@ public interface AdminCatalogAsyncApi extends CatalogAsyncApi {
    @Consumes
    @Produces(VCloudDirectorMediaType.OWNER)
    @JAXBResponseParser
-   ListenableFuture<Void> setOwner(@EndpointParam(parser = CatalogURNToAdminHref.class) String catalogUrn,
+   ListenableFuture<Void> setOwner(@EndpointParam(parser = URNToAdminHref.class) String catalogUrn,
             @BinderParam(BindToXMLPayload.class) Owner newOwner);
 
    /**
@@ -186,7 +183,7 @@ public interface AdminCatalogAsyncApi extends CatalogAsyncApi {
    @Consumes
    @Produces(VCloudDirectorMediaType.PUBLISH_CATALOG_PARAMS)
    @JAXBResponseParser
-   ListenableFuture<Void> publish(@EndpointParam(parser = CatalogURNToAdminHref.class) String catalogUrn,
+   ListenableFuture<Void> publish(@EndpointParam(parser = URNToAdminHref.class) String catalogUrn,
             @BinderParam(BindToXMLPayload.class) PublishCatalogParams params);
 
    /**
@@ -208,7 +205,7 @@ public interface AdminCatalogAsyncApi extends CatalogAsyncApi {
    @Produces(CONTROL_ACCESS)
    @Consumes(CONTROL_ACCESS)
    @JAXBResponseParser
-   ListenableFuture<ControlAccessParams> editAccessControl(@EndpointParam(parser = CatalogURNToAdminHref.class) String catalogUrn,
+   ListenableFuture<ControlAccessParams> editAccessControl(@EndpointParam(parser = URNToAdminHref.class) String catalogUrn,
       @BinderParam(BindToXMLPayload.class) ControlAccessParams params);
 
    /**
@@ -229,8 +226,8 @@ public interface AdminCatalogAsyncApi extends CatalogAsyncApi {
    @Path("/controlAccess")
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
-   ListenableFuture<ControlAccessParams> getAccessControl(@EndpointParam(parser = CatalogURNToAdminHref.class) String catalogUrn);
+   @Fallback(NullOnNotFoundOr404.class)
+   ListenableFuture<ControlAccessParams> getAccessControl(@EndpointParam(parser = URNToAdminHref.class) String catalogUrn);
    
    /**
     * @see AdminCatalogApi#getAccessControl(URI)
@@ -239,18 +236,6 @@ public interface AdminCatalogAsyncApi extends CatalogAsyncApi {
    @Path("/controlAccess")
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<ControlAccessParams> getAccessControl(@EndpointParam URI catalogAdminHref);
-   
-   /**
-    * @return synchronous access to {@link Metadata.Writeable} features
-    */
-   @Override
-   @Delegate
-   MetadataAsyncApi.Writeable getMetadataApi(@EndpointParam(parser = CatalogURNToAdminHref.class) String catalogUrn);
-
-   @Override
-   @Delegate
-   MetadataAsyncApi.Writeable getMetadataApi(@EndpointParam URI catalogAdminHref);
-
 }

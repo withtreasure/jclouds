@@ -1,5 +1,6 @@
 package org.jclouds.trmk.vcloud_0_8.internal;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.jclouds.Constants.PROPERTY_SESSION_INTERVAL;
 import static org.jclouds.trmk.vcloud_0_8.reference.TerremarkConstants.PROPERTY_TERREMARK_EXTENSION_NAME;
 import static org.jclouds.trmk.vcloud_0_8.reference.TerremarkConstants.PROPERTY_TERREMARK_EXTENSION_NS;
@@ -11,7 +12,6 @@ import static org.jclouds.trmk.vcloud_0_8.reference.VCloudConstants.PROPERTY_VCL
 import static org.jclouds.trmk.vcloud_0_8.reference.VCloudConstants.PROPERTY_VCLOUD_XML_SCHEMA;
 
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import org.jclouds.apis.ApiMetadata;
 import org.jclouds.compute.ComputeServiceContext;
@@ -24,7 +24,7 @@ import org.jclouds.rest.internal.BaseRestApiMetadata;
  */
 public abstract class TerremarkVCloudApiMetadata extends BaseRestApiMetadata {
 
-   protected TerremarkVCloudApiMetadata(Builder builder) {
+   protected TerremarkVCloudApiMetadata(Builder<?> builder) {
       super(builder);
    }
 
@@ -41,11 +41,11 @@ public abstract class TerremarkVCloudApiMetadata extends BaseRestApiMetadata {
       properties.setProperty("jclouds.dns_name_length_min", "1");
       properties.setProperty("jclouds.dns_name_length_max", "15");
       // terremark can sometimes block extremely long times
-      properties.setProperty(PROPERTY_VCLOUD_TIMEOUT_TASK_COMPLETED, TimeUnit.MINUTES.toMillis(20) + "");
+      properties.setProperty(PROPERTY_VCLOUD_TIMEOUT_TASK_COMPLETED, MINUTES.toMillis(20) + "");
       return properties;
    }
 
-   public abstract static class Builder extends BaseRestApiMetadata.Builder {
+   public abstract static class Builder<B extends Builder<B>> extends BaseRestApiMetadata.Builder<B> {
 
       protected Builder(Class<?> syncClient, Class<?> asyncClient) {
          super(syncClient, asyncClient);
@@ -55,13 +55,5 @@ public abstract class TerremarkVCloudApiMetadata extends BaseRestApiMetadata {
          .defaultProperties(TerremarkVCloudApiMetadata.defaultProperties())
          .view(ComputeServiceContext.class);
       }
-
-      @Override
-      public Builder fromApiMetadata(ApiMetadata in) {
-         super.fromApiMetadata(in);
-         return this;
-      }
-
    }
-
 }

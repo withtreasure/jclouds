@@ -20,19 +20,18 @@
 package org.jclouds.abiquo.features;
 
 import static org.jclouds.abiquo.domain.DomainUtils.withHeader;
+import static org.jclouds.reflect.Reflection2.method;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.abiquo.domain.EnterpriseResources;
 import org.jclouds.abiquo.domain.InfrastructureResources;
 import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
 import org.jclouds.http.functions.ParseXMLWithJAXB;
 import org.jclouds.http.functions.ReleasePayloadAndReturn;
-import org.jclouds.rest.functions.MapHttp4xxCodesToExceptions;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
+import org.jclouds.reflect.Invocation;
 import org.jclouds.rest.internal.GeneratedHttpRequest;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
 import org.testng.annotations.Test;
 
 import com.abiquo.am.model.TemplatesStateDto;
@@ -53,7 +52,8 @@ import com.abiquo.server.core.infrastructure.DatacenterDto;
 import com.abiquo.server.core.infrastructure.DatacentersDto;
 import com.abiquo.server.core.infrastructure.MachinesDto;
 import com.abiquo.server.core.infrastructure.network.VLANNetworksDto;
-import com.google.inject.TypeLiteral;
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 
 /**
  * Tests annotation parsing of {@code EnterpriseAsyncApi}
@@ -66,8 +66,8 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
    /*********************** Enterprise ********************** */
 
    public void testListEnterprises() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("listEnterprises");
-      GeneratedHttpRequest request = processor.createRequest(method);
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "listEnterprises");
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.of()));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/enterprises HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + EnterprisesDto.BASE_MEDIA_TYPE + "\n");
@@ -75,7 +75,7 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -83,8 +83,8 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
    public void testListEnterprisesWithOptions() throws SecurityException, NoSuchMethodException, IOException {
       EnterpriseOptions options = EnterpriseOptions.builder().has("abi").orderBy("name").ascendant(true).build();
 
-      Method method = EnterpriseAsyncApi.class.getMethod("listEnterprises", EnterpriseOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, options);
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "listEnterprises", EnterpriseOptions.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(options)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/enterprises?has=abi&by=name&asc=true HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + EnterprisesDto.BASE_MEDIA_TYPE + "\n");
@@ -92,7 +92,7 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -100,9 +100,10 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
    public void testListEnterprisesByDatacenter() throws SecurityException, NoSuchMethodException, IOException {
       EnterpriseOptions options = EnterpriseOptions.builder().startWith(0).limit(25).network(true).build();
 
-      Method method = EnterpriseAsyncApi.class.getMethod("listEnterprises", DatacenterDto.class,
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "listEnterprises", DatacenterDto.class,
             EnterpriseOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(), options);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut(), options)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/datacenters/1/action/enterprises?network=true&startwith=0&limit=25 HTTP/1.1");
@@ -111,14 +112,15 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testCreateEnterprise() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("createEnterprise", EnterpriseDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.enterprisePost());
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "createEnterprise", EnterpriseDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.enterprisePost())));
 
       assertRequestLineEquals(request, "POST http://localhost/api/admin/enterprises HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + EnterpriseDto.BASE_MEDIA_TYPE + "\n");
@@ -127,14 +129,14 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetEnterprise() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("getEnterprise", Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, 1);
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "getEnterprise", Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/enterprises/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + EnterpriseDto.BASE_MEDIA_TYPE + "\n");
@@ -142,14 +144,15 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testUpdateEnterprise() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("updateEnterprise", EnterpriseDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.enterprisePut());
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "updateEnterprise", EnterpriseDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.enterprisePut())));
 
       assertRequestLineEquals(request, "PUT http://localhost/api/admin/enterprises/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + EnterpriseDto.BASE_MEDIA_TYPE + "\n");
@@ -158,14 +161,15 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeleteEnterprise() throws SecurityException, NoSuchMethodException {
-      Method method = EnterpriseAsyncApi.class.getMethod("deleteEnterprise", EnterpriseDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.enterprisePut());
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "deleteEnterprise", EnterpriseDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.enterprisePut())));
 
       assertRequestLineEquals(request, "DELETE http://localhost/api/admin/enterprises/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
@@ -173,14 +177,14 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListAllowedDatacenters() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("listAllowedDatacenters", Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, 1);
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "listAllowedDatacenters", Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters?idEnterprise=1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + DatacentersDto.BASE_MEDIA_TYPE + "\n");
@@ -188,14 +192,15 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListVirtualDatacentersFromEnterprise() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("listVirtualDatacenters", EnterpriseDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.enterprisePut());
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "listVirtualDatacenters", EnterpriseDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.enterprisePut())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/enterprises/1/action/virtualdatacenters HTTP/1.1");
@@ -204,7 +209,7 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -212,8 +217,9 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
    /*********************** Enterprise Properties ********************** */
 
    public void testGetEnterpriseProperties() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("getEnterpriseProperties", EnterpriseDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.enterprisePut());
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "getEnterpriseProperties", EnterpriseDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.enterprisePut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/enterprises/1/properties HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + EnterprisePropertiesDto.BASE_MEDIA_TYPE + "\n");
@@ -221,14 +227,16 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, MapHttp4xxCodesToExceptions.class);
+      assertFallbackClassEquals(method, MapHttp4xxCodesToExceptions.class);
 
       checkFilters(request);
    }
 
    public void testUpdateEnterpriseProperties() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("updateEnterpriseProperties", EnterprisePropertiesDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.enterprisePropertiesPut());
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "updateEnterpriseProperties",
+            EnterprisePropertiesDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.enterprisePropertiesPut())));
 
       assertRequestLineEquals(request, "PUT http://localhost/api/admin/enterprises/1/properties HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + EnterprisePropertiesDto.BASE_MEDIA_TYPE + "\n");
@@ -237,7 +245,7 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -249,9 +257,10 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
       DatacenterDto datacenter = InfrastructureResources.datacenterPut();
       DatacenterLimitsDto limits = EnterpriseResources.datacenterLimitsPost();
 
-      Method method = EnterpriseAsyncApi.class.getMethod("createLimits", EnterpriseDto.class, DatacenterDto.class,
-            DatacenterLimitsDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, enterprise, datacenter, limits);
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "createLimits", EnterpriseDto.class,
+            DatacenterDto.class, DatacenterLimitsDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(enterprise, datacenter, limits)));
 
       String limitsUri = enterprise.searchLink("limits").getHref();
       String requestURI = String.format("POST %s?datacenter=%d HTTP/1.1", limitsUri, datacenter.getId());
@@ -263,7 +272,7 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -272,8 +281,9 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
       EnterpriseDto enterprise = EnterpriseResources.enterprisePut();
       DatacenterDto datacenter = InfrastructureResources.datacenterPut();
 
-      Method method = EnterpriseAsyncApi.class.getMethod("getLimits", EnterpriseDto.class, DatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, enterprise, datacenter);
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "getLimits", EnterpriseDto.class, DatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(enterprise, datacenter)));
 
       String limitsUri = enterprise.searchLink("limits").getHref();
       String requestURI = String.format("GET %s?datacenter=%d HTTP/1.1", limitsUri, datacenter.getId());
@@ -284,7 +294,7 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
@@ -292,9 +302,9 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
    public void testUpdateLimits() throws SecurityException, NoSuchMethodException, IOException {
       EnterpriseDto enterprise = EnterpriseResources.enterprisePut();
 
-      Method method = EnterpriseAsyncApi.class.getMethod("updateLimits", DatacenterLimitsDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method,
-            EnterpriseResources.datacenterLimitsPut(enterprise));
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "updateLimits", DatacenterLimitsDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.datacenterLimitsPut(enterprise))));
 
       assertRequestLineEquals(request, "PUT http://localhost/api/admin/enterprises/1/limits/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + DatacenterLimitsDto.BASE_MEDIA_TYPE + "\n");
@@ -303,7 +313,7 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -311,9 +321,9 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
    public void testDeleteLimits() throws SecurityException, NoSuchMethodException {
       EnterpriseDto enterprise = EnterpriseResources.enterprisePut();
 
-      Method method = EnterpriseAsyncApi.class.getMethod("deleteLimits", DatacenterLimitsDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method,
-            EnterpriseResources.datacenterLimitsPut(enterprise));
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "deleteLimits", DatacenterLimitsDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.datacenterLimitsPut(enterprise))));
 
       assertRequestLineEquals(request, "DELETE http://localhost/api/admin/enterprises/1/limits/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
@@ -321,14 +331,15 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListLimitsEnterprise() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("listLimits", EnterpriseDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.enterprisePut());
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "listLimits", EnterpriseDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.enterprisePut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/enterprises/1/limits HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + DatacentersLimitsDto.BASE_MEDIA_TYPE + "\n");
@@ -336,7 +347,7 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -344,8 +355,9 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
    /*********************** User ***********************/
 
    public void testGetUser() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("getUser", EnterpriseDto.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.enterprisePut(), 1);
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "getUser", EnterpriseDto.class, Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.enterprisePut(), 1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/enterprises/1/users/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + UserDto.BASE_MEDIA_TYPE + "\n");
@@ -353,14 +365,15 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testListUsers() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("listUsers", EnterpriseDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.enterprisePut());
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "listUsers", EnterpriseDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.enterprisePut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/enterprises/1/users HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + UsersDto.BASE_MEDIA_TYPE + "\n");
@@ -368,7 +381,7 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -377,8 +390,9 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
       EnterpriseDto enterprise = EnterpriseResources.enterprisePut();
       UserDto user = EnterpriseResources.userPost();
 
-      Method method = EnterpriseAsyncApi.class.getMethod("createUser", EnterpriseDto.class, UserDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, enterprise, user);
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "createUser", EnterpriseDto.class, UserDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(enterprise, user)));
 
       assertRequestLineEquals(request, "POST http://localhost/api/admin/enterprises/1/users HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + UserDto.BASE_MEDIA_TYPE + "\n");
@@ -387,14 +401,15 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testUpdateUser() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("updateUser", UserDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.userPut());
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "updateUser", UserDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.userPut())));
 
       assertRequestLineEquals(request, "PUT http://localhost/api/admin/enterprises/1/users/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + UserDto.BASE_MEDIA_TYPE + "\n");
@@ -403,14 +418,15 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeleteUser() throws SecurityException, NoSuchMethodException {
-      Method method = EnterpriseAsyncApi.class.getMethod("deleteUser", UserDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.userPut());
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "deleteUser", UserDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.userPut())));
 
       assertRequestLineEquals(request, "DELETE http://localhost/api/admin/enterprises/1/users/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
@@ -418,14 +434,15 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListVirtualMachinesByUser() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("listVirtualMachines", UserDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.userPut());
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "listVirtualMachines", UserDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.userPut())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/enterprises/1/users/1/action/virtualmachines HTTP/1.1");
@@ -434,7 +451,7 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -442,9 +459,10 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
    /*********************** Datacenter Repository ********************** */
 
    public void testGetDatacenterRepository() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("getDatacenterRepository", EnterpriseDto.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.enterprisePut(),
-            InfrastructureResources.datacenterPut().getId());
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "getDatacenterRepository", EnterpriseDto.class,
+            Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
+            EnterpriseResources.enterprisePut(), InfrastructureResources.datacenterPut().getId())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/enterprises/1/datacenterrepositories/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + DatacenterRepositoryDto.BASE_MEDIA_TYPE + "\n");
@@ -452,15 +470,16 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testRefreshTemplateRepository() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("refreshTemplateRepository", Integer.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.enterprisePut().getId(),
-            InfrastructureResources.datacenterPut().getId());
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "refreshTemplateRepository", Integer.class,
+            Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
+            EnterpriseResources.enterprisePut().getId(), InfrastructureResources.datacenterPut().getId())));
 
       assertRequestLineEquals(request,
             "PUT http://localhost/api/admin/enterprises/1/datacenterrepositories/1/actions/refresh HTTP/1.1");
@@ -469,7 +488,7 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -477,8 +496,9 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
    /*********************** External Network ********************** */
 
    public void testListExternalNetworks() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("listExternalNetworks", EnterpriseDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.enterprisePut());
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "listExternalNetworks", EnterpriseDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.enterprisePut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/enterprises/1/action/externalnetworks HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VLANNetworksDto.BASE_MEDIA_TYPE + "\n");
@@ -486,7 +506,7 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -494,8 +514,9 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
    /*********************** Cloud ********************** */
 
    public void testListVirtualMachines() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("listVirtualMachines", EnterpriseDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.enterprisePut());
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "listVirtualMachines", EnterpriseDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.enterprisePut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/enterprises/1/action/virtualmachines HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VirtualMachinesWithNodeExtendedDto.BASE_MEDIA_TYPE + "\n");
@@ -503,14 +524,15 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListVirtualAppliances() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("listVirtualAppliances", EnterpriseDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.enterprisePut());
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "listVirtualAppliances", EnterpriseDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.enterprisePut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/enterprises/1/action/virtualappliances HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VirtualAppliancesDto.BASE_MEDIA_TYPE + "\n");
@@ -518,7 +540,7 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -526,8 +548,9 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
    /*********************** Machine ********************** */
 
    public void testListReservedMachines() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("listReservedMachines", EnterpriseDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.enterprisePut());
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "listReservedMachines", EnterpriseDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.enterprisePut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/enterprises/1/reservedmachines HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + MachinesDto.BASE_MEDIA_TYPE + "\n");
@@ -535,7 +558,7 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -543,8 +566,9 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
    /*********************** Template definition list ***********************/
 
    public void testListTemplateDefinitionLists() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("listTemplateDefinitionLists", EnterpriseDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.enterprisePut());
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "listTemplateDefinitionLists", EnterpriseDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.enterprisePut())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/enterprises/1/appslib/templateDefinitionLists HTTP/1.1");
@@ -553,7 +577,7 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -562,9 +586,10 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
       EnterpriseDto enterprise = EnterpriseResources.enterprisePut();
       TemplateDefinitionListDto template = EnterpriseResources.templateListPost();
 
-      Method method = EnterpriseAsyncApi.class.getMethod("createTemplateDefinitionList", EnterpriseDto.class,
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "createTemplateDefinitionList", EnterpriseDto.class,
             TemplateDefinitionListDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, enterprise, template);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(enterprise, template)));
 
       assertRequestLineEquals(request,
             "POST http://localhost/api/admin/enterprises/1/appslib/templateDefinitionLists HTTP/1.1");
@@ -574,7 +599,7 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -582,9 +607,9 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
    public void testUpdateTemplateDefinitionList() throws SecurityException, NoSuchMethodException, IOException {
       TemplateDefinitionListDto template = EnterpriseResources.templateListPut();
 
-      Method method = EnterpriseAsyncApi.class.getMethod("updateTemplateDefinitionList",
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "updateTemplateDefinitionList",
             TemplateDefinitionListDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, template);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(template)));
 
       assertRequestLineEquals(request,
             "PUT http://localhost/api/admin/enterprises/1/appslib/templateDefinitionLists/1 HTTP/1.1");
@@ -594,15 +619,16 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeleteTemplateDefinitionList() throws SecurityException, NoSuchMethodException {
-      Method method = EnterpriseAsyncApi.class.getMethod("deleteTemplateDefinitionList",
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "deleteTemplateDefinitionList",
             TemplateDefinitionListDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.templateListPut());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.templateListPut())));
 
       assertRequestLineEquals(request,
             "DELETE http://localhost/api/admin/enterprises/1/appslib/templateDefinitionLists/1 HTTP/1.1");
@@ -611,15 +637,16 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetTemplateDefinitionList() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("getTemplateDefinitionList", EnterpriseDto.class,
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "getTemplateDefinitionList", EnterpriseDto.class,
             Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.enterprisePut(), 1);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.enterprisePut(), 1)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/enterprises/1/appslib/templateDefinitionLists/1 HTTP/1.1");
@@ -628,16 +655,16 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testListTemplateListStatus() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EnterpriseAsyncApi.class.getMethod("listTemplateListStatus", TemplateDefinitionListDto.class,
-            DatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.templateListPut(),
-            InfrastructureResources.datacenterPut());
+      Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "listTemplateListStatus",
+            TemplateDefinitionListDto.class, DatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.templateListPut(), InfrastructureResources.datacenterPut())));
 
       assertRequestLineEquals(
             request,
@@ -647,14 +674,8 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
-   }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<EnterpriseAsyncApi>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<EnterpriseAsyncApi>>() {
-      };
    }
 }

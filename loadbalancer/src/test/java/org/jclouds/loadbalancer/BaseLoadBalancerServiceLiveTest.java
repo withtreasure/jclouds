@@ -19,11 +19,13 @@
 package org.jclouds.loadbalancer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jclouds.reflect.Reflection2.typeToken;
+import static org.jclouds.util.Predicates2.retry;
 import static org.testng.Assert.assertNotNull;
 
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.jclouds.Constants;
 import org.jclouds.ContextBuilder;
@@ -37,12 +39,12 @@ import org.jclouds.compute.predicates.NodePredicates;
 import org.jclouds.domain.LoginCredentials;
 import org.jclouds.domain.LoginCredentials.Builder;
 import org.jclouds.loadbalancer.domain.LoadBalancerMetadata;
-import org.jclouds.predicates.RetryablePredicate;
 import org.jclouds.predicates.SocketOpen;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.net.HostAndPort;
@@ -89,7 +91,7 @@ public abstract class BaseLoadBalancerServiceLiveTest extends BaseViewLiveTest<L
 
    protected String group;
 
-   protected RetryablePredicate<HostAndPort> socketTester;
+   protected Predicate<HostAndPort> socketTester;
    protected Set<? extends NodeMetadata> nodes;
    protected LoadBalancerMetadata loadbalancer;
 
@@ -131,7 +133,7 @@ public abstract class BaseLoadBalancerServiceLiveTest extends BaseViewLiveTest<L
 
    protected void buildSocketTester() {
       SocketOpen socketOpen = Guice.createInjector(getSshModule()).getInstance(SocketOpen.class);
-      socketTester = new RetryablePredicate<HostAndPort>(socketOpen, 60, 1, TimeUnit.SECONDS);
+      socketTester = retry(socketOpen, 60, 1, SECONDS);
    }
 
    abstract protected Module getSshModule();
@@ -182,6 +184,6 @@ public abstract class BaseLoadBalancerServiceLiveTest extends BaseViewLiveTest<L
 
    @Override
    protected TypeToken<LoadBalancerServiceContext> viewType() {
-      return TypeToken.of(LoadBalancerServiceContext.class);
+      return typeToken(LoadBalancerServiceContext.class);
    }
 }

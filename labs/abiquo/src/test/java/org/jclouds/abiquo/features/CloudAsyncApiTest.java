@@ -20,12 +20,13 @@
 package org.jclouds.abiquo.features;
 
 import static org.jclouds.abiquo.domain.DomainUtils.withHeader;
+import static org.jclouds.reflect.Reflection2.method;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.abiquo.domain.CloudResources;
 import org.jclouds.abiquo.domain.EnterpriseResources;
 import org.jclouds.abiquo.domain.InfrastructureResources;
@@ -35,14 +36,14 @@ import org.jclouds.abiquo.domain.cloud.options.VirtualMachineOptions;
 import org.jclouds.abiquo.domain.cloud.options.VirtualMachineTemplateOptions;
 import org.jclouds.abiquo.domain.cloud.options.VolumeOptions;
 import org.jclouds.abiquo.domain.network.options.IpOptions;
+import org.jclouds.abiquo.domain.options.search.reference.OrderBy;
+import org.jclouds.abiquo.fallbacks.MovedVolume;
 import org.jclouds.abiquo.functions.ReturnTaskReferenceOrNull;
-import org.jclouds.abiquo.functions.cloud.ReturnMovedVolume;
 import org.jclouds.http.functions.ParseXMLWithJAXB;
 import org.jclouds.http.functions.ReleasePayloadAndReturn;
 import org.jclouds.http.functions.ReturnStringIf2xx;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
+import org.jclouds.reflect.Invocation;
 import org.jclouds.rest.internal.GeneratedHttpRequest;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
 import org.testng.annotations.Test;
 
 import com.abiquo.model.enumerator.HypervisorType;
@@ -78,7 +79,8 @@ import com.abiquo.server.core.infrastructure.storage.TierDto;
 import com.abiquo.server.core.infrastructure.storage.TiersDto;
 import com.abiquo.server.core.infrastructure.storage.VolumeManagementDto;
 import com.abiquo.server.core.infrastructure.storage.VolumesManagementDto;
-import com.google.inject.TypeLiteral;
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 
 /**
  * Tests annotation parsing of {@code CloudAsyncApi}
@@ -91,9 +93,9 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
    /*********************** Virtual Datacenter ***********************/
 
    public void testListVirtualDatacentersParams() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("listVirtualDatacenters", VirtualDatacenterOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, VirtualDatacenterOptions.builder().datacenterId(1)
-            .enterpriseId(1).build());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "listVirtualDatacenters", VirtualDatacenterOptions.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(VirtualDatacenterOptions.builder().datacenterId(1).enterpriseId(1).build())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/cloud/virtualdatacenters?datacenter=1&enterprise=1 HTTP/1.1");
@@ -102,14 +104,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListVirtualDatacentersNoParams() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("listVirtualDatacenters", VirtualDatacenterOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, VirtualDatacenterOptions.builder().build());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "listVirtualDatacenters", VirtualDatacenterOptions.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(VirtualDatacenterOptions.builder().build())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/cloud/virtualdatacenters HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VirtualDatacentersDto.BASE_MEDIA_TYPE + "\n");
@@ -117,33 +120,34 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testCreateVirtualDatacenter() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("createVirtualDatacenter", VirtualDatacenterDto.class,
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "createVirtualDatacenter", VirtualDatacenterDto.class,
             DatacenterDto.class, EnterpriseDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPost(),
-            InfrastructureResources.datacenterPut(), EnterpriseResources.enterprisePut());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
+            CloudResources.virtualDatacenterPost(), InfrastructureResources.datacenterPut(),
+            EnterpriseResources.enterprisePut())));
 
       assertRequestLineEquals(request,
-            "POST http://localhost/api/cloud/virtualdatacenters?enterprise=1&datacenter=1 HTTP/1.1");
+            "POST http://localhost/api/cloud/virtualdatacenters?datacenter=1&enterprise=1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VirtualDatacenterDto.BASE_MEDIA_TYPE + "\n");
       assertPayloadEquals(request, withHeader(CloudResources.virtualDatacenterPostPayload()),
             VirtualDatacenterDto.class, VirtualDatacenterDto.BASE_MEDIA_TYPE, false);
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetVirtualDatacenter() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("getVirtualDatacenter", Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, 1);
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "getVirtualDatacenter", Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/cloud/virtualdatacenters/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VirtualDatacenterDto.BASE_MEDIA_TYPE + "\n");
@@ -151,14 +155,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testUpdateVirtualDatacenter() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("updateVirtualDatacenter", VirtualDatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "updateVirtualDatacenter", VirtualDatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut())));
 
       assertRequestLineEquals(request, "PUT http://localhost/api/cloud/virtualdatacenters/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VirtualDatacenterDto.BASE_MEDIA_TYPE + "\n");
@@ -167,14 +172,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeleteVirtualDatacenter() throws SecurityException, NoSuchMethodException {
-      Method method = CloudAsyncApi.class.getMethod("deleteVirtualDatacenter", VirtualDatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "deleteVirtualDatacenter", VirtualDatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut())));
 
       assertRequestLineEquals(request, "DELETE http://localhost/api/cloud/virtualdatacenters/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
@@ -182,7 +188,7 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -191,9 +197,10 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
    public void testListAvailablePublicIpsWithOptions() throws SecurityException, NoSuchMethodException, IOException {
       IpOptions options = IpOptions.builder().limit(5).build();
-      Method method = CloudAsyncApi.class.getMethod("listAvailablePublicIps", VirtualDatacenterDto.class,
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "listAvailablePublicIps", VirtualDatacenterDto.class,
             IpOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut(), options);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut(), options)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/cloud/virtualdatacenters/1/publicips/topurchase?limit=5 HTTP/1.1");
@@ -202,16 +209,17 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListPurchasedPublicIpsWithOptions() throws SecurityException, NoSuchMethodException, IOException {
       IpOptions options = IpOptions.builder().limit(5).build();
-      Method method = CloudAsyncApi.class.getMethod("listPurchasedPublicIps", VirtualDatacenterDto.class,
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "listPurchasedPublicIps", VirtualDatacenterDto.class,
             IpOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut(), options);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut(), options)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/cloud/virtualdatacenters/1/publicips/purchased?limit=5 HTTP/1.1");
@@ -220,14 +228,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testPurchasePublicIp() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("purchasePublicIp", PublicIpDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, NetworkResources.publicIpToPurchase());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "purchasePublicIp", PublicIpDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(NetworkResources.publicIpToPurchase())));
 
       assertRequestLineEquals(request,
             "PUT http://localhost/api/cloud/virtualdatacenters/5/publicips/purchased/1 HTTP/1.1");
@@ -236,14 +245,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testReleasePublicIp() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("releasePublicIp", PublicIpDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, NetworkResources.publicIpToRelease());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "releasePublicIp", PublicIpDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(NetworkResources.publicIpToRelease())));
 
       assertRequestLineEquals(request,
             "PUT http://localhost/api/cloud/virtualdatacenters/5/publicips/topurchase/1 HTTP/1.1");
@@ -252,7 +262,7 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -260,8 +270,9 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
    /*********************** Available templates ***********************/
 
    public void testListAvailableTemplates() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("listAvailableTemplates", VirtualDatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "listAvailableTemplates", VirtualDatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/cloud/virtualdatacenters/1/action/templates HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VirtualMachineTemplatesDto.BASE_MEDIA_TYPE + "\n");
@@ -269,17 +280,18 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListAvailableTemplatesWithOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("listAvailableTemplates", VirtualDatacenterDto.class,
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "listAvailableTemplates", VirtualDatacenterDto.class,
             VirtualMachineTemplateOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut(),
-            VirtualMachineTemplateOptions.builder().hypervisorType(HypervisorType.XENSERVER).categoryName("Firewalls")
-                  .idTemplate(1).build());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(
+            method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut(), VirtualMachineTemplateOptions.builder()
+                  .hypervisorType(HypervisorType.XENSERVER).categoryName("Firewalls").idTemplate(1).build())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/cloud/virtualdatacenters/1/action/templates"
             + "?hypervisorTypeName=XENSERVER&categoryName=Firewalls&idTemplate=1 HTTP/1.1");
@@ -288,7 +300,7 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -296,8 +308,9 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
    /*********************** Storage Tiers ***********************/
 
    public void testListStorageTiers() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("listStorageTiers", VirtualDatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "listStorageTiers", VirtualDatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/cloud/virtualdatacenters/1/tiers HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + TiersDto.BASE_MEDIA_TYPE + "\n");
@@ -305,14 +318,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetStorageTier() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("getStorageTier", VirtualDatacenterDto.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut(), 1);
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "getStorageTier", VirtualDatacenterDto.class, Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut(), 1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/cloud/virtualdatacenters/1/tiers/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + TierDto.BASE_MEDIA_TYPE + "\n");
@@ -320,14 +334,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testGetDefaultNetwork() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("getDefaultNetwork", VirtualDatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "getDefaultNetwork", VirtualDatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/cloud/virtualdatacenters/1/privatenetworks/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VLANNetworkDto.BASE_MEDIA_TYPE + "\n");
@@ -335,16 +350,16 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testSetDefaultNetworkInternal() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("setDefaultNetwork", VirtualDatacenterDto.class,
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "setDefaultNetwork", VirtualDatacenterDto.class,
             VLANNetworkDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut(),
-            NetworkResources.privateNetworkPut());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut(), NetworkResources.privateNetworkPut())));
 
       RESTLink netLink = NetworkResources.privateNetworkPut().getEditLink();
 
@@ -356,16 +371,16 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testSetDefaultNetworkExternal() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("setDefaultNetwork", VirtualDatacenterDto.class,
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "setDefaultNetwork", VirtualDatacenterDto.class,
             VLANNetworkDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut(),
-            NetworkResources.externalNetworkPut());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut(), NetworkResources.externalNetworkPut())));
 
       RESTLink netLink = NetworkResources.externalNetworkPut().getEditLink();
 
@@ -377,7 +392,7 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -385,8 +400,9 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
    /*********************** Private Network ***********************/
 
    public void testListPrivateNetworks() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("listPrivateNetworks", VirtualDatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "listPrivateNetworks", VirtualDatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/cloud/virtualdatacenters/1/privatenetworks HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VLANNetworksDto.BASE_MEDIA_TYPE + "\n");
@@ -394,14 +410,16 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetPrivateNetwork() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("getPrivateNetwork", VirtualDatacenterDto.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut(), 1);
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "getPrivateNetwork", VirtualDatacenterDto.class,
+            Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut(), 1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/cloud/virtualdatacenters/1/privatenetworks/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VLANNetworkDto.BASE_MEDIA_TYPE + "\n");
@@ -409,16 +427,16 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testCreatePrivateNetwork() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("createPrivateNetwork", VirtualDatacenterDto.class,
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "createPrivateNetwork", VirtualDatacenterDto.class,
             VLANNetworkDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut(),
-            NetworkResources.vlanPost());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut(), NetworkResources.vlanPost())));
 
       assertRequestLineEquals(request, "POST http://localhost/api/cloud/virtualdatacenters/1/privatenetworks HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VLANNetworkDto.BASE_MEDIA_TYPE + "\n");
@@ -427,14 +445,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testUpdatePrivateNetwork() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("updatePrivateNetwork", VLANNetworkDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, NetworkResources.privateNetworkPut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "updatePrivateNetwork", VLANNetworkDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(NetworkResources.privateNetworkPut())));
 
       assertRequestLineEquals(request, "PUT http://localhost/api/cloud/virtualdatacenters/1/privatenetworks/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VLANNetworkDto.BASE_MEDIA_TYPE + "\n");
@@ -443,14 +462,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeletePrivateNetwork() throws SecurityException, NoSuchMethodException {
-      Method method = CloudAsyncApi.class.getMethod("deletePrivateNetwork", VLANNetworkDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, NetworkResources.privateNetworkPut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "deletePrivateNetwork", VLANNetworkDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(NetworkResources.privateNetworkPut())));
 
       assertRequestLineEquals(request,
             "DELETE http://localhost/api/cloud/virtualdatacenters/1/privatenetworks/1 HTTP/1.1");
@@ -459,7 +479,7 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -467,8 +487,9 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
    /*********************** Private Network IPs ***********************/
 
    public void testListPrivateNetworkIps() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("listPrivateNetworkIps", VLANNetworkDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, NetworkResources.privateNetworkPut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "listPrivateNetworkIps", VLANNetworkDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(NetworkResources.privateNetworkPut())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/cloud/virtualdatacenters/1/privatenetworks/1/ips HTTP/1.1");
@@ -477,15 +498,17 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListPrivateNetworkIpsWithOptions() throws SecurityException, NoSuchMethodException, IOException {
       IpOptions options = IpOptions.builder().startWith(10).build();
-      Method method = CloudAsyncApi.class.getMethod("listPrivateNetworkIps", VLANNetworkDto.class, IpOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, NetworkResources.privateNetworkPut(), options);
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "listPrivateNetworkIps", VLANNetworkDto.class,
+            IpOptions.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(NetworkResources.privateNetworkPut(), options)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/cloud/virtualdatacenters/1/privatenetworks/1/ips?startwith=10 HTTP/1.1");
@@ -494,14 +517,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetPrivateNetworkIp() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("getPrivateNetworkIp", VLANNetworkDto.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, NetworkResources.privateNetworkPut(), 1);
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "getPrivateNetworkIp", VLANNetworkDto.class, Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(NetworkResources.privateNetworkPut(), 1)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/cloud/virtualdatacenters/1/privatenetworks/1/ips/1 HTTP/1.1");
@@ -510,7 +534,7 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -518,8 +542,9 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
    /*********************** Virtual Appliance ***********************/
 
    public void testListVirtualAppliances() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("listVirtualAppliances", VirtualDatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "listVirtualAppliances", VirtualDatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/cloud/virtualdatacenters/1/virtualappliances HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VirtualAppliancesDto.BASE_MEDIA_TYPE + "\n");
@@ -527,14 +552,16 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetVirtualAppliance() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("getVirtualAppliance", VirtualDatacenterDto.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut(), 1);
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "getVirtualAppliance", VirtualDatacenterDto.class,
+            Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut(), 1)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1 HTTP/1.1");
@@ -543,14 +570,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testGetVirtualApplianceState() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("getVirtualApplianceState", VirtualApplianceDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualAppliancePut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "getVirtualApplianceState", VirtualApplianceDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualAppliancePut())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/state HTTP/1.1");
@@ -559,16 +587,16 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testCreateVirtualAppliance() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("createVirtualAppliance", VirtualDatacenterDto.class,
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "createVirtualAppliance", VirtualDatacenterDto.class,
             VirtualApplianceDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut(),
-            CloudResources.virtualAppliancePost());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut(), CloudResources.virtualAppliancePost())));
 
       assertRequestLineEquals(request,
             "POST http://localhost/api/cloud/virtualdatacenters/1/virtualappliances HTTP/1.1");
@@ -578,14 +606,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testUpdateVirtualAppliance() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("updateVirtualAppliance", VirtualApplianceDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualAppliancePut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "updateVirtualAppliance", VirtualApplianceDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualAppliancePut())));
 
       assertRequestLineEquals(request,
             "PUT http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1 HTTP/1.1");
@@ -595,14 +624,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeleteVirtualAppliance() throws SecurityException, NoSuchMethodException {
-      Method method = CloudAsyncApi.class.getMethod("deleteVirtualAppliance", VirtualApplianceDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualAppliancePut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "deleteVirtualAppliance", VirtualApplianceDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualAppliancePut())));
 
       assertRequestLineEquals(request,
             "DELETE http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1 HTTP/1.1");
@@ -611,16 +641,16 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeployVirtualAppliance() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("deployVirtualAppliance", VirtualApplianceDto.class,
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "deployVirtualAppliance", VirtualApplianceDto.class,
             VirtualMachineTaskDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualAppliancePut(),
-            CloudResources.deployOptions());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualAppliancePut(), CloudResources.deployOptions())));
 
       assertRequestLineEquals(request,
             "POST http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/action/deploy HTTP/1.1");
@@ -630,16 +660,16 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testUndeployVirtualAppliance() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("undeployVirtualAppliance", VirtualApplianceDto.class,
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "undeployVirtualAppliance", VirtualApplianceDto.class,
             VirtualMachineTaskDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualAppliancePut(),
-            CloudResources.undeployOptions());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualAppliancePut(), CloudResources.undeployOptions())));
 
       assertRequestLineEquals(request,
             "POST http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/action/undeploy HTTP/1.1");
@@ -649,14 +679,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetVirtualAppliancePrice() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("getVirtualAppliancePrice", VirtualApplianceDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualAppliancePut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "getVirtualAppliancePrice", VirtualApplianceDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualAppliancePut())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/action/price HTTP/1.1");
@@ -665,7 +696,7 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ReturnStringIf2xx.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -673,8 +704,9 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
    /*********************** Virtual Machine ***********************/
 
    public void testListVirtualMachines() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("listVirtualMachines", VirtualApplianceDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualAppliancePut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "listVirtualMachines", VirtualApplianceDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualAppliancePut())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines HTTP/1.1");
@@ -683,16 +715,18 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListVirtualMachinesWithOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("listVirtualMachines", VirtualApplianceDto.class,
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "listVirtualMachines", VirtualApplianceDto.class,
             VirtualMachineOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualAppliancePut(),
-            VirtualMachineOptions.builder().disablePagination().build());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(
+            method,
+            ImmutableList.<Object> of(CloudResources.virtualAppliancePut(), VirtualMachineOptions.builder()
+                  .disablePagination().build())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines?limit=0 HTTP/1.1");
@@ -701,14 +735,16 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetVirtualMachine() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("getVirtualMachine", VirtualApplianceDto.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualAppliancePut(), 1);
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "getVirtualMachine", VirtualApplianceDto.class,
+            Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualAppliancePut(), 1)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1 HTTP/1.1");
@@ -717,16 +753,16 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testCreateVirtualMachine() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("createVirtualMachine", VirtualApplianceDto.class,
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "createVirtualMachine", VirtualApplianceDto.class,
             VirtualMachineWithNodeExtendedDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualAppliancePut(),
-            CloudResources.virtualMachinePost());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualAppliancePut(), CloudResources.virtualMachinePost())));
 
       assertRequestLineEquals(request,
             "POST http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines HTTP/1.1");
@@ -736,14 +772,16 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testUpdateVirtualMachine() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("updateVirtualMachine", VirtualMachineWithNodeExtendedDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualMachinePut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "updateVirtualMachine",
+            VirtualMachineWithNodeExtendedDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualMachinePut())));
 
       assertRequestLineEquals(request,
             "PUT http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1 HTTP/1.1");
@@ -753,16 +791,18 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ReturnTaskReferenceOrNull.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testUpdateVirtualMachineWithOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("updateVirtualMachine", VirtualMachineWithNodeExtendedDto.class,
-            VirtualMachineOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualMachinePut(),
-            VirtualMachineOptions.builder().force(true).build());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "updateVirtualMachine",
+            VirtualMachineWithNodeExtendedDto.class, VirtualMachineOptions.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(
+            method,
+            ImmutableList.<Object> of(CloudResources.virtualMachinePut(), VirtualMachineOptions.builder().force(true)
+                  .build())));
 
       assertRequestLineEquals(request,
             "PUT http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1?force=true HTTP/1.1");
@@ -772,16 +812,16 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ReturnTaskReferenceOrNull.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testChangeVirtualMachineState() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("changeVirtualMachineState", VirtualMachineDto.class,
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "changeVirtualMachineState", VirtualMachineDto.class,
             VirtualMachineStateDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualMachinePut(),
-            CloudResources.virtualMachineState());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualMachinePut(), CloudResources.virtualMachineState())));
 
       assertRequestLineEquals(request,
             "PUT http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/state HTTP/1.1");
@@ -791,14 +831,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeleteVirtualMachine() throws SecurityException, NoSuchMethodException {
-      Method method = CloudAsyncApi.class.getMethod("deleteVirtualMachine", VirtualMachineDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualMachinePut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "deleteVirtualMachine", VirtualMachineDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualMachinePut())));
 
       assertRequestLineEquals(request,
             "DELETE http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1 HTTP/1.1");
@@ -807,14 +848,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetVirtualMachineState() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("getVirtualMachineState", VirtualMachineDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualMachinePut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "getVirtualMachineState", VirtualMachineDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualMachinePut())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/state HTTP/1.1");
@@ -823,16 +865,16 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeployVirtualMachine() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("deployVirtualMachine", VirtualMachineDto.class,
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "deployVirtualMachine", VirtualMachineDto.class,
             VirtualMachineTaskDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualMachinePut(),
-            CloudResources.deployOptions());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualMachinePut(), CloudResources.deployOptions())));
 
       assertRequestLineEquals(request,
             "POST http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/action/deploy HTTP/1.1");
@@ -842,16 +884,16 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testUndeployVirtualMachine() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("undeployVirtualMachine", VirtualMachineDto.class,
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "undeployVirtualMachine", VirtualMachineDto.class,
             VirtualMachineTaskDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualMachinePut(),
-            CloudResources.undeployOptions());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualMachinePut(), CloudResources.undeployOptions())));
 
       assertRequestLineEquals(request,
             "POST http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/action/undeploy HTTP/1.1");
@@ -861,14 +903,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testRebootVirtualMachine() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("rebootVirtualMachine", VirtualMachineDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualMachinePut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "rebootVirtualMachine", VirtualMachineDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualMachinePut())));
 
       assertRequestLineEquals(request,
             "POST http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/action/reset HTTP/1.1");
@@ -877,11 +920,11 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
-
+   
    public void testSnapshotVirtualMachine() throws SecurityException, NoSuchMethodException, IOException {
       Method method = CloudAsyncApi.class.getMethod("snapshotVirtualMachine", VirtualMachineDto.class,
             VirtualMachineInstanceDto.class);
@@ -896,7 +939,7 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -913,7 +956,7 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -921,8 +964,9 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
    /*********************** Virtual Machine Template ***********************/
 
    public void testGetVirtualMachineTemplate() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("getVirtualMachineTemplate", VirtualMachineDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualMachinePut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "getVirtualMachineTemplate", VirtualMachineDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualMachinePut())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates/1 HTTP/1.1");
@@ -931,14 +975,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListAttachedVolumes() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("listAttachedVolumes", VirtualMachineDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualMachinePut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "listAttachedVolumes", VirtualMachineDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualMachinePut())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/storage/volumes HTTP/1.1");
@@ -947,14 +992,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListAttachedHardDisks() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("listAttachedHardDisks", VirtualMachineDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualMachinePut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "listAttachedHardDisks", VirtualMachineDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualMachinePut())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/storage/disks HTTP/1.1");
@@ -963,7 +1009,7 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -971,8 +1017,9 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
    /*********************** Hard disks ***********************/
 
    public void testListHardDisks() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("listHardDisks", VirtualDatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "listHardDisks", VirtualDatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/cloud/virtualdatacenters/1/disks HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + DisksManagementDto.BASE_MEDIA_TYPE + "\n");
@@ -980,14 +1027,16 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetHardDisk() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("getHardDisk", VirtualDatacenterDto.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut(), 1);
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "getHardDisk", VirtualDatacenterDto.class, Integer.class);
+      ;
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut(), 1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/cloud/virtualdatacenters/1/disks/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + DiskManagementDto.BASE_MEDIA_TYPE + "\n");
@@ -995,16 +1044,16 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testCreateHardDisk() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("createHardDisk", VirtualDatacenterDto.class,
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "createHardDisk", VirtualDatacenterDto.class,
             DiskManagementDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut(),
-            CloudResources.hardDiskPost());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut(), CloudResources.hardDiskPost())));
 
       assertRequestLineEquals(request, "POST http://localhost/api/cloud/virtualdatacenters/1/disks HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + DiskManagementDto.BASE_MEDIA_TYPE + "\n");
@@ -1013,14 +1062,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeleteHardDisk() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("deleteHardDisk", DiskManagementDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.hardDiskPut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "deleteHardDisk", DiskManagementDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.hardDiskPut())));
 
       assertRequestLineEquals(request, "DELETE http://localhost/api/cloud/virtualdatacenters/1/disks/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
@@ -1028,7 +1078,7 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -1036,8 +1086,9 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
    /*********************** Volumes ***********************/
 
    public void testListVolumes() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("listVolumes", VirtualDatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "listVolumes", VirtualDatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/cloud/virtualdatacenters/1/volumes HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VolumesManagementDto.BASE_MEDIA_TYPE + "\n");
@@ -1045,15 +1096,18 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListVolumesWithOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("listVolumes", VirtualDatacenterDto.class, VolumeOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut(),
-            VolumeOptions.builder().onlyAvailable(true).build());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "listVolumes", VirtualDatacenterDto.class,
+            VolumeOptions.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(
+            method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut(), VolumeOptions.builder()
+                  .onlyAvailable(true).build())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/cloud/virtualdatacenters/1/volumes?available=true HTTP/1.1");
@@ -1062,16 +1116,19 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListVolumesWithFilterOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("listVolumes", VirtualDatacenterDto.class, VolumeOptions.class);
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "listVolumes", VirtualDatacenterDto.class,
+            VolumeOptions.class);
 
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut(),
-            VolumeOptions.builder().has("vol").orderBy("name").ascendant(true).build());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(
+            method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut(), VolumeOptions.builder().has("vol")
+                  .orderBy(OrderBy.NAME).ascendant(true).build())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/cloud/virtualdatacenters/1/volumes?has=vol&by=name&asc=true HTTP/1.1");
@@ -1080,14 +1137,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetVolume() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("getVolume", VirtualDatacenterDto.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut(), 1);
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "getVolume", VirtualDatacenterDto.class, Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut(), 1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/cloud/virtualdatacenters/1/volumes/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VolumeManagementDto.BASE_MEDIA_TYPE + "\n");
@@ -1095,16 +1153,16 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testCreateVolume() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("createVolume", VirtualDatacenterDto.class,
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "createVolume", VirtualDatacenterDto.class,
             VolumeManagementDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.virtualDatacenterPut(),
-            CloudResources.volumePost());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.virtualDatacenterPut(), CloudResources.volumePost())));
 
       assertRequestLineEquals(request, "POST http://localhost/api/cloud/virtualdatacenters/1/volumes HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VolumeManagementDto.BASE_MEDIA_TYPE + "\n");
@@ -1113,14 +1171,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testUpdateVolume() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("updateVolume", VolumeManagementDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.volumePut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "updateVolume", VolumeManagementDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.volumePut())));
 
       assertRequestLineEquals(request, "PUT http://localhost/api/cloud/virtualdatacenters/1/volumes/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + AcceptedRequestDto.BASE_MEDIA_TYPE + "\n");
@@ -1129,14 +1188,15 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ReturnTaskReferenceOrNull.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeleteVolume() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class.getMethod("deleteVolume", VolumeManagementDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.volumePut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "deleteVolume", VolumeManagementDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.volumePut())));
 
       assertRequestLineEquals(request, "DELETE http://localhost/api/cloud/virtualdatacenters/1/volumes/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
@@ -1144,16 +1204,16 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testMoveVolume() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CloudAsyncApi.class
-            .getMethod("moveVolume", VolumeManagementDto.class, VirtualDatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, CloudResources.volumePut(),
-            CloudResources.virtualDatacenterPut());
+      Invokable<?, ?> method = method(CloudAsyncApi.class, "moveVolume", VolumeManagementDto.class,
+            VirtualDatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(CloudResources.volumePut(), CloudResources.virtualDatacenterPut())));
 
       assertRequestLineEquals(request,
             "POST http://localhost/api/cloud/virtualdatacenters/1/volumes/1/action/move HTTP/1.1");
@@ -1163,14 +1223,8 @@ public class CloudAsyncApiTest extends BaseAbiquoAsyncApiTest<CloudAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnMovedVolume.class);
+      assertFallbackClassEquals(method, MovedVolume.class);
 
       checkFilters(request);
-   }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<CloudAsyncApi>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<CloudAsyncApi>>() {
-      };
    }
 }

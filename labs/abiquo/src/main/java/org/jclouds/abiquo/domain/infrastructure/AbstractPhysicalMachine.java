@@ -252,8 +252,8 @@ public abstract class AbstractPhysicalMachine extends DomainWrapper<MachineDto> 
 
    // Aux operations
 
-   public NetworkInterface findAvailableVirtualSwitch(final String vswitch) {
-      return find(getNetworkInterfaces(), NetworkInterfacePredicates.name(vswitch));
+   public NetworkInterface findAvailableVirtualSwitch(final String virtualswitch) {
+      return find(getNetworkInterfaces(), NetworkInterfacePredicates.name(virtualswitch));
    }
 
    @Override

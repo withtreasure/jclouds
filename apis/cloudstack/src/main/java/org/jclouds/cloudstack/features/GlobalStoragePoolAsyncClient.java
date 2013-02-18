@@ -20,6 +20,7 @@ package org.jclouds.cloudstack.features;
 
 import java.util.Set;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.core.MediaType;
@@ -30,7 +31,6 @@ import org.jclouds.cloudstack.options.ListStoragePoolsOptions;
 import org.jclouds.rest.annotations.QueryParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.SelectJson;
-import org.jclouds.rest.annotations.SkipEncoding;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -44,9 +44,9 @@ import com.google.common.util.concurrent.ListenableFuture;
  */
 @RequestFilters(AuthenticationFilter.class)
 @QueryParams(keys = "response", values = "json")
-@SkipEncoding({'/'})
 public interface GlobalStoragePoolAsyncClient {
 
+   @Named("listStoragePools")
    @GET
    @QueryParams(keys = { "command", "listAll" }, values = { "listStoragePools", "true" })
    @SelectJson("storagepool")

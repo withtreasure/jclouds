@@ -19,13 +19,15 @@
 package org.jclouds.rest.functions;
 
 import static com.google.common.base.Throwables.propagate;
+import static org.jclouds.reflect.Reflection2.method;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import org.jclouds.internal.ClassMethodArgsAndReturnVal;
+import org.jclouds.reflect.Invocation;
+import org.jclouds.reflect.InvocationSuccess;
 import org.jclouds.rest.annotations.Delegate;
 import org.jclouds.rest.annotations.SinceApiVersion;
 import org.jclouds.rest.functions.PresentWhenApiVersionLexicographicallyAtOrAfterSinceApiVersion.Loader;
@@ -33,6 +35,7 @@ import org.testng.annotations.Test;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Allows you to use simple api version comparison to determine if a feature is
@@ -120,51 +123,51 @@ public class PresentWhenApiVersionLexicographicallyAtOrAfterSinceApiVersionTest 
    }
 
    public void testCacheIsFasterWhenNoAnnotationPresent() {
-      ClassMethodArgsAndReturnVal keyPairApi = getKeyPairApi();
+      InvocationSuccess keyPairApi = getKeyPairApi();
       ImplicitOptionalConverter fn = forApiVersion("2011-07-15");
       Stopwatch watch = new Stopwatch().start();
       fn.apply(keyPairApi);
-      long first = watch.stop().elapsedTime(TimeUnit.MICROSECONDS);
+      long first = watch.stop().elapsed(TimeUnit.MICROSECONDS);
       watch.reset().start();
       fn.apply(keyPairApi);
-      long cached = watch.stop().elapsedTime(TimeUnit.MICROSECONDS);
+      long cached = watch.stop().elapsed(TimeUnit.MICROSECONDS);
       assertTrue(cached < first, String.format("cached [%s] should be less than initial [%s]", cached, first));
       Logger.getAnonymousLogger().info(
             "lookup cache saved " + (first - cached) + " microseconds when no annotation present");
    }
 
    public void testCacheIsFasterWhenAnnotationPresent() {
-      ClassMethodArgsAndReturnVal floatingIpApi = getKeyPairApi();
+      InvocationSuccess floatingIpApi = getKeyPairApi();
       ImplicitOptionalConverter fn = forApiVersion("2011-07-15");
       Stopwatch watch = new Stopwatch().start();
       fn.apply(floatingIpApi);
-      long first = watch.stop().elapsedTime(TimeUnit.MICROSECONDS);
+      long first = watch.stop().elapsed(TimeUnit.MICROSECONDS);
       watch.reset().start();
       fn.apply(floatingIpApi);
-      long cached = watch.stop().elapsedTime(TimeUnit.MICROSECONDS);
+      long cached = watch.stop().elapsed(TimeUnit.MICROSECONDS);
       assertTrue(cached < first, String.format("cached [%s] should be less than initial [%s]", cached, first));
       Logger.getAnonymousLogger().info(
             "lookup cache saved " + (first - cached) + " microseconds when annotation present");
 
    }
 
-   ClassMethodArgsAndReturnVal getFloatingIPApi() {
+   InvocationSuccess getFloatingIPApi() {
       return getApi("Tag", TagAsyncApi.class);
    }
 
-   ClassMethodArgsAndReturnVal getKeyPairApi() {
+   InvocationSuccess getKeyPairApi() {
       return getApi("KeyPair", KeyPairAsyncApi.class);
    }
 
-   ClassMethodArgsAndReturnVal getVpcApi() {
+   InvocationSuccess getVpcApi() {
       return getApi("Vpc", VpcAsyncApi.class);
    }
 
-   ClassMethodArgsAndReturnVal getApi(String name, Class<?> type) {
+   InvocationSuccess getApi(String name, Class<?> target) {
       try {
-         return ClassMethodArgsAndReturnVal.builder().clazz(type)
-               .method(EC2AsyncApi.class.getDeclaredMethod("get" + name + "ApiForRegion", String.class))
-               .args(new Object[] { "region" }).returnVal("present").build();
+         return InvocationSuccess.create(
+               Invocation.create(method(EC2AsyncApi.class, "get" + name + "ApiForRegion", String.class),
+                     ImmutableList.<Object> of("region")), "present");
       } catch (Exception e) {
          throw propagate(e);
       }

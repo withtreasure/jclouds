@@ -19,16 +19,18 @@
 
 package org.jclouds.abiquo.features;
 
+import static org.jclouds.reflect.Reflection2.method;
+
 import java.io.IOException;
-import java.lang.reflect.Method;
 
 import org.jclouds.http.functions.ParseXMLWithJAXB;
+import org.jclouds.reflect.Invocation;
 import org.jclouds.rest.internal.GeneratedHttpRequest;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
 import org.testng.annotations.Test;
 
 import com.abiquo.server.core.event.EventsDto;
-import com.google.inject.TypeLiteral;
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 
 /**
  * Tests annotation parsing of {@code EventAsyncApi}
@@ -39,8 +41,8 @@ import com.google.inject.TypeLiteral;
 @Test(groups = "unit", testName = "EventAsyncApiTest")
 public class EventAsyncApiTest extends BaseAbiquoAsyncApiTest<EventAsyncApi> {
    public void testListEvents() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = EventAsyncApi.class.getMethod("listEvents");
-      GeneratedHttpRequest request = processor.createRequest(method);
+      Invokable<?, ?> method = method(EventAsyncApi.class, "listEvents");
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.of()));
 
       assertRequestLineEquals(request, "GET http://localhost/api/events HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + EventsDto.BASE_MEDIA_TYPE + "\n");
@@ -48,14 +50,8 @@ public class EventAsyncApiTest extends BaseAbiquoAsyncApiTest<EventAsyncApi> {
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
-   }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<EventAsyncApi>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<EventAsyncApi>>() {
-      };
    }
 }

@@ -18,27 +18,27 @@
  */
 package org.jclouds.cloudstack.features;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
+import static org.jclouds.reflect.Reflection2.method;
 
+import java.io.IOException;
+
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
+import org.jclouds.Fallbacks.VoidOnNotFoundOr404;
 import org.jclouds.cloudstack.internal.BaseCloudStackAsyncClientTest;
 import org.jclouds.cloudstack.options.CreateVMGroupOptions;
 import org.jclouds.cloudstack.options.ListVMGroupsOptions;
 import org.jclouds.cloudstack.options.UpdateVMGroupOptions;
+import org.jclouds.fallbacks.MapHttp4xxCodesToExceptions;
 import org.jclouds.functions.IdentityFunction;
-import org.jclouds.http.HttpRequest;
 import org.jclouds.http.functions.ParseFirstJsonValueNamed;
 import org.jclouds.http.functions.ReleasePayloadAndReturn;
-import org.jclouds.rest.functions.MapHttp4xxCodesToExceptions;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnVoidOnNotFoundOr404;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
 import com.google.common.base.Functions;
-import com.google.inject.TypeLiteral;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 /**
  * Tests behavior of {@code VMGroupAsyncClient}
  *
@@ -50,8 +50,8 @@ import com.google.inject.TypeLiteral;
 public class VMGroupAsyncClientTest extends BaseCloudStackAsyncClientTest<VMGroupAsyncClient> {
 
    public void testListVMGroups() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VMGroupAsyncClient.class.getMethod("listInstanceGroups", ListVMGroupsOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method);
+      Invokable<?, ?> method = method(VMGroupAsyncClient.class, "listInstanceGroups", ListVMGroupsOptions[].class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.of());
 
       assertRequestLineEquals(httpRequest,
          "GET http://localhost:8080/client/api?response=json&command=listInstanceGroups&listAll=true HTTP/1.1");
@@ -60,16 +60,16 @@ public class VMGroupAsyncClientTest extends BaseCloudStackAsyncClientTest<VMGrou
 
       assertResponseParserClassEquals(method, httpRequest, ParseFirstJsonValueNamed.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
    }
 
    public void testListVMGroupsOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VMGroupAsyncClient.class.getMethod("listInstanceGroups", ListVMGroupsOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method, ListVMGroupsOptions.Builder.account("fred")
-         .domainId("5").id("6"));
+      Invokable<?, ?> method = method(VMGroupAsyncClient.class, "listInstanceGroups", ListVMGroupsOptions[].class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(ListVMGroupsOptions.Builder.account("fred")
+         .domainId("5").id("6")));
 
       assertRequestLineEquals(
          httpRequest,
@@ -79,15 +79,15 @@ public class VMGroupAsyncClientTest extends BaseCloudStackAsyncClientTest<VMGrou
 
       assertResponseParserClassEquals(method, httpRequest, ParseFirstJsonValueNamed.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
    }
 
    public void testGetVMGroup() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VMGroupAsyncClient.class.getMethod("getInstanceGroup", String.class);
-      HttpRequest httpRequest = processor.createRequest(method, 5);
+      Invokable<?, ?> method = method(VMGroupAsyncClient.class, "getInstanceGroup", String.class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(5));
 
       assertRequestLineEquals(httpRequest,
          "GET http://localhost:8080/client/api?response=json&command=listInstanceGroups&listAll=true&id=5 HTTP/1.1");
@@ -97,15 +97,15 @@ public class VMGroupAsyncClientTest extends BaseCloudStackAsyncClientTest<VMGrou
       assertResponseParserClassEquals(method, httpRequest,
          Functions.compose(IdentityFunction.INSTANCE, IdentityFunction.INSTANCE).getClass());
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
    }
 
    public void testCreateVMGroup() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VMGroupAsyncClient.class.getMethod("createInstanceGroup", String.class, CreateVMGroupOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method, "goo");
+      Invokable<?, ?> method = method(VMGroupAsyncClient.class, "createInstanceGroup", String.class, CreateVMGroupOptions[].class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of("goo"));
 
       assertRequestLineEquals(httpRequest,
          "GET http://localhost:8080/client/api?response=json&command=createInstanceGroup&name=goo HTTP/1.1");
@@ -114,15 +114,15 @@ public class VMGroupAsyncClientTest extends BaseCloudStackAsyncClientTest<VMGrou
 
       assertResponseParserClassEquals(method, httpRequest, ParseFirstJsonValueNamed.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, MapHttp4xxCodesToExceptions.class);
+      assertFallbackClassEquals(method, MapHttp4xxCodesToExceptions.class);
 
       checkFilters(httpRequest);
 
    }
 
    public void testCreateVMGroupOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VMGroupAsyncClient.class.getMethod("createInstanceGroup", String.class, CreateVMGroupOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method, "goo", CreateVMGroupOptions.Builder.account("foo").domainId("42"));
+      Invokable<?, ?> method = method(VMGroupAsyncClient.class, "createInstanceGroup", String.class, CreateVMGroupOptions[].class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of("goo", CreateVMGroupOptions.Builder.account("foo").domainId("42")));
 
       assertRequestLineEquals(httpRequest,
          "GET http://localhost:8080/client/api?response=json&command=createInstanceGroup&name=goo&account=foo&domainid=42 HTTP/1.1");
@@ -131,15 +131,15 @@ public class VMGroupAsyncClientTest extends BaseCloudStackAsyncClientTest<VMGrou
 
       assertResponseParserClassEquals(method, httpRequest, ParseFirstJsonValueNamed.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, MapHttp4xxCodesToExceptions.class);
+      assertFallbackClassEquals(method, MapHttp4xxCodesToExceptions.class);
 
       checkFilters(httpRequest);
 
    }
 
    public void testUpdateVMGroup() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VMGroupAsyncClient.class.getMethod("updateInstanceGroup", String.class, UpdateVMGroupOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method, 5, UpdateVMGroupOptions.Builder.name("fred"));
+      Invokable<?, ?> method = method(VMGroupAsyncClient.class, "updateInstanceGroup", String.class, UpdateVMGroupOptions[].class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(5, UpdateVMGroupOptions.Builder.name("fred")));
 
       assertRequestLineEquals(httpRequest,
          "GET http://localhost:8080/client/api?response=json&command=updateInstanceGroup&id=5&name=fred HTTP/1.1");
@@ -148,15 +148,15 @@ public class VMGroupAsyncClientTest extends BaseCloudStackAsyncClientTest<VMGrou
 
       assertResponseParserClassEquals(method, httpRequest, ParseFirstJsonValueNamed.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, MapHttp4xxCodesToExceptions.class);
+      assertFallbackClassEquals(method, MapHttp4xxCodesToExceptions.class);
 
       checkFilters(httpRequest);
 
    }
 
    public void testDeleteVMGroup() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VMGroupAsyncClient.class.getMethod("deleteInstanceGroup", String.class);
-      HttpRequest httpRequest = processor.createRequest(method, 5);
+      Invokable<?, ?> method = method(VMGroupAsyncClient.class, "deleteInstanceGroup", String.class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(5));
 
       assertRequestLineEquals(httpRequest,
          "GET http://localhost:8080/client/api?response=json&command=deleteInstanceGroup&id=5 HTTP/1.1");
@@ -165,15 +165,9 @@ public class VMGroupAsyncClientTest extends BaseCloudStackAsyncClientTest<VMGrou
 
       assertResponseParserClassEquals(method, httpRequest, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnVoidOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, VoidOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
-   }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<VMGroupAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<VMGroupAsyncClient>>() {
-      };
    }
 }

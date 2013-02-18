@@ -18,11 +18,12 @@
  */
 
 package org.jclouds.virtualbox.config;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.jclouds.util.Predicates2.retry;
 
 import java.io.File;
 import java.net.URI;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Singleton;
 
@@ -37,7 +38,6 @@ import org.jclouds.compute.extensions.ImageExtension;
 import org.jclouds.compute.reference.ComputeServiceConstants.Timeouts;
 import org.jclouds.domain.Location;
 import org.jclouds.functions.IdentityFunction;
-import org.jclouds.predicates.RetryablePredicate;
 import org.jclouds.ssh.SshClient;
 import org.jclouds.virtualbox.compute.VirtualBoxComputeServiceAdapter;
 import org.jclouds.virtualbox.compute.extensions.VirtualBoxImageExtension;
@@ -62,10 +62,10 @@ import org.jclouds.virtualbox.functions.admin.ImagesToYamlImagesFromYamlDescript
 import org.jclouds.virtualbox.functions.admin.PreseedCfgServer;
 import org.jclouds.virtualbox.functions.admin.StartVBoxIfNotAlreadyRunning;
 import org.jclouds.virtualbox.predicates.SshResponds;
-import org.virtualbox_4_1.IMachine;
-import org.virtualbox_4_1.LockType;
-import org.virtualbox_4_1.MachineState;
-import org.virtualbox_4_1.VirtualBoxManager;
+import org.virtualbox_4_2.IMachine;
+import org.virtualbox_4_2.LockType;
+import org.virtualbox_4_2.MachineState;
+import org.virtualbox_4_2.VirtualBoxManager;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
@@ -104,15 +104,15 @@ public class VirtualBoxComputeServiceContextModule extends
       bind(new TypeLiteral<Function<IMachine, Image>>() {
       }).to(IMachineToImage.class);
       bind(new TypeLiteral<CacheLoader<IsoSpec, URI>>() {
-      }).to((Class) PreseedCfgServer.class);
+      }).to(Class.class.cast(PreseedCfgServer.class));
       bind(new TypeLiteral<Function<URI, File>>() {
-      }).to((Class) FileDownloadFromURI.class);
+      }).to(Class.class.cast(FileDownloadFromURI.class));
 
       bind(new TypeLiteral<Supplier<VirtualBoxManager>>() {
-      }).to((Class) StartVBoxIfNotAlreadyRunning.class);
+      }).to(Class.class.cast(StartVBoxIfNotAlreadyRunning.class));
       // the yaml config to image mapper
       bind(new TypeLiteral<Supplier<Map<Image, YamlImage>>>() {
-      }).to((Class) ImagesToYamlImagesFromYamlDescriptor.class);
+      }).to(Class.class.cast(ImagesToYamlImagesFromYamlDescriptor.class));
       // the yaml config provider
       bind(YamlImagesFromFileConfig.class);
 
@@ -126,15 +126,15 @@ public class VirtualBoxComputeServiceContextModule extends
 
       // the master creating function
       bind(new TypeLiteral<Function<MasterSpec, IMachine>>() {
-      }).to((Class) CreateAndInstallVm.class);
+      }).to(Class.class.cast(CreateAndInstallVm.class));
       // the machine cloning function
       bind(new TypeLiteral<Function<NodeSpec, NodeAndInitialCredentials<IMachine>>>() {
-      }).to((Class) NodeCreator.class);
+      }).to(Class.class.cast(NodeCreator.class));
       bind(new TypeLiteral<Function<CloneSpec, IMachine>>() {
-      }).to((Class) CloneAndRegisterMachineFromIMachineIfNotAlreadyExists.class);
+      }).to(Class.class.cast(CloneAndRegisterMachineFromIMachineIfNotAlreadyExists.class));
       // the jetty server provider
       bind(new TypeLiteral<Server>() {
-      }).to((Class) PreseedCfgServer.class).asEagerSingleton();
+      }).to(Class.class.cast(PreseedCfgServer.class)).asEagerSingleton();
 
       bind(new TypeLiteral<Function<IMachine, SshClient>>() {
       }).to(IMachineToSshClient.class);
@@ -167,7 +167,7 @@ public class VirtualBoxComputeServiceContextModule extends
    @Provides
    @Singleton
    protected Predicate<SshClient> sshResponds(SshResponds sshResponds, Timeouts timeouts) {
-      return new RetryablePredicate<SshClient>(sshResponds, timeouts.nodeRunning, 500l, TimeUnit.MILLISECONDS);
+      return retry(sshResponds, timeouts.nodeRunning, 500l, MILLISECONDS);
    }
 
    @Override

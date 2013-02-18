@@ -28,18 +28,18 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.rest.annotations.BinderParam;
 import org.jclouds.rest.annotations.EndpointParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.JAXBResponseParser;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.binders.BindToXMLPayload;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 import org.jclouds.vcloud.director.v1_5.VCloudDirectorMediaType;
 import org.jclouds.vcloud.director.v1_5.domain.User;
 import org.jclouds.vcloud.director.v1_5.filters.AddVCloudAuthorizationAndCookieToRequest;
-import org.jclouds.vcloud.director.v1_5.functions.href.OrgURNToAdminHref;
-import org.jclouds.vcloud.director.v1_5.functions.href.UserURNToHref;
+import org.jclouds.vcloud.director.v1_5.functions.URNToAdminHref;
+import org.jclouds.vcloud.director.v1_5.functions.URNToHref;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -59,7 +59,7 @@ public interface UserAsyncApi {
    @Produces(VCloudDirectorMediaType.USER)
    @JAXBResponseParser
    ListenableFuture<User> addUserToOrg(@BinderParam(BindToXMLPayload.class) User user,
-            @EndpointParam(parser = OrgURNToAdminHref.class) String orgUrn);
+            @EndpointParam(parser = URNToAdminHref.class) String orgUrn);
 
    /**
     * @see UserApi#addUserToOrg(User, URI)
@@ -78,8 +78,8 @@ public interface UserAsyncApi {
    @GET
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
-   ListenableFuture<User> get(@EndpointParam(parser = UserURNToHref.class) String userUrn);
+   @Fallback(NullOnNotFoundOr404.class)
+   ListenableFuture<User> get(@EndpointParam(parser = URNToHref.class) String userUrn);
 
    /**
     * @see UserApi#get(URI)
@@ -87,7 +87,7 @@ public interface UserAsyncApi {
    @GET
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<User> get(@EndpointParam URI userHref);
 
    /**
@@ -97,7 +97,7 @@ public interface UserAsyncApi {
    @Consumes(VCloudDirectorMediaType.USER)
    @Produces(VCloudDirectorMediaType.USER)
    @JAXBResponseParser
-   ListenableFuture<User> edit(@EndpointParam(parser = UserURNToHref.class) String userUrn,
+   ListenableFuture<User> edit(@EndpointParam(parser = URNToHref.class) String userUrn,
             @BinderParam(BindToXMLPayload.class) User user);
 
    /**
@@ -115,7 +115,7 @@ public interface UserAsyncApi {
    @DELETE
    @Consumes
    @JAXBResponseParser
-   ListenableFuture<Void> remove(@EndpointParam(parser = UserURNToHref.class) String userUrn);
+   ListenableFuture<Void> remove(@EndpointParam(parser = URNToHref.class) String userUrn);
 
    /**
     * @see UserApi#remove(URI)
@@ -132,7 +132,7 @@ public interface UserAsyncApi {
    @Path("/action/unlock")
    @Consumes
    @JAXBResponseParser
-   ListenableFuture<Void> unlock(@EndpointParam(parser = UserURNToHref.class) String userUrn);
+   ListenableFuture<Void> unlock(@EndpointParam(parser = URNToHref.class) String userUrn);
 
    /**
     * @see UserApi#unlock(URI)

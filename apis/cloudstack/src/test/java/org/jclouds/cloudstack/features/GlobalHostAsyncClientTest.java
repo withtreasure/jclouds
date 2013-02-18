@@ -18,18 +18,17 @@
  */
 package org.jclouds.cloudstack.features;
 
-import java.lang.reflect.Method;
+import static org.jclouds.reflect.Reflection2.method;
 
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
 import org.jclouds.cloudstack.internal.BaseCloudStackAsyncClientTest;
 import org.jclouds.cloudstack.options.ListHostsOptions;
-import org.jclouds.http.HttpRequest;
 import org.jclouds.http.functions.ParseFirstJsonValueNamed;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
-import com.google.inject.TypeLiteral;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 /**
  * Tests behavior of {@code GlobalHostAsyncClient}
  *
@@ -39,8 +38,8 @@ import com.google.inject.TypeLiteral;
 public class GlobalHostAsyncClientTest extends BaseCloudStackAsyncClientTest<GlobalHostAsyncClient> {
 
    public void testListHosts() throws Exception {
-      Method method =GlobalHostAsyncClient.class.getMethod("listHosts", ListHostsOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method);
+      Invokable<?, ?> method = method(GlobalHostAsyncClient.class, "listHosts", ListHostsOptions[].class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.of());
 
       assertRequestLineEquals(httpRequest,
          "GET http://localhost:8080/client/api?response=json&command=listHosts&listAll=true HTTP/1.1");
@@ -49,14 +48,8 @@ public class GlobalHostAsyncClientTest extends BaseCloudStackAsyncClientTest<Glo
 
       assertResponseParserClassEquals(method, httpRequest, ParseFirstJsonValueNamed.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
-   }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<GlobalHostAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<GlobalHostAsyncClient>>() {
-      };
    }
 }

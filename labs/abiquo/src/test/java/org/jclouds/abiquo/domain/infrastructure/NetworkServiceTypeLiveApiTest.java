@@ -31,14 +31,14 @@ import org.testng.annotations.Test;
  * 
  * @author Jaume Devesa
  */
-@Test(groups = "live")
+@Test(groups = "api", testName = "NetworkServiceTypeLiveApiTest")
 public class NetworkServiceTypeLiveApiTest extends BaseAbiquoApiLiveApiTest {
 
-   NetworkServiceType nst = null;
+   private NetworkServiceType nst = null;
 
    @Test
    public void testCreate() {
-      nst = NetworkServiceType.builder(env.context.getApiContext(), env.datacenter).name("Storage Service").build();
+      nst = NetworkServiceType.builder(env.context.getApiContext(), env.datacenter).name("Storage Network").build();
       nst.save();
 
       assertNotNull(nst.getId());
@@ -49,7 +49,7 @@ public class NetworkServiceTypeLiveApiTest extends BaseAbiquoApiLiveApiTest {
 
    @Test(dependsOnMethods = "testCreate")
    public void testUpdate() {
-      nst.setName("Storage Service Updated");
+      nst.setName("Storage Network Updated");
       nst.update();
 
       NetworkServiceType copy = env.datacenter.getNetworkServiceType(nst.getId());

@@ -18,22 +18,22 @@
  */
 package org.jclouds.vcloud.features;
 
+import static org.jclouds.reflect.Reflection2.method;
+
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URI;
 
-import org.jclouds.http.HttpRequest;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
+import org.jclouds.fallbacks.MapHttp4xxCodesToExceptions;
 import org.jclouds.http.functions.ParseSax;
-import org.jclouds.rest.functions.MapHttp4xxCodesToExceptions;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.jclouds.vcloud.internal.BaseVCloudAsyncClientTest;
 import org.jclouds.vcloud.xml.OrgHandler;
 import org.jclouds.vcloud.xml.OrgListHandler;
 import org.testng.annotations.Test;
 
-import com.google.inject.TypeLiteral;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 /**
  * Tests behavior of {@code OrgAsyncClient}
  * 
@@ -44,15 +44,9 @@ import com.google.inject.TypeLiteral;
 @Test(groups = "unit", testName = "OrgAsyncClientTest")
 public class OrgAsyncClientTest extends BaseVCloudAsyncClientTest<OrgAsyncClient> {
 
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<OrgAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<OrgAsyncClient>>() {
-      };
-   }
-
    public void testlistOrgs() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = OrgAsyncClient.class.getMethod("listOrgs");
-      HttpRequest request = processor.createRequest(method);
+      Invokable<?, ?> method = method(OrgAsyncClient.class, "listOrgs");
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.of());
 
       assertRequestLineEquals(request, "GET https://vcenterprise.bluelock.com/api/v1.0/org HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: application/vnd.vmware.vcloud.orgList+xml\n");
@@ -60,15 +54,15 @@ public class OrgAsyncClientTest extends BaseVCloudAsyncClientTest<OrgAsyncClient
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, OrgListHandler.class);
-      assertExceptionParserClassEquals(method, MapHttp4xxCodesToExceptions.class);
+      assertFallbackClassEquals(method, MapHttp4xxCodesToExceptions.class);
 
       checkFilters(request);
    }
 
    public void testOrg() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = OrgAsyncClient.class.getMethod("getOrg", URI.class);
-      HttpRequest request = processor.createRequest(method, URI
-               .create("https://vcenterprise.bluelock.com/api/v1.0/org/1"));
+      Invokable<?, ?> method = method(OrgAsyncClient.class, "getOrg", URI.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
+               .create("https://vcenterprise.bluelock.com/api/v1.0/org/1")));
 
       assertRequestLineEquals(request, "GET https://vcenterprise.bluelock.com/api/v1.0/org/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: application/vnd.vmware.vcloud.org+xml\n");
@@ -76,14 +70,14 @@ public class OrgAsyncClientTest extends BaseVCloudAsyncClientTest<OrgAsyncClient
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, OrgHandler.class);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testFindOrgNamed() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = OrgAsyncClient.class.getMethod("findOrgNamed", String.class);
-      HttpRequest request = processor.createRequest(method, "org");
+      Invokable<?, ?> method = method(OrgAsyncClient.class, "findOrgNamed", String.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of("org"));
 
       assertRequestLineEquals(request, "GET https://vcenterprise.bluelock.com/api/v1.0/org/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: application/vnd.vmware.vcloud.org+xml\n");
@@ -91,7 +85,7 @@ public class OrgAsyncClientTest extends BaseVCloudAsyncClientTest<OrgAsyncClient
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, OrgHandler.class);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }

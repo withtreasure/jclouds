@@ -19,6 +19,7 @@
 package org.jclouds.vcloud.director.v1_5;
 
 import static org.jclouds.Constants.PROPERTY_SESSION_INTERVAL;
+import static org.jclouds.reflect.Reflection2.typeToken;
 import static org.jclouds.vcloud.director.v1_5.VCloudDirectorConstants.PROPERTY_VCLOUD_DIRECTOR_TIMEOUT_TASK_COMPLETED;
 import static org.jclouds.vcloud.director.v1_5.VCloudDirectorConstants.PROPERTY_VCLOUD_DIRECTOR_VERSION_SCHEMA;
 import static org.jclouds.vcloud.director.v1_5.VCloudDirectorConstants.PROPERTY_VCLOUD_DIRECTOR_XML_NAMESPACE;
@@ -30,8 +31,8 @@ import java.util.Properties;
 import org.jclouds.apis.ApiMetadata;
 import org.jclouds.rest.internal.BaseRestApiMetadata;
 import org.jclouds.vcloud.director.v1_5.config.VCloudDirectorRestClientModule;
-import org.jclouds.vcloud.director.v1_5.user.VCloudDirectorAsyncApi;
 import org.jclouds.vcloud.director.v1_5.user.VCloudDirectorApi;
+import org.jclouds.vcloud.director.v1_5.user.VCloudDirectorAsyncApi;
 
 import com.google.common.reflect.TypeToken;
 
@@ -42,7 +43,7 @@ import com.google.common.reflect.TypeToken;
  */
 public class VCloudDirectorApiMetadata extends BaseRestApiMetadata {
 
-   public static final TypeToken<VCloudDirectorContext> CONTEXT_TOKEN = TypeToken.of(VCloudDirectorContext.class);
+   public static final TypeToken<VCloudDirectorContext> CONTEXT_TOKEN = typeToken(VCloudDirectorContext.class);
    
    @Override
    public Builder toBuilder() {
@@ -74,9 +75,7 @@ public class VCloudDirectorApiMetadata extends BaseRestApiMetadata {
       return properties;
    }
 
-   public static class Builder
-         extends
-       BaseRestApiMetadata.Builder {
+   public static class Builder extends BaseRestApiMetadata.Builder<Builder> {
 
       protected Builder() {
          super(VCloudDirectorApi.class, VCloudDirectorAsyncApi.class);
@@ -87,10 +86,8 @@ public class VCloudDirectorApiMetadata extends BaseRestApiMetadata {
          .documentation(URI.create("http://www.vmware.com/support/pubs/vcd_pubs.html"))
          .version("1.5")
          .defaultProperties(VCloudDirectorApiMetadata.defaultProperties())
-         .context(TypeToken.of(VCloudDirectorContext.class))
+         .context(typeToken(VCloudDirectorContext.class))
          .defaultModule(VCloudDirectorRestClientModule.class);
-//         .view(TypeToken.of(ComputeServiceContext.class))
-//         .defaultModules(ImmutableSet.<Class<? extends Module>>of(VCloudDirectorRestClientModule.class, VCloudDirectorComputeServiceContextModule.class));
       }
 
       @Override
@@ -99,11 +96,8 @@ public class VCloudDirectorApiMetadata extends BaseRestApiMetadata {
       }
 
       @Override
-      public Builder fromApiMetadata(ApiMetadata in) {
-         super.fromApiMetadata(in);
+      protected Builder self() {
          return this;
       }
-
    }
-
 }

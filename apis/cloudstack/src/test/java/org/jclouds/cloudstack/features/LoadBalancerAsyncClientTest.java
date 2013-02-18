@@ -18,24 +18,25 @@
  */
 package org.jclouds.cloudstack.features;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
+import static org.jclouds.reflect.Reflection2.method;
 
+import java.io.IOException;
+
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.cloudstack.domain.LoadBalancerRule.Algorithm;
 import org.jclouds.cloudstack.internal.BaseCloudStackAsyncClientTest;
 import org.jclouds.cloudstack.options.CreateLoadBalancerRuleOptions;
 import org.jclouds.cloudstack.options.ListLoadBalancerRulesOptions;
 import org.jclouds.cloudstack.options.UpdateLoadBalancerRuleOptions;
+import org.jclouds.fallbacks.MapHttp4xxCodesToExceptions;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.http.functions.ParseFirstJsonValueNamed;
-import org.jclouds.rest.functions.MapHttp4xxCodesToExceptions;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
-import com.google.inject.TypeLiteral;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 /**
  * Tests behavior of {@code LoadBalancerAsyncClient}
  * 
@@ -46,9 +47,9 @@ import com.google.inject.TypeLiteral;
 @Test(groups = "unit", testName = "LoadBalancerAsyncClientTest")
 public class LoadBalancerAsyncClientTest extends BaseCloudStackAsyncClientTest<LoadBalancerAsyncClient> {
    public void testListLoadBalancerRules() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = LoadBalancerAsyncClient.class.getMethod("listLoadBalancerRules",
+      Invokable<?, ?> method = method(LoadBalancerAsyncClient.class, "listLoadBalancerRules",
             ListLoadBalancerRulesOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.of());
 
       assertRequestLineEquals(httpRequest,
             "GET http://localhost:8080/client/api?response=json&command=listLoadBalancerRules&listAll=true HTTP/1.1");
@@ -57,16 +58,16 @@ public class LoadBalancerAsyncClientTest extends BaseCloudStackAsyncClientTest<L
 
       assertResponseParserClassEquals(method, httpRequest, ParseFirstJsonValueNamed.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
    }
 
    public void testListLoadBalancerRulesOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = LoadBalancerAsyncClient.class.getMethod("listLoadBalancerRules",
+      Invokable<?, ?> method = method(LoadBalancerAsyncClient.class, "listLoadBalancerRules",
             ListLoadBalancerRulesOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method, ListLoadBalancerRulesOptions.Builder.publicIPId("3"));
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(ListLoadBalancerRulesOptions.Builder.publicIPId("3")));
 
       assertRequestLineEquals(httpRequest,
             "GET http://localhost:8080/client/api?response=json&command=listLoadBalancerRules&listAll=true&publicipid=3 HTTP/1.1");
@@ -75,34 +76,42 @@ public class LoadBalancerAsyncClientTest extends BaseCloudStackAsyncClientTest<L
 
       assertResponseParserClassEquals(method, httpRequest, ParseFirstJsonValueNamed.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
    }
 
-   public void testCreateLoadBalancerRuleForPublicIP() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = LoadBalancerAsyncClient.class.getMethod("createLoadBalancerRuleForPublicIP", String.class,
-            Algorithm.class, String.class, int.class, int.class, CreateLoadBalancerRuleOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method, 6, Algorithm.LEASTCONN, "tcp", 22, 22);
+   HttpRequest createLoadBalancerRule = HttpRequest.builder().method("GET")
+                                                   .endpoint("http://localhost:8080/client/api")
+                                                   .addQueryParam("response", "json")
+                                                   .addQueryParam("command", "createLoadBalancerRule")
+                                                   .addQueryParam("publicipid", "6")
+                                                   .addQueryParam("algorithm", "leastconn")
+                                                   .addQueryParam("name", "tcp")
+                                                   .addQueryParam("privateport", "22")
+                                                   .addQueryParam("publicport", "22").build();
 
-      assertRequestLineEquals(
-            httpRequest,
-            "GET http://localhost:8080/client/api?response=json&command=createLoadBalancerRule&publicipid=6&name=tcp&algorithm=leastconn&privateport=22&publicport=22 HTTP/1.1");
+   public void testCreateLoadBalancerRuleForPublicIP() throws SecurityException, NoSuchMethodException, IOException {
+      Invokable<?, ?> method = method(LoadBalancerAsyncClient.class, "createLoadBalancerRuleForPublicIP", String.class,
+            Algorithm.class, String.class, int.class, int.class, CreateLoadBalancerRuleOptions[].class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(6, Algorithm.LEASTCONN, "tcp", 22, 22));
+
+      assertRequestLineEquals(httpRequest, createLoadBalancerRule.getRequestLine());
       assertNonPayloadHeadersEqual(httpRequest, "Accept: application/json\n");
       assertPayloadEquals(httpRequest, null, null, false);
 
       assertResponseParserClassEquals(method, httpRequest, ParseFirstJsonValueNamed.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, MapHttp4xxCodesToExceptions.class);
+      assertFallbackClassEquals(method, MapHttp4xxCodesToExceptions.class);
 
       checkFilters(httpRequest);
 
    }
 
    public void testUpdateLoadBalancerRule() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = LoadBalancerAsyncClient.class.getMethod("updateLoadBalancerRule", String.class, UpdateLoadBalancerRuleOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method, 5);
+      Invokable<?, ?> method = method(LoadBalancerAsyncClient.class, "updateLoadBalancerRule", String.class, UpdateLoadBalancerRuleOptions[].class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(5));
 
       assertRequestLineEquals(httpRequest,
             "GET http://localhost:8080/client/api?response=json&command=updateLoadBalancerRule&id=5 HTTP/1.1");
@@ -110,15 +119,15 @@ public class LoadBalancerAsyncClientTest extends BaseCloudStackAsyncClientTest<L
       assertPayloadEquals(httpRequest, null, null, false);
 
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
    }
 
    public void testDeleteLoadBalancerRule() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = LoadBalancerAsyncClient.class.getMethod("deleteLoadBalancerRule", String.class);
-      HttpRequest httpRequest = processor.createRequest(method, 5);
+      Invokable<?, ?> method = method(LoadBalancerAsyncClient.class, "deleteLoadBalancerRule", String.class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(5));
 
       assertRequestLineEquals(httpRequest,
             "GET http://localhost:8080/client/api?response=json&command=deleteLoadBalancerRule&id=5 HTTP/1.1");
@@ -127,7 +136,7 @@ public class LoadBalancerAsyncClientTest extends BaseCloudStackAsyncClientTest<L
 
       assertResponseParserClassEquals(method, httpRequest, ParseFirstJsonValueNamed.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
@@ -135,9 +144,9 @@ public class LoadBalancerAsyncClientTest extends BaseCloudStackAsyncClientTest<L
 
    public void testListVirtualMachinesAssignedToLoadBalancerRule() throws SecurityException, NoSuchMethodException,
          IOException {
-      Method method = LoadBalancerAsyncClient.class.getMethod("listVirtualMachinesAssignedToLoadBalancerRule",
+      Invokable<?, ?> method = method(LoadBalancerAsyncClient.class, "listVirtualMachinesAssignedToLoadBalancerRule",
             String.class);
-      HttpRequest httpRequest = processor.createRequest(method, 5);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(5));
 
       assertRequestLineEquals(httpRequest,
             "GET http://localhost:8080/client/api?response=json&command=listLoadBalancerRuleInstances&listAll=true&id=5 HTTP/1.1");
@@ -146,15 +155,9 @@ public class LoadBalancerAsyncClientTest extends BaseCloudStackAsyncClientTest<L
 
       assertResponseParserClassEquals(method, httpRequest, ParseFirstJsonValueNamed.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
-   }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<LoadBalancerAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<LoadBalancerAsyncClient>>() {
-      };
    }
 }

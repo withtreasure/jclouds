@@ -37,22 +37,7 @@
         </dependency>
         <dependency>
             <groupId>org.jclouds.provider</groupId>
-            <artifactId>eucalyptus-partnercloud-ec2</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jclouds.api</groupId>
-            <artifactId>deltacloud</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jclouds.provider</groupId>
             <artifactId>aws-ec2</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jclouds.provider</groupId>
-            <artifactId>rimuhosting</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -63,11 +48,6 @@
         <dependency>
             <groupId>org.jclouds.api</groupId>
             <artifactId>openstack-nova-ec2</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jclouds.api</groupId>
-            <artifactId>nova</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -128,11 +108,6 @@
         <dependency>
             <groupId>org.jclouds.provider</groupId>
             <artifactId>gogrid</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jclouds.provider</groupId>
-            <artifactId>slicehost</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

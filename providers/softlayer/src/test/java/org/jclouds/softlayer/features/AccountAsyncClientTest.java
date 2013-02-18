@@ -18,17 +18,17 @@
  */
 package org.jclouds.softlayer.features;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
+import static org.jclouds.reflect.Reflection2.method;
 
-import org.jclouds.http.HttpRequest;
+import java.io.IOException;
+
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.http.functions.ParseJson;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
-import com.google.inject.TypeLiteral;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 /**
  * Tests annotation parsing of {@code AccountAsyncClient}
  *
@@ -38,8 +38,8 @@ import com.google.inject.TypeLiteral;
 public class AccountAsyncClientTest extends BaseSoftLayerAsyncClientTest<AccountAsyncClient> {
 
    public void testGetActivePackages() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AccountAsyncClient.class.getMethod("getActivePackages");
-      HttpRequest httpRequest = processor.createRequest(method);
+      Invokable<?, ?> method = method(AccountAsyncClient.class, "getActivePackages");
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.of());
 
       assertRequestLineEquals(
                httpRequest,
@@ -49,15 +49,9 @@ public class AccountAsyncClientTest extends BaseSoftLayerAsyncClientTest<Account
 
       assertResponseParserClassEquals(method, httpRequest, ParseJson.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
-   }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<AccountAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<AccountAsyncClient>>() {
-      };
    }
 }

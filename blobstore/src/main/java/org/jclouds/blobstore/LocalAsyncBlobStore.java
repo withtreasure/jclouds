@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.concurrent.ExecutorService;
 
 import javax.annotation.Resource;
 import javax.inject.Inject;
@@ -80,6 +79,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 
 /**
  * Implementation of {@link BaseAsyncBlobStore} which uses a pluggable
@@ -103,13 +103,13 @@ public class LocalAsyncBlobStore extends BaseAsyncBlobStore {
    @Inject
    protected LocalAsyncBlobStore(BlobStoreContext context,
          BlobUtils blobUtils,
-         @Named(Constants.PROPERTY_USER_THREADS) ExecutorService service,
+         @Named(Constants.PROPERTY_USER_THREADS) ListeningExecutorService userExecutor,
          Supplier<Location> defaultLocation,
          @Memoized Supplier<Set<? extends Location>> locations,
          ContentMetadataCodec contentMetadataCodec,
          IfDirectoryReturnNameStrategy ifDirectoryReturnName,
          Factory blobFactory, LocalStorageStrategy storageStrategy) {
-      super(context, blobUtils, service, defaultLocation, locations);
+      super(context, blobUtils, userExecutor, defaultLocation, locations);
       this.blobFactory = blobFactory;
       this.contentMetadataCodec = contentMetadataCodec;
       this.ifDirectoryReturnName = ifDirectoryReturnName;
@@ -191,15 +191,12 @@ public class LocalAsyncBlobStore extends BaseAsyncBlobStore {
 
             contents = newTreeSet(filter(contents, new DelimiterFilter(prefix, delimiter)));
 
-            Iterables.<StorageMetadata> addAll(contents, transform(commonPrefixes,
-                  new Function<String, StorageMetadata>() {
-                     public StorageMetadata apply(String o) {
-                        MutableStorageMetadata md = new MutableStorageMetadataImpl();
-                        md.setType(StorageType.RELATIVE_PATH);
-                        md.setName(o);
-                        return md;
-                     }
-                  }));
+            for (String o : commonPrefixes) {
+               MutableStorageMetadata md = new MutableStorageMetadataImpl();
+               md.setType(StorageType.RELATIVE_PATH);
+               md.setName(o);
+               contents.add(md);
+            }
          }
 
          // trim metadata, if the response isn't supposed to be detailed.
@@ -369,47 +366,8 @@ public class LocalAsyncBlobStore extends BaseAsyncBlobStore {
 
    public static HttpResponseException returnResponseException(int code) {
       HttpResponse response = HttpResponse.builder().statusCode(code).build();
-      return new HttpResponseException(new HttpCommand() {
-
-         public int getRedirectCount() {
-            return 0;
-         }
-
-         public int incrementRedirectCount() {
-            return 0;
-         }
-
-         public boolean isReplayable() {
-            return false;
-         }
-
-         public Exception getException() {
-            return null;
-         }
-
-         public int getFailureCount() {
-            return 0;
-         }
-
-         public int incrementFailureCount() {
-            return 0;
-         }
-
-         public void setException(Exception exception) {
-
-         }
-
-         @Override
-         public HttpRequest getCurrentRequest() {
-            return HttpRequest.builder().method("GET").endpoint("http://stub").build();
-         }
-
-         @Override
-         public void setCurrentRequest(HttpRequest request) {
-
-         }
-
-      }, response);
+      return new HttpResponseException(new HttpCommand(HttpRequest.builder().method("GET").endpoint("http://stub")
+            .build()), response);
    }
 
    /**

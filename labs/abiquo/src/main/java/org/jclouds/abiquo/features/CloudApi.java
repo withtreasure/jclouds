@@ -19,8 +19,6 @@
 
 package org.jclouds.abiquo.features;
 
-import java.util.concurrent.TimeUnit;
-
 import org.jclouds.abiquo.domain.cloud.options.VirtualApplianceOptions;
 import org.jclouds.abiquo.domain.cloud.options.VirtualDatacenterOptions;
 import org.jclouds.abiquo.domain.cloud.options.VirtualMachineOptions;
@@ -28,7 +26,6 @@ import org.jclouds.abiquo.domain.cloud.options.VirtualMachineTemplateOptions;
 import org.jclouds.abiquo.domain.cloud.options.VolumeOptions;
 import org.jclouds.abiquo.domain.network.options.IpOptions;
 import org.jclouds.abiquo.reference.annotations.EnterpriseEdition;
-import org.jclouds.concurrent.Timeout;
 
 import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
@@ -71,7 +68,6 @@ import com.abiquo.server.core.infrastructure.storage.VolumesManagementDto;
  * @author Ignasi Barrera
  * @author Francesc Montserrat
  */
-@Timeout(duration = 30, timeUnit = TimeUnit.SECONDS)
 public interface CloudApi {
    /*********************** Virtual Datacenter ***********************/
 
@@ -381,8 +377,7 @@ public interface CloudApi {
     *           the extra options for the deploy process.
     * @return Response message to the deploy request.
     */
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
-   AcceptedRequestDto<String> deployVirtualAppliance(VirtualApplianceDto virtualAppliance, VirtualMachineTaskDto options);
+      AcceptedRequestDto<String> deployVirtualAppliance(VirtualApplianceDto virtualAppliance, VirtualMachineTaskDto options);
 
    /**
     * Undeploy a virtual appliance.
@@ -393,7 +388,6 @@ public interface CloudApi {
     *           the extra options for the undeploy process.
     * @return Response message to the undeploy request.
     */
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    AcceptedRequestDto<String> undeployVirtualAppliance(VirtualApplianceDto virtualAppliance,
          VirtualMachineTaskDto options);
 
@@ -528,7 +522,6 @@ public interface CloudApi {
     *           extra deploy options.
     * @return Response message to the deploy request.
     */
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    AcceptedRequestDto<String> deployVirtualMachine(VirtualMachineDto virtualMachine, VirtualMachineTaskDto options);
 
    /**
@@ -540,7 +533,6 @@ public interface CloudApi {
     *           extra undeploy options.
     * @return Response message to the undeploy request.
     */
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    AcceptedRequestDto<String> undeployVirtualMachine(VirtualMachineDto virtualMachine, VirtualMachineTaskDto options);
 
    /**
@@ -693,7 +685,6 @@ public interface CloudApi {
     * @return The created volume.
     */
    @EnterpriseEdition
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    VolumeManagementDto createVolume(VirtualDatacenterDto virtualDatacenter, VolumeManagementDto volume);
 
    /**
@@ -708,7 +699,6 @@ public interface CloudApi {
     * @return The task reference or <code>null</code> if no task was generated.
     */
    @EnterpriseEdition
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    AcceptedRequestDto<String> updateVolume(VolumeManagementDto volume);
 
    /**
@@ -718,7 +708,6 @@ public interface CloudApi {
     *           The volume to delete.
     */
    @EnterpriseEdition
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    void deleteVolume(VolumeManagementDto volume);
 
    /**

@@ -20,15 +20,15 @@ package org.jclouds.openstack.swift.functions;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static org.jclouds.http.Uris.uriBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.util.List;
 import java.util.SortedSet;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.ws.rs.core.UriBuilder;
 
 import org.jclouds.blobstore.domain.PageSet;
 import org.jclouds.blobstore.domain.internal.PageSetImpl;
@@ -53,40 +53,34 @@ import com.google.inject.TypeLiteral;
  * @author Adrian Cole
  */
 public class ParseObjectInfoListFromJsonResponse extends ParseJson<PageSet<ObjectInfo>> implements
-         InvocationContext<ParseObjectInfoListFromJsonResponse> {
-   private final Provider<UriBuilder> uriBuilders;
+      InvocationContext<ParseObjectInfoListFromJsonResponse> {
 
-   private GeneratedHttpRequest request;
+   private List<Object> args;
    private String container;
+   private GeneratedHttpRequest request;
+   private ListContainerOptions options;
 
    @Inject
-   public ParseObjectInfoListFromJsonResponse(Json json, Provider<UriBuilder> uriBuilders) {
+   public ParseObjectInfoListFromJsonResponse(Json json) {
       super(json, new TypeLiteral<PageSet<ObjectInfo>>() {
       });
-      this.uriBuilders = uriBuilders;
    }
 
    public PageSet<ObjectInfo> apply(InputStream stream) {
-      checkState(request != null, "request should be initialized at this point");
-      checkState(request.getArgs() != null, "request.getArgs() should be initialized at this point");
-      checkArgument(request.getArgs().get(0) instanceof String, "arg[0] must be a container name");
-      checkArgument(request.getArgs().get(1) instanceof ListContainerOptions[],
-               "arg[1] must be an array of ListContainerOptions");
-      ListContainerOptions[] optionsList = (ListContainerOptions[]) request.getArgs().get(1);
-      ListContainerOptions options = optionsList.length > 0 ? optionsList[0] : ListContainerOptions.NONE;
+      checkState(args != null, "request should be initialized at this point");
       Type listType = new TypeToken<SortedSet<ObjectInfoImpl>>() {
       }.getType();
 
       try {
          SortedSet<ObjectInfoImpl> list = apply(stream, listType);
          SortedSet<ObjectInfo> returnVal = Sets.newTreeSet(Iterables.transform(list,
-                  new Function<ObjectInfoImpl, ObjectInfo>() {
-                     public ObjectInfo apply(ObjectInfoImpl from) {
-                        return from.toBuilder().container(container).uri(
-                                 uriBuilders.get().uri(request.getEndpoint()).path(from.getName()).replaceQuery("")
-                                          .build()).build();
-                     }
-                  }));
+               new Function<ObjectInfoImpl, ObjectInfo>() {
+                  public ObjectInfo apply(ObjectInfoImpl from) {
+                     return from.toBuilder().container(container)
+                           .uri(uriBuilder(request.getEndpoint()).clearQuery().appendPath(from.getName()).build())
+                           .build();
+                  }
+               }));
          boolean truncated = options.getMaxResults() == returnVal.size();
          String marker = truncated ? returnVal.last().getName() : null;
          return new PageSetImpl<ObjectInfo>(returnVal, marker);
@@ -98,12 +92,13 @@ public class ParseObjectInfoListFromJsonResponse extends ParseJson<PageSet<Objec
    @Override
    public ParseObjectInfoListFromJsonResponse setContext(HttpRequest request) {
       checkArgument(request instanceof GeneratedHttpRequest, "note this handler requires a GeneratedHttpRequest");
-      this.request = (GeneratedHttpRequest) request;
-      return setContainer(GeneratedHttpRequest.class.cast(request).getArgs().get(0).toString());
-   }
-
-   private ParseObjectInfoListFromJsonResponse setContainer(String container) {
-      this.container = container;
+      this.request = GeneratedHttpRequest.class.cast(request);
+      this.args = this.request.getInvocation().getArgs();
+      checkArgument(args.get(0) instanceof String, "arg[0] must be a container name");
+      this.container = args.get(0).toString();
+      checkArgument(args.get(1) instanceof ListContainerOptions[], "arg[1] must be an array of ListContainerOptions");
+      ListContainerOptions[] optionsList = (ListContainerOptions[]) args.get(1);
+      this.options = optionsList.length > 0 ? optionsList[0] : ListContainerOptions.NONE;
       return this;
    }
 }

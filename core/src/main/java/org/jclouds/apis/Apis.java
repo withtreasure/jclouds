@@ -21,14 +21,17 @@ package org.jclouds.apis;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.find;
+import static org.jclouds.reflect.Reflection2.typeToken;
 
 import java.util.NoSuchElementException;
 import java.util.ServiceLoader;
 
 import org.jclouds.View;
+import org.jclouds.osgi.ApiRegistry;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.reflect.TypeToken;
 
@@ -39,7 +42,7 @@ import com.google.common.reflect.TypeToken;
  */
 public class Apis {
 
-   public static enum IdFunction implements Function<ApiMetadata, String> {
+   private static enum IdFunction implements Function<ApiMetadata, String> {
       INSTANCE;
 
       @Override
@@ -58,9 +61,8 @@ public class Apis {
     * 
     * @return all available apis loaded from classpath via ServiceLoader
     */
-   @SuppressWarnings("unchecked")
    private static Iterable<ApiMetadata> fromServiceLoader() {
-      return Iterable.class.cast(ServiceLoader.load(ApiMetadata.class));
+      return ServiceLoader.load(ApiMetadata.class);
    }
 
    /**
@@ -69,7 +71,9 @@ public class Apis {
     * @return all available apis
     */
    public static Iterable<ApiMetadata> all() {
-      return Iterables.concat(fromServiceLoader(), ApiRegistry.fromRegistry());
+      return ImmutableSet.<ApiMetadata>builder()
+                         .addAll(fromServiceLoader())
+                         .addAll(ApiRegistry.fromRegistry()).build();
    }
 
    /**
@@ -112,7 +116,7 @@ public class Apis {
    }
    
    public static Iterable<ApiMetadata> viewableAs(Class<? extends View> type) {
-      return filter(all(), ApiPredicates.viewableAs(TypeToken.of(type)));
+      return filter(all(), ApiPredicates.viewableAs(typeToken(type)));
    }
 
    /**

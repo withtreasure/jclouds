@@ -43,6 +43,7 @@ import com.abiquo.server.core.infrastructure.DatacenterDto;
 import com.abiquo.server.core.infrastructure.network.ExternalIpDto;
 import com.abiquo.server.core.infrastructure.network.ExternalIpsDto;
 import com.abiquo.server.core.infrastructure.network.VLANNetworkDto;
+import com.google.common.base.Optional;
 import com.google.inject.TypeLiteral;
 
 /**
@@ -174,25 +175,32 @@ public class ExternalNetwork extends Network<ExternalIp> {
 
       private Enterprise enterprise;
 
-      private NetworkServiceType nst;
+      private Optional<NetworkServiceType> networkServiceType = Optional.absent();
 
       public Builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context, final Datacenter datacenter,
             final Enterprise enterprise) {
          super(context);
-         checkNotNull(datacenter, ValidationErrors.NULL_RESOURCE + Datacenter.class);
-         checkNotNull(datacenter, ValidationErrors.NULL_RESOURCE + Enterprise.class);
-         this.datacenter = datacenter;
-         this.enterprise = enterprise;
+         this.datacenter = checkNotNull(datacenter,
+               ValidationErrors.NULL_RESOURCE + Datacenter.class.getCanonicalName());
+         this.enterprise = checkNotNull(enterprise,
+               ValidationErrors.NULL_RESOURCE + Enterprise.class.getCanonicalName());
          this.context = context;
       }
 
       public Builder datacenter(final Datacenter datacenter) {
-         this.datacenter = datacenter;
+         this.datacenter = checkNotNull(datacenter,
+               ValidationErrors.NULL_RESOURCE + Datacenter.class.getCanonicalName());
          return this;
       }
 
       public Builder enterprise(final Enterprise enterprise) {
-         this.enterprise = enterprise;
+         this.enterprise = checkNotNull(enterprise,
+               ValidationErrors.NULL_RESOURCE + Enterprise.class.getCanonicalName());
+         return this;
+      }
+
+      public Builder networkServiceType(final NetworkServiceType networkServiceType) {
+         this.networkServiceType = Optional.of(networkServiceType);
          return this;
       }
 
@@ -215,10 +223,8 @@ public class ExternalNetwork extends Network<ExternalIp> {
          dto.setUnmanaged(Boolean.FALSE);
          dto.setType(NetworkType.EXTERNAL);
 
-         if (nst == null) {
-            nst = datacenter.defaultNetworkServiceType();
-         }
-         dto.getLinks().add(new RESTLink("networkservicetype", nst.unwrap().getEditLink().getHref()));
+         NetworkServiceType nst = networkServiceType.or(datacenter.defaultNetworkServiceType());
+         dto.addLink(new RESTLink("networkservicetype", nst.unwrap().getEditLink().getHref()));
 
          ExternalNetwork network = new ExternalNetwork(context, dto);
          network.datacenter = datacenter;

@@ -18,6 +18,9 @@
  */
 package org.jclouds.openstack.glance.v1_0.config;
 
+
+import static org.jclouds.reflect.Reflection2.typeToken;
+
 import java.net.URI;
 import java.util.Map;
 import java.util.Set;
@@ -68,7 +71,7 @@ public class GlanceRestClientModule<S extends GlanceApi, A extends GlanceAsyncAp
          .build();
 
    public GlanceRestClientModule() {
-      super(TypeToken.class.cast(TypeToken.of(GlanceApi.class)), TypeToken.class.cast(TypeToken.of(GlanceAsyncApi.class)), DELEGATE_MAP);
+      super(TypeToken.class.cast(typeToken(GlanceApi.class)), TypeToken.class.cast(typeToken(GlanceAsyncApi.class)), DELEGATE_MAP);
    }
 
    protected GlanceRestClientModule(TypeToken<S> syncClientType, TypeToken<A> asyncClientType, Map<Class<?>, Class<?>> sync2Async) {

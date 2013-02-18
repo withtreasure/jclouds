@@ -18,24 +18,24 @@
  */
 package org.jclouds.cloudstack.features;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
+import static org.jclouds.reflect.Reflection2.method;
 
+import java.io.IOException;
+
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
+import org.jclouds.Fallbacks.VoidOnNotFoundOr404;
 import org.jclouds.cloudstack.domain.PortForwardingRule;
 import org.jclouds.cloudstack.internal.BaseCloudStackAsyncClientTest;
 import org.jclouds.cloudstack.options.ListPortForwardingRulesOptions;
-import org.jclouds.http.HttpRequest;
+import org.jclouds.fallbacks.MapHttp4xxCodesToExceptions;
 import org.jclouds.http.functions.ParseFirstJsonValueNamed;
 import org.jclouds.http.functions.ReleasePayloadAndReturn;
 import org.jclouds.http.functions.UnwrapOnlyJsonValue;
-import org.jclouds.rest.functions.MapHttp4xxCodesToExceptions;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnVoidOnNotFoundOr404;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
-import com.google.inject.TypeLiteral;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 /**
  * Tests behavior of {@code FirewallAsyncClient}
  * 
@@ -46,9 +46,9 @@ import com.google.inject.TypeLiteral;
 @Test(groups = "unit", testName = "FirewallAsyncClientTest")
 public class FirewallAsyncClientTest extends BaseCloudStackAsyncClientTest<FirewallAsyncClient> {
    public void testListPortForwardingRules() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = FirewallAsyncClient.class.getMethod("listPortForwardingRules",
+      Invokable<?, ?> method = method(FirewallAsyncClient.class, "listPortForwardingRules",
             ListPortForwardingRulesOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.of());
 
       assertRequestLineEquals(httpRequest,
             "GET http://localhost:8080/client/api?response=json&command=listPortForwardingRules&listAll=true HTTP/1.1");
@@ -57,16 +57,16 @@ public class FirewallAsyncClientTest extends BaseCloudStackAsyncClientTest<Firew
 
       assertResponseParserClassEquals(method, httpRequest, ParseFirstJsonValueNamed.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
    }
 
    public void testListPortForwardingRulesOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = FirewallAsyncClient.class.getMethod("listPortForwardingRules",
+      Invokable<?, ?> method = method(FirewallAsyncClient.class, "listPortForwardingRules",
             ListPortForwardingRulesOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method, ListPortForwardingRulesOptions.Builder.ipAddressId("3"));
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(ListPortForwardingRulesOptions.Builder.ipAddressId("3")));
 
       assertRequestLineEquals(httpRequest,
             "GET http://localhost:8080/client/api?response=json&command=listPortForwardingRules&listAll=true&ipaddressid=3 HTTP/1.1");
@@ -75,7 +75,7 @@ public class FirewallAsyncClientTest extends BaseCloudStackAsyncClientTest<Firew
 
       assertResponseParserClassEquals(method, httpRequest, ParseFirstJsonValueNamed.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
@@ -83,27 +83,27 @@ public class FirewallAsyncClientTest extends BaseCloudStackAsyncClientTest<Firew
 
    public void testCreatePortForwardingRuleForVirtualMachine() throws SecurityException, NoSuchMethodException,
          IOException {
-      Method method = FirewallAsyncClient.class.getMethod("createPortForwardingRuleForVirtualMachine", String.class,
+      Invokable<?, ?> method = method(FirewallAsyncClient.class, "createPortForwardingRuleForVirtualMachine", String.class,
             PortForwardingRule.Protocol.class, int.class, String.class, int.class);
-      HttpRequest httpRequest = processor.createRequest(method, "6", PortForwardingRule.Protocol.TCP, 22, "7", 22);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of("6", PortForwardingRule.Protocol.TCP, 22, "7", 22));
 
       assertRequestLineEquals(
             httpRequest,
-            "GET http://localhost:8080/client/api?response=json&command=createPortForwardingRule&ipaddressid=6&publicport=22&protocol=tcp&virtualmachineid=7&privateport=22 HTTP/1.1");
+            "GET http://localhost:8080/client/api?response=json&command=createPortForwardingRule&ipaddressid=6&protocol=tcp&publicport=22&virtualmachineid=7&privateport=22 HTTP/1.1");
       assertNonPayloadHeadersEqual(httpRequest, "Accept: application/json\n");
       assertPayloadEquals(httpRequest, null, null, false);
 
       assertResponseParserClassEquals(method, httpRequest, UnwrapOnlyJsonValue.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, MapHttp4xxCodesToExceptions.class);
+      assertFallbackClassEquals(method, MapHttp4xxCodesToExceptions.class);
 
       checkFilters(httpRequest);
 
    }
 
    public void testDeletePortForwardingRule() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = FirewallAsyncClient.class.getMethod("deletePortForwardingRule", String.class);
-      HttpRequest httpRequest = processor.createRequest(method, 5);
+      Invokable<?, ?> method = method(FirewallAsyncClient.class, "deletePortForwardingRule", String.class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(5));
 
       assertRequestLineEquals(httpRequest,
             "GET http://localhost:8080/client/api?response=json&command=deletePortForwardingRule&id=5 HTTP/1.1");
@@ -112,15 +112,9 @@ public class FirewallAsyncClientTest extends BaseCloudStackAsyncClientTest<Firew
 
       assertResponseParserClassEquals(method, httpRequest, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnVoidOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, VoidOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
-   }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<FirewallAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<FirewallAsyncClient>>() {
-      };
    }
 }

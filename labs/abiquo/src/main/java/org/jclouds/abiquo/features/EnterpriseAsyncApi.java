@@ -19,6 +19,7 @@
 
 package org.jclouds.abiquo.features;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -29,6 +30,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.abiquo.binders.AppendToPath;
 import org.jclouds.abiquo.binders.BindToPath;
 import org.jclouds.abiquo.binders.BindToXMLPayloadAndPath;
@@ -39,12 +41,11 @@ import org.jclouds.abiquo.http.filters.AppendApiVersionToMediaType;
 import org.jclouds.abiquo.reference.annotations.EnterpriseEdition;
 import org.jclouds.abiquo.rest.annotations.EndpointLink;
 import org.jclouds.rest.annotations.BinderParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.JAXBResponseParser;
 import org.jclouds.rest.annotations.ParamParser;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.binders.BindToXMLPayload;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.abiquo.am.model.TemplatesStateDto;
 import com.abiquo.server.core.appslibrary.DatacenterRepositoryDto;
@@ -85,6 +86,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#listEnterprises()
     */
+   @Named("enterprise:list")
    @GET
    @Path("/enterprises")
    @Consumes(EnterprisesDto.BASE_MEDIA_TYPE)
@@ -94,6 +96,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#listEnterprises(EnterpriseOptions)
     */
+   @Named("enterprise:list")
    @GET
    @Path("/enterprises")
    @Consumes(EnterprisesDto.BASE_MEDIA_TYPE)
@@ -103,6 +106,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#listEnterprises(DatacenterDto, EnterpriseOptions)
     */
+   @Named("enterprise:list")
    @GET
    @Consumes(EnterprisesDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
@@ -112,6 +116,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#createEnterprise(EnterpriseDto)
     */
+   @Named("enterprise:create")
    @POST
    @Path("/enterprises")
    @Produces(EnterpriseDto.BASE_MEDIA_TYPE)
@@ -122,16 +127,18 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#getEnterprise(Integer)
     */
+   @Named("enterprise:get")
    @GET
    @Path("/enterprises/{enterprise}")
    @Consumes(EnterpriseDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<EnterpriseDto> getEnterprise(@PathParam("enterprise") Integer enterpriseId);
 
    /**
     * @see EnterpriseApi#updateEnterprise(EnterpriseDto)
     */
+   @Named("enterprise:update")
    @PUT
    @Produces(EnterpriseDto.BASE_MEDIA_TYPE)
    @Consumes(EnterpriseDto.BASE_MEDIA_TYPE)
@@ -142,12 +149,14 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#deleteEnterprise(EnterpriseDto)
     */
+   @Named("enterprise:delete")
    @DELETE
    ListenableFuture<Void> deleteEnterprise(@EndpointLink("edit") @BinderParam(BindToPath.class) EnterpriseDto enterprise);
 
    /**
     * @see EnterpriseApi#listAllowedDatacenters(Integer)
     */
+   @Named("enterprise:listalloweddatacenters")
    @GET
    @Path("/datacenters")
    @Consumes(DatacentersDto.BASE_MEDIA_TYPE)
@@ -157,6 +166,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#listVirtualDatacenters(EnterpriseDto)
     */
+   @Named("enterprise:listvirtualdatacenters")
    @GET
    @Consumes(VirtualDatacentersDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
@@ -168,6 +178,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#getEnterpriseProperties(EnterpriseDto)
     */
+   @Named("enterprise:getproperties")
    @EnterpriseEdition
    @GET
    @Consumes(EnterprisePropertiesDto.BASE_MEDIA_TYPE)
@@ -178,6 +189,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#updateEnterpriseProperties(EnterprisePropertiesDto)
     */
+   @Named("enterprse:setproperties")
    @EnterpriseEdition
    @PUT
    @Produces(EnterprisePropertiesDto.BASE_MEDIA_TYPE)
@@ -192,6 +204,7 @@ public interface EnterpriseAsyncApi {
     * @see EnterpriseApi#createLimits(EnterpriseDto, DatacenterDto,
     *      DatacenterLimitsDto)
     */
+   @Named("limit:create")
    @POST
    @Produces(DatacenterLimitsDto.BASE_MEDIA_TYPE)
    @Consumes(DatacenterLimitsDto.BASE_MEDIA_TYPE)
@@ -204,10 +217,11 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#getLimits(EnterpriseDto, DatacenterDto)
     */
+   @Named("limit:get")
    @GET
    @Consumes(DatacentersLimitsDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<DatacentersLimitsDto> getLimits(
          @EndpointLink("limits") @BinderParam(BindToPath.class) final EnterpriseDto enterprise,
          @QueryParam("datacenter") @ParamParser(ParseDatacenterId.class) final DatacenterDto datacenter);
@@ -226,6 +240,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#updateLimits(DatacenterLimitsDto)
     */
+   @Named("limit:update")
    @PUT
    @Produces(DatacenterLimitsDto.BASE_MEDIA_TYPE)
    @Consumes(DatacenterLimitsDto.BASE_MEDIA_TYPE)
@@ -236,12 +251,14 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#deleteLimits(DatacenterLimitsDto)
     */
+   @Named("limit:delete")
    @DELETE
    ListenableFuture<Void> deleteLimits(@EndpointLink("edit") @BinderParam(BindToPath.class) DatacenterLimitsDto limits);
 
    /**
     * @see EnterpriseApi#listLimits(EnterpriseDto)
     */
+   @Named("limit:list")
    @GET
    @Consumes(DatacentersLimitsDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
@@ -253,6 +270,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#listUsers(EnterpriseDto)
     */
+   @Named("user:list")
    @GET
    @Consumes(UsersDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
@@ -261,16 +279,18 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#getUser(EnterpriseDto, Integer)
     */
+   @Named("user:get")
    @GET
    @Consumes(UserDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<UserDto> getUser(@EndpointLink("users") @BinderParam(BindToPath.class) EnterpriseDto enterprise,
          @BinderParam(AppendToPath.class) Integer userId);
 
    /**
     * @see EnterpriseApi#createUser(EnterpriseDto)
     */
+   @Named("user:create")
    @POST
    @Produces(UserDto.BASE_MEDIA_TYPE)
    @Consumes(UserDto.BASE_MEDIA_TYPE)
@@ -281,6 +301,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#updateUser(UserDto)
     */
+   @Named("user:update")
    @PUT
    @Produces(UserDto.BASE_MEDIA_TYPE)
    @Consumes(UserDto.BASE_MEDIA_TYPE)
@@ -290,12 +311,14 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#deleteUser(UserDto)
     */
+   @Named("user:delete")
    @DELETE
    ListenableFuture<Void> deleteUser(@EndpointLink("edit") @BinderParam(BindToPath.class) UserDto user);
 
    /**
     * @see EnterpriseApi#listVirtualMachines(UserDto)
     */
+   @Named("user:listvms")
    @GET
    @Consumes(VirtualMachinesWithNodeExtendedDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
@@ -307,10 +330,11 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#getDatacenterRepository(EnterpriseDto, Integer)
     */
+   @Named("repository:get")
    @GET
    @Consumes(DatacenterRepositoryDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<UserDto> getDatacenterRepository(
          @EndpointLink("datacenterrepositories") @BinderParam(BindToPath.class) EnterpriseDto enterprise,
          @BinderParam(AppendToPath.class) Integer datacenterRepositoryId);
@@ -318,6 +342,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#refreshTemplateRepository(Integer, Integer)
     */
+   @Named("repository:refresh")
    @PUT
    @Path("/enterprises/{enterprise}/datacenterrepositories/{datacenterrepository}/actions/refresh")
    ListenableFuture<Void> refreshTemplateRepository(@PathParam("enterprise") Integer enterpriseId,
@@ -328,6 +353,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#listExternalNetworks(EnterpriseDto)
     */
+   @Named("enterprise:listexternalnetworks")
    @EnterpriseEdition
    @GET
    @Consumes(VLANNetworksDto.BASE_MEDIA_TYPE)
@@ -340,6 +366,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#listVirtualAppliances(EnterpriseDto)
     */
+   @Named("enterprise:listvapps")
    @GET
    @Consumes(VirtualAppliancesDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
@@ -349,6 +376,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#listVirtualMachines(EnterpriseDto)
     */
+   @Named("enterprise:listvms")
    @GET
    @Consumes(VirtualMachinesWithNodeExtendedDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
@@ -360,6 +388,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#listVirtualMachines(EnterpriseDto)
     */
+   @Named("enterprise:listreservedmachines")
    @GET
    @Consumes(MachinesDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
@@ -371,6 +400,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#listTemplateDefinitionLists(EnterpriseDto)
     */
+   @Named("templatedefinitionlist:list")
    @GET
    @Consumes(TemplateDefinitionListsDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
@@ -381,6 +411,7 @@ public interface EnterpriseAsyncApi {
     * @see EnterpriseApi#createTemplateDefinitionList(EnterpriseDto,
     *      TemplateDefinitionListDto)
     */
+   @Named("templatedefinitionlist:create")
    @POST
    @Produces(TemplateDefinitionListDto.BASE_MEDIA_TYPE)
    @Consumes(TemplateDefinitionListDto.BASE_MEDIA_TYPE)
@@ -392,6 +423,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#updateTemplateDefinitionList(TemplateDefinitionListDto)
     */
+   @Named("templatedefinitionlist:update")
    @PUT
    @Produces(TemplateDefinitionListDto.BASE_MEDIA_TYPE)
    @Consumes(TemplateDefinitionListDto.BASE_MEDIA_TYPE)
@@ -411,6 +443,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#deleteTemplateDefinitionList(EnterpriseDto)
     */
+   @Named("templatedefinitionlist:delete")
    @DELETE
    ListenableFuture<Void> deleteTemplateDefinitionList(
          @EndpointLink("edit") @BinderParam(BindToPath.class) TemplateDefinitionListDto templateList);
@@ -418,10 +451,11 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#getTemplateDefinitionList(EnterpriseDto, Integer)
     */
+   @Named("templatedefinitionlist:get")
    @GET
    @Consumes(TemplateDefinitionListDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<TemplateDefinitionListsDto> getTemplateDefinitionList(
          @EndpointLink("appslib/templateDefinitionLists") @BinderParam(BindToPath.class) EnterpriseDto enterprise,
          @BinderParam(AppendToPath.class) Integer templateListId);
@@ -429,6 +463,7 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#getTemplateDefinitionList(EnterpriseDto, Integer)
     */
+   @Named("templatedefinitionlist:status")
    @GET
    @Consumes(TemplatesStateDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser

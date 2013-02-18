@@ -20,6 +20,7 @@ package org.jclouds.hpcloud.objectstorage;
 
 import java.util.Set;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -32,15 +33,14 @@ import org.jclouds.location.Region;
 import org.jclouds.openstack.keystone.v2_0.filters.AuthenticateRequest;
 import org.jclouds.openstack.swift.CommonSwiftAsyncClient;
 import org.jclouds.openstack.swift.Storage;
+import org.jclouds.openstack.swift.SwiftFallbacks.TrueOn404FalseOn409;
 import org.jclouds.openstack.swift.domain.ContainerMetadata;
-import org.jclouds.openstack.swift.functions.ReturnTrueOn404FalseOn409;
 import org.jclouds.openstack.swift.options.ListContainerOptions;
 import org.jclouds.rest.annotations.Delegate;
 import org.jclouds.rest.annotations.Endpoint;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.QueryParams;
 import org.jclouds.rest.annotations.RequestFilters;
-import org.jclouds.rest.annotations.SkipEncoding;
 
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -50,16 +50,17 @@ import com.google.inject.Provides;
  * Provides asynchronous access to HP Cloud Object Storage via the REST API.
  * 
  * <p/>
- * All commands return a ListenableFuture of the result. Any exceptions incurred during processing
- * will be backend in an {@link java.util.concurrent.ExecutionException} as documented in
+ * All commands return a ListenableFuture of the result. Any exceptions incurred
+ * during processing will be backend in an
+ * {@link java.util.concurrent.ExecutionException} as documented in
  * {@link ListenableFuture#get()}.
  * 
  * @see HPCloudObjectStorageApi
- * @see <a href="https://manage.hpcloud.com/pages/build/docs/objectstorage-lvs/api">HP Cloud Object
- *      Storage API</a>
+ * @see <a
+ *      href="https://api-docs.hpcloud.com/hpcloud-object-storage/1.0/content/ch_object-storage-dev-overview.html">HP
+ *      Cloud Object Storage API</a>
  * @author Jeremy Daggett
  */
-@SkipEncoding('/')
 @RequestFilters(AuthenticateRequest.class)
 @Endpoint(Storage.class)
 public interface HPCloudObjectStorageAsyncApi extends CommonSwiftAsyncClient {
@@ -74,6 +75,7 @@ public interface HPCloudObjectStorageAsyncApi extends CommonSwiftAsyncClient {
    /**
     * @see org.jclouds.openstack.swift.CommonSwiftClient#listContainers
     */
+   @Named("ListContainers")
    @GET
    @Consumes(MediaType.APPLICATION_JSON)
    @QueryParams(keys = "format", values = "json")
@@ -83,8 +85,9 @@ public interface HPCloudObjectStorageAsyncApi extends CommonSwiftAsyncClient {
    /**
     * @see org.jclouds.openstack.swift.CommonSwiftClient#deleteContainerIfEmpty
     */
+   @Named("DeleteContainer")
    @DELETE
-   @ExceptionParser(ReturnTrueOn404FalseOn409.class)
+   @Fallback(TrueOn404FalseOn409.class)
    @Path("/{container}")
    ListenableFuture<Boolean> deleteContainerIfEmpty(@PathParam("container") String container);
 

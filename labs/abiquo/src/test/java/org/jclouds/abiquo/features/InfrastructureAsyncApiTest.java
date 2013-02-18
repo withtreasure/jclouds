@@ -20,12 +20,15 @@
 package org.jclouds.abiquo.features;
 
 import static org.jclouds.abiquo.domain.DomainUtils.withHeader;
+import static org.jclouds.reflect.Reflection2.method;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
+import org.jclouds.abiquo.AbiquoFallbacks.FalseIfNotAvailable;
+import org.jclouds.abiquo.AbiquoFallbacks.PropagateAbiquoExceptionOnNotFoundOr4xx;
 import org.jclouds.abiquo.domain.EnterpriseResources;
 import org.jclouds.abiquo.domain.InfrastructureResources;
 import org.jclouds.abiquo.domain.NetworkResources;
@@ -36,16 +39,13 @@ import org.jclouds.abiquo.domain.infrastructure.options.StoragePoolOptions;
 import org.jclouds.abiquo.domain.network.options.IpOptions;
 import org.jclouds.abiquo.domain.network.options.NetworkOptions;
 import org.jclouds.abiquo.domain.options.search.FilterOptions;
-import org.jclouds.abiquo.functions.ReturnAbiquoExceptionOnNotFoundOr4xx;
-import org.jclouds.abiquo.functions.ReturnFalseIfNotAvailable;
+import org.jclouds.fallbacks.MapHttp4xxCodesToExceptions;
 import org.jclouds.http.functions.ParseXMLWithJAXB;
 import org.jclouds.http.functions.ReleasePayloadAndReturn;
 import org.jclouds.http.functions.ReturnStringIf2xx;
 import org.jclouds.http.functions.ReturnTrueIf2xx;
-import org.jclouds.rest.functions.MapHttp4xxCodesToExceptions;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
+import org.jclouds.reflect.Invocation;
 import org.jclouds.rest.internal.GeneratedHttpRequest;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
 import org.testng.annotations.Test;
 
 import com.abiquo.model.enumerator.HypervisorType;
@@ -92,7 +92,8 @@ import com.abiquo.server.core.infrastructure.storage.StoragePoolDto;
 import com.abiquo.server.core.infrastructure.storage.StoragePoolsDto;
 import com.abiquo.server.core.infrastructure.storage.TierDto;
 import com.abiquo.server.core.infrastructure.storage.TiersDto;
-import com.google.inject.TypeLiteral;
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 
 /**
  * Tests annotation parsing of {@code InfrastructureAsyncApi}
@@ -104,8 +105,8 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
    /*********************** Datacenter ***********************/
 
    public void testListDatacenters() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("listDatacenters");
-      GeneratedHttpRequest request = processor.createRequest(method);
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listDatacenters");
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.of()));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + DatacentersDto.BASE_MEDIA_TYPE + "\n");
@@ -113,14 +114,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testCreateDatacenter() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("createDatacenter", DatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPost());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "createDatacenter", DatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPost())));
 
       assertRequestLineEquals(request, "POST http://localhost/api/admin/datacenters HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + DatacenterDto.BASE_MEDIA_TYPE + "\n");
@@ -129,14 +131,14 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetDatacenter() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("getDatacenter", Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, 1);
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "getDatacenter", Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + DatacenterDto.BASE_MEDIA_TYPE + "\n");
@@ -144,14 +146,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testUpdateDatacenter() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("updateDatacenter", DatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "updateDatacenter", DatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut())));
 
       assertRequestLineEquals(request, "PUT http://localhost/api/admin/datacenters/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + DatacenterDto.BASE_MEDIA_TYPE + "\n");
@@ -160,14 +163,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeleteDatacenter() throws SecurityException, NoSuchMethodException {
-      Method method = InfrastructureAsyncApi.class.getMethod("deleteDatacenter", DatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "deleteDatacenter", DatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut())));
 
       assertRequestLineEquals(request, "DELETE http://localhost/api/admin/datacenters/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
@@ -175,14 +179,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListLimitsDatacenter() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("listLimits", DatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listLimits", DatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/action/getLimits HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + DatacentersLimitsDto.BASE_MEDIA_TYPE + "\n");
@@ -190,7 +195,7 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -198,10 +203,12 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
    /*********************** Hypervisor ***********************/
 
    public void testGetHypervisorTypeFromMachine() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("getHypervisorTypeFromMachine", DatacenterDto.class,
-            DatacenterOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(),
-            DatacenterOptions.builder().ip("10.60.1.120").build());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "getHypervisorTypeFromMachine",
+            DatacenterDto.class, DatacenterOptions.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(
+            method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut(),
+                  DatacenterOptions.builder().ip("10.60.1.120").build())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/datacenters/1/action/hypervisor?ip=10.60.1.120 HTTP/1.1");
@@ -210,14 +217,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ReturnStringIf2xx.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetHypervisorTypesFromDatacenter() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("getHypervisorTypes", DatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "getHypervisorTypes", DatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/hypervisors HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + HypervisorTypesDto.BASE_MEDIA_TYPE + "\n");
@@ -225,7 +233,7 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -233,8 +241,9 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
    /*********************** Managed Rack ***********************/
 
    public void testListRacks() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("listRacks", DatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listRacks", DatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/racks HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + RacksDto.BASE_MEDIA_TYPE + "\n");
@@ -242,15 +251,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testCreateRack() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("createRack", DatacenterDto.class, RackDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(),
-            InfrastructureResources.rackPost());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "createRack", DatacenterDto.class, RackDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut(), InfrastructureResources.rackPost())));
 
       assertRequestLineEquals(request, "POST http://localhost/api/admin/datacenters/1/racks HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + RackDto.BASE_MEDIA_TYPE + "\n");
@@ -259,14 +268,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetRack() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("getRack", DatacenterDto.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(), 1);
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "getRack", DatacenterDto.class, Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut(), 1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/racks/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + RackDto.BASE_MEDIA_TYPE + "\n");
@@ -274,14 +284,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testUpdateRack() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("updateRack", RackDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.rackPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "updateRack", RackDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.rackPut())));
 
       assertRequestLineEquals(request, "PUT http://localhost/api/admin/datacenters/1/racks/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + RackDto.BASE_MEDIA_TYPE + "\n");
@@ -290,14 +301,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeleteRack() throws SecurityException, NoSuchMethodException {
-      Method method = InfrastructureAsyncApi.class.getMethod("deleteRack", RackDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.rackPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "deleteRack", RackDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.rackPut())));
 
       assertRequestLineEquals(request, "DELETE http://localhost/api/admin/datacenters/1/racks/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
@@ -305,7 +317,7 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -313,8 +325,9 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
    /*********************** Managed Rack ***********************/
 
    public void testListManagedRacks() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("listManagedRacks", DatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listManagedRacks", DatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/racks HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + UcsRacksDto.BASE_MEDIA_TYPE + "\n");
@@ -322,16 +335,18 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testCreateManagedRack() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class
-            .getMethod("createManagedRack", DatacenterDto.class, UcsRackDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(),
-            InfrastructureResources.managedRackPost());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "createManagedRack", DatacenterDto.class,
+            UcsRackDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(
+            method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut(),
+                  InfrastructureResources.managedRackPost())));
 
       assertRequestLineEquals(request, "POST http://localhost/api/admin/datacenters/1/racks HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + UcsRackDto.BASE_MEDIA_TYPE + "\n");
@@ -340,14 +355,16 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetManagedRack() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("getManagedRack", DatacenterDto.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(), 1);
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "getManagedRack", DatacenterDto.class,
+            Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut(), 1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/racks/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + UcsRackDto.BASE_MEDIA_TYPE + "\n");
@@ -355,15 +372,16 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testUpdateManagedRack() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("updateManagedRack", UcsRackDto.class);
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "updateManagedRack", UcsRackDto.class);
 
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.managedRackPut());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.managedRackPut())));
 
       assertRequestLineEquals(request, "PUT http://localhost/api/admin/datacenters/1/racks/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + UcsRackDto.BASE_MEDIA_TYPE + "\n");
@@ -372,14 +390,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListServiceProfiles() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("listServiceProfiles", UcsRackDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.managedRackPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listServiceProfiles", UcsRackDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.managedRackPut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/racks/1/logicservers HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + LogicServersDto.BASE_MEDIA_TYPE + "\n");
@@ -387,7 +406,7 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -395,9 +414,10 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
    public void testListServiceProfilesWithOptions() throws SecurityException, NoSuchMethodException, IOException {
       FilterOptions options = FilterOptions.builder().startWith(1).limit(2).build();
 
-      Method method = InfrastructureAsyncApi.class.getMethod("listServiceProfiles", UcsRackDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listServiceProfiles", UcsRackDto.class,
             FilterOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.managedRackPut(), options);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.managedRackPut(), options)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/datacenters/1/racks/1/logicservers?startwith=1&limit=2 HTTP/1.1");
@@ -406,14 +426,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListOrganizations() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("listOrganizations", UcsRackDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.managedRackPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listOrganizations", UcsRackDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.managedRackPut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/racks/1/organizations HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + OrganizationsDto.BASE_MEDIA_TYPE + "\n");
@@ -421,7 +442,7 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -429,9 +450,10 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
    public void testListOrganizationsWithOptions() throws SecurityException, NoSuchMethodException, IOException {
       FilterOptions options = FilterOptions.builder().has("org").build();
 
-      Method method = InfrastructureAsyncApi.class
-            .getMethod("listOrganizations", UcsRackDto.class, FilterOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.managedRackPut(), options);
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listOrganizations", UcsRackDto.class,
+            FilterOptions.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.managedRackPut(), options)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/datacenters/1/racks/1/organizations?has=org HTTP/1.1");
@@ -440,14 +462,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListServiceProfileTemplates() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("listServiceProfileTemplates", UcsRackDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.managedRackPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listServiceProfileTemplates", UcsRackDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.managedRackPut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/racks/1/lstemplates HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + LogicServersDto.BASE_MEDIA_TYPE + "\n");
@@ -455,7 +478,7 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -464,9 +487,10 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
          IOException {
       FilterOptions options = FilterOptions.builder().ascendant(true).build();
 
-      Method method = InfrastructureAsyncApi.class.getMethod("listServiceProfileTemplates", UcsRackDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listServiceProfileTemplates", UcsRackDto.class,
             FilterOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.managedRackPut(), options);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.managedRackPut(), options)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/datacenters/1/racks/1/lstemplates?asc=true HTTP/1.1");
@@ -475,73 +499,79 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testAssociateLogicServer() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("associateLogicServer", UcsRackDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "associateLogicServer", UcsRackDto.class,
             LogicServerDto.class, OrganizationDto.class, String.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.managedRackPut(),
-            InfrastructureResources.logicServerPut(), InfrastructureResources.organizationPut(), "blade");
+      GeneratedHttpRequest request = processor.apply(Invocation.create(
+            method,
+            ImmutableList.<Object> of(InfrastructureResources.managedRackPut(),
+                  InfrastructureResources.logicServerPut(), InfrastructureResources.organizationPut(), "blade")));
 
       assertRequestLineEquals(
             request,
-            "POST http://localhost/api/admin/datacenters/1/racks/1/logicservers/associate?bladeDn=blade&org=org-root%2Forg-Finance&lsName=server HTTP/1.1");
+            "POST http://localhost/api/admin/datacenters/1/racks/1/logicservers/associate?bladeDn=blade&lsName=server&org=org-root/org-Finance HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
       assertPayloadEquals(request, null, null, false);
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testAssociateTemplate() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("associateTemplate", UcsRackDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "associateTemplate", UcsRackDto.class,
             LogicServerDto.class, OrganizationDto.class, String.class, String.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.managedRackPut(),
-            InfrastructureResources.logicServerPut(), InfrastructureResources.organizationPut(), "newname", "blade");
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
+            InfrastructureResources.managedRackPut(), InfrastructureResources.logicServerPut(),
+            InfrastructureResources.organizationPut(), "newname", "blade")));
 
       assertRequestLineEquals(
             request,
-            "POST http://localhost/api/admin/datacenters/1/racks/1/logicservers/associatetemplate?newName=newname&bladeDn=blade&org=org-root%2Forg-Finance&lsName=server HTTP/1.1");
+            "POST http://localhost/api/admin/datacenters/1/racks/1/logicservers/associatetemplate?newName=newname&bladeDn=blade&lsName=server&org=org-root/org-Finance HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
       assertPayloadEquals(request, null, null, false);
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testCloneAndAssociateLogicServer() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("cloneAndAssociateLogicServer", UcsRackDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "cloneAndAssociateLogicServer", UcsRackDto.class,
             LogicServerDto.class, OrganizationDto.class, String.class, String.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.managedRackPut(),
-            InfrastructureResources.logicServerPut(), InfrastructureResources.organizationPut(), "newname", "blade");
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
+            InfrastructureResources.managedRackPut(), InfrastructureResources.logicServerPut(),
+            InfrastructureResources.organizationPut(), "newname", "blade")));
 
       assertRequestLineEquals(
             request,
-            "POST http://localhost/api/admin/datacenters/1/racks/1/logicservers/assocclone?newName=newname&bladeDn=blade&org=org-root%2Forg-Finance&lsName=server HTTP/1.1");
+            "POST http://localhost/api/admin/datacenters/1/racks/1/logicservers/assocclone?newName=newname&bladeDn=blade&lsName=server&org=org-root/org-Finance HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
       assertPayloadEquals(request, null, null, false);
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDissociateLogicServer() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("dissociateLogicServer", UcsRackDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "dissociateLogicServer", UcsRackDto.class,
             LogicServerDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.managedRackPut(),
-            InfrastructureResources.logicServerPut(), InfrastructureResources.organizationPut());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(
+            method,
+            ImmutableList.<Object> of(InfrastructureResources.managedRackPut(),
+                  InfrastructureResources.logicServerPut(), InfrastructureResources.organizationPut())));
 
       assertRequestLineEquals(request,
             "POST http://localhost/api/admin/datacenters/1/racks/1/logicservers/dissociate?lsName=server HTTP/1.1");
@@ -550,35 +580,39 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testCloneLogicServer() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("cloneLogicServer", UcsRackDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "cloneLogicServer", UcsRackDto.class,
             LogicServerDto.class, OrganizationDto.class, String.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.managedRackPut(),
-            InfrastructureResources.logicServerPut(), InfrastructureResources.organizationPut(), "name");
+      GeneratedHttpRequest request = processor.apply(Invocation.create(
+            method,
+            ImmutableList.<Object> of(InfrastructureResources.managedRackPut(),
+                  InfrastructureResources.logicServerPut(), InfrastructureResources.organizationPut(), "name")));
 
       assertRequestLineEquals(
             request,
-            "POST http://localhost/api/admin/datacenters/1/racks/1/logicservers/clone?newName=name&org=org-root%2Forg-Finance&lsName=server HTTP/1.1");
+            "POST http://localhost/api/admin/datacenters/1/racks/1/logicservers/clone?newName=name&lsName=server&org=org-root/org-Finance HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
       assertPayloadEquals(request, null, null, false);
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeleteLogicServer() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("deleteLogicServer", UcsRackDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "deleteLogicServer", UcsRackDto.class,
             LogicServerDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.managedRackPut(),
-            InfrastructureResources.logicServerPut());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(
+            method,
+            ImmutableList.<Object> of(InfrastructureResources.managedRackPut(),
+                  InfrastructureResources.logicServerPut())));
 
       assertRequestLineEquals(request,
             "POST http://localhost/api/admin/datacenters/1/racks/1/logicservers/delete?lsName=server HTTP/1.1");
@@ -587,14 +621,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListFsms() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("listFsms", UcsRackDto.class, String.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.managedRackPut(), "dn");
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listFsms", UcsRackDto.class, String.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.managedRackPut(), "dn")));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/racks/1/fsm?dn=dn HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + FsmsDto.BASE_MEDIA_TYPE + "\n");
@@ -602,7 +637,7 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -610,8 +645,9 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
    /*********************** Remote Service **********************/
 
    public void testListRemoteServices() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("listRemoteServices", DatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listRemoteServices", DatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/remoteservices HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + RemoteServicesDto.BASE_MEDIA_TYPE + "\n");
@@ -619,16 +655,18 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testCreateRemoteService() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("createRemoteService", DatacenterDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "createRemoteService", DatacenterDto.class,
             RemoteServiceDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(),
-            InfrastructureResources.remoteServicePost());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(
+            method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut(),
+                  InfrastructureResources.remoteServicePost())));
 
       assertRequestLineEquals(request, "POST http://localhost/api/admin/datacenters/1/remoteservices HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + RemoteServiceDto.BASE_MEDIA_TYPE + "\n");
@@ -637,16 +675,16 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetRemoteService() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("getRemoteService", DatacenterDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "getRemoteService", DatacenterDto.class,
             RemoteServiceType.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(),
-            RemoteServiceType.STORAGE_SYSTEM_MONITOR);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
+            InfrastructureResources.datacenterPut(), RemoteServiceType.STORAGE_SYSTEM_MONITOR)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/datacenters/1/remoteservices/storagesystemmonitor HTTP/1.1");
@@ -655,14 +693,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testUpdateRemoteService() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("updateRemoteService", RemoteServiceDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.remoteServicePut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "updateRemoteService", RemoteServiceDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.remoteServicePut())));
 
       assertRequestLineEquals(request,
             "PUT http://localhost/api/admin/datacenters/1/remoteservices/nodecollector HTTP/1.1");
@@ -672,14 +711,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeleteRemoteService() throws SecurityException, NoSuchMethodException {
-      Method method = InfrastructureAsyncApi.class.getMethod("deleteRemoteService", RemoteServiceDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.remoteServicePut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "deleteRemoteService", RemoteServiceDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.remoteServicePut())));
 
       assertRequestLineEquals(request,
             "DELETE http://localhost/api/admin/datacenters/1/remoteservices/nodecollector HTTP/1.1");
@@ -688,14 +728,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testIsAvailableRemoteService() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("isAvailable", RemoteServiceDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.remoteServicePut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "isAvailable", RemoteServiceDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.remoteServicePut())));
 
       String checkUri = InfrastructureResources.remoteServicePut().searchLink("check").getHref();
       assertRequestLineEquals(request, String.format("GET %s HTTP/1.1", checkUri));
@@ -704,7 +745,7 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ReturnTrueIf2xx.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnFalseIfNotAvailable.class);
+      assertFallbackClassEquals(method, FalseIfNotAvailable.class);
 
       checkFilters(request);
    }
@@ -712,13 +753,13 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
    /*********************** Machine ***********************/
 
    public void testDiscoverSingleMachineWithoutOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("discoverSingleMachine", DatacenterDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "discoverSingleMachine", DatacenterDto.class,
             String.class, HypervisorType.class, String.class, String.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(),
-            "10.60.1.222", HypervisorType.XENSERVER, "user", "pass");
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
+            InfrastructureResources.datacenterPut(), "10.60.1.222", HypervisorType.XENSERVER, "user", "pass")));
 
       String baseUrl = "http://localhost/api/admin/datacenters/1/action/discoversingle";
-      String query = "hypervisor=XENSERVER&ip=10.60.1.222&user=user&password=pass";
+      String query = "ip=10.60.1.222&hypervisor=XENSERVER&user=user&password=pass";
       String expectedRequest = String.format("GET %s?%s HTTP/1.1", baseUrl, query);
 
       assertRequestLineEquals(request, expectedRequest);
@@ -727,19 +768,20 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnAbiquoExceptionOnNotFoundOr4xx.class);
+      assertFallbackClassEquals(method, PropagateAbiquoExceptionOnNotFoundOr4xx.class);
 
       checkFilters(request);
    }
 
    public void testDiscoverSingleMachineAllParams() throws SecurityException, NoSuchMethodException {
-      Method method = InfrastructureAsyncApi.class.getMethod("discoverSingleMachine", DatacenterDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "discoverSingleMachine", DatacenterDto.class,
             String.class, HypervisorType.class, String.class, String.class, MachineOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(),
-            "80.80.80.80", HypervisorType.KVM, "user", "pass", MachineOptions.builder().port(8889).build());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
+            InfrastructureResources.datacenterPut(), "80.80.80.80", HypervisorType.KVM, "user", "pass", MachineOptions
+                  .builder().port(8889).build())));
 
       String baseUrl = "http://localhost/api/admin/datacenters/1/action/discoversingle";
-      String query = "hypervisor=KVM&ip=80.80.80.80&user=user&password=pass&port=8889";
+      String query = "ip=80.80.80.80&hypervisor=KVM&user=user&password=pass&port=8889";
       String expectedRequest = String.format("GET %s?%s HTTP/1.1", baseUrl, query);
 
       assertRequestLineEquals(request, expectedRequest);
@@ -748,19 +790,20 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnAbiquoExceptionOnNotFoundOr4xx.class);
+      assertFallbackClassEquals(method, PropagateAbiquoExceptionOnNotFoundOr4xx.class);
 
       checkFilters(request);
    }
 
    public void testDiscoverSingleMachineDefaultValues() throws SecurityException, NoSuchMethodException {
-      Method method = InfrastructureAsyncApi.class.getMethod("discoverSingleMachine", DatacenterDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "discoverSingleMachine", DatacenterDto.class,
             String.class, HypervisorType.class, String.class, String.class, MachineOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(),
-            "80.80.80.80", HypervisorType.KVM, "user", "pass", MachineOptions.builder().build());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
+            InfrastructureResources.datacenterPut(), "80.80.80.80", HypervisorType.KVM, "user", "pass", MachineOptions
+                  .builder().build())));
 
       String baseUrl = "http://localhost/api/admin/datacenters/1/action/discoversingle";
-      String query = "hypervisor=KVM&ip=80.80.80.80&user=user&password=pass";
+      String query = "ip=80.80.80.80&hypervisor=KVM&user=user&password=pass";
       String expectedRequest = String.format("GET %s?%s HTTP/1.1", baseUrl, query);
 
       assertRequestLineEquals(request, expectedRequest);
@@ -769,20 +812,21 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnAbiquoExceptionOnNotFoundOr4xx.class);
+      assertFallbackClassEquals(method, PropagateAbiquoExceptionOnNotFoundOr4xx.class);
 
       checkFilters(request);
    }
 
    public void testDiscoverMultipleMachinesWithoutOptions() throws SecurityException, NoSuchMethodException,
          IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("discoverMultipleMachines", DatacenterDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "discoverMultipleMachines", DatacenterDto.class,
             String.class, String.class, HypervisorType.class, String.class, String.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(),
-            "10.60.1.222", "10.60.1.250", HypervisorType.XENSERVER, "user", "pass");
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
+            InfrastructureResources.datacenterPut(), "10.60.1.222", "10.60.1.250", HypervisorType.XENSERVER, "user",
+            "pass")));
 
       String baseUrl = "http://localhost/api/admin/datacenters/1/action/discovermultiple";
-      String query = "password=pass&ipTo=10.60.1.250&ipFrom=10.60.1.222&hypervisor=XENSERVER&user=user";
+      String query = "ipFrom=10.60.1.222&ipTo=10.60.1.250&hypervisor=XENSERVER&user=user&password=pass";
       String expectedRequest = String.format("GET %s?%s HTTP/1.1", baseUrl, query);
 
       assertRequestLineEquals(request, expectedRequest);
@@ -791,20 +835,20 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnAbiquoExceptionOnNotFoundOr4xx.class);
+      assertFallbackClassEquals(method, PropagateAbiquoExceptionOnNotFoundOr4xx.class);
 
       checkFilters(request);
    }
 
    public void testDiscoverMultipleMachinesAllParams() throws SecurityException, NoSuchMethodException {
-      Method method = InfrastructureAsyncApi.class.getMethod("discoverMultipleMachines", DatacenterDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "discoverMultipleMachines", DatacenterDto.class,
             String.class, String.class, HypervisorType.class, String.class, String.class, MachineOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(),
-            "80.80.80.80", "80.80.80.86", HypervisorType.KVM, "user", "pass", MachineOptions.builder().port(8889)
-                  .build());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
+            InfrastructureResources.datacenterPut(), "80.80.80.80", "80.80.80.86", HypervisorType.KVM, "user", "pass",
+            MachineOptions.builder().port(8889).build())));
 
       String baseUrl = "http://localhost/api/admin/datacenters/1/action/discovermultiple";
-      String query = "password=pass&ipTo=80.80.80.86&ipFrom=80.80.80.80&hypervisor=KVM&user=user&port=8889";
+      String query = "ipFrom=80.80.80.80&ipTo=80.80.80.86&hypervisor=KVM&user=user&password=pass&port=8889";
       String expectedRequest = String.format("GET %s?%s HTTP/1.1", baseUrl, query);
 
       assertRequestLineEquals(request, expectedRequest);
@@ -813,19 +857,19 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnAbiquoExceptionOnNotFoundOr4xx.class);
+      assertFallbackClassEquals(method, PropagateAbiquoExceptionOnNotFoundOr4xx.class);
 
       checkFilters(request);
    }
 
    public void testCheckMachineStateWithoutOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("checkMachineState", DatacenterDto.class, String.class,
-            HypervisorType.class, String.class, String.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(),
-            "10.60.1.222", HypervisorType.XENSERVER, "user", "pass");
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "checkMachineState", DatacenterDto.class,
+            String.class, HypervisorType.class, String.class, String.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
+            InfrastructureResources.datacenterPut(), "10.60.1.222", HypervisorType.XENSERVER, "user", "pass")));
 
       String baseUrl = "http://localhost/api/admin/datacenters/1/action/checkmachinestate";
-      String query = "hypervisor=XENSERVER&ip=10.60.1.222&user=user&password=pass";
+      String query = "ip=10.60.1.222&hypervisor=XENSERVER&user=user&password=pass";
       String expectedRequest = String.format("GET %s?%s HTTP/1.1", baseUrl, query);
 
       assertRequestLineEquals(request, expectedRequest);
@@ -834,19 +878,20 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnAbiquoExceptionOnNotFoundOr4xx.class);
+      assertFallbackClassEquals(method, PropagateAbiquoExceptionOnNotFoundOr4xx.class);
 
       checkFilters(request);
    }
 
    public void testCheckMachineStateAllParams() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("checkMachineState", DatacenterDto.class, String.class,
-            HypervisorType.class, String.class, String.class, MachineOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(),
-            "10.60.1.222", HypervisorType.XENSERVER, "user", "pass", MachineOptions.builder().port(8889).build());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "checkMachineState", DatacenterDto.class,
+            String.class, HypervisorType.class, String.class, String.class, MachineOptions.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
+            InfrastructureResources.datacenterPut(), "10.60.1.222", HypervisorType.XENSERVER, "user", "pass",
+            MachineOptions.builder().port(8889).build())));
 
       String baseUrl = "http://localhost/api/admin/datacenters/1/action/checkmachinestate";
-      String query = "hypervisor=XENSERVER&ip=10.60.1.222&user=user&password=pass&port=8889";
+      String query = "ip=10.60.1.222&hypervisor=XENSERVER&user=user&password=pass&port=8889";
       String expectedRequest = String.format("GET %s?%s HTTP/1.1", baseUrl, query);
 
       assertRequestLineEquals(request, expectedRequest);
@@ -855,19 +900,19 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnAbiquoExceptionOnNotFoundOr4xx.class);
+      assertFallbackClassEquals(method, PropagateAbiquoExceptionOnNotFoundOr4xx.class);
 
       checkFilters(request);
    }
 
    public void testCheckMachineIpmiStateWithoutOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("checkMachineIpmiState", DatacenterDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "checkMachineIpmiState", DatacenterDto.class,
             String.class, String.class, String.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(),
-            "10.60.1.222", "user", "pass");
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut(), "10.60.1.222", "user", "pass")));
 
       String baseUrl = "http://localhost/api/admin/datacenters/1/action/checkmachineipmistate";
-      String query = "user=user&ip=10.60.1.222&password=pass";
+      String query = "ip=10.60.1.222&user=user&password=pass";
       String expectedRequest = String.format("GET %s?%s HTTP/1.1", baseUrl, query);
 
       assertRequestLineEquals(request, expectedRequest);
@@ -876,19 +921,20 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnAbiquoExceptionOnNotFoundOr4xx.class);
+      assertFallbackClassEquals(method, PropagateAbiquoExceptionOnNotFoundOr4xx.class);
 
       checkFilters(request);
    }
 
    public void testCheckMachineIpmiStateWithALLOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("checkMachineIpmiState", DatacenterDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "checkMachineIpmiState", DatacenterDto.class,
             String.class, String.class, String.class, IpmiOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(),
-            "10.60.1.222", "user", "pass", IpmiOptions.builder().port(8889).build());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
+            InfrastructureResources.datacenterPut(), "10.60.1.222", "user", "pass", IpmiOptions.builder().port(8889)
+                  .build())));
 
       String baseUrl = "http://localhost/api/admin/datacenters/1/action/checkmachineipmistate";
-      String query = "user=user&ip=10.60.1.222&password=pass&port=8889";
+      String query = "ip=10.60.1.222&user=user&password=pass&port=8889";
       String expectedRequest = String.format("GET %s?%s HTTP/1.1", baseUrl, query);
 
       assertRequestLineEquals(request, expectedRequest);
@@ -897,14 +943,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnAbiquoExceptionOnNotFoundOr4xx.class);
+      assertFallbackClassEquals(method, PropagateAbiquoExceptionOnNotFoundOr4xx.class);
 
       checkFilters(request);
    }
 
    public void testListMachines() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("listMachines", RackDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.rackPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listMachines", RackDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.rackPut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/racks/1/machines HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + MachinesDto.BASE_MEDIA_TYPE + "\n");
@@ -912,14 +959,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetMachine() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("getMachine", RackDto.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.rackPut(), 1);
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "getMachine", RackDto.class, Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.rackPut(), 1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/racks/1/machines/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + MachineDto.BASE_MEDIA_TYPE + "\n");
@@ -927,14 +975,16 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testCheckMachineState() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("checkMachineState", MachineDto.class, boolean.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.machinePut(), true);
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "checkMachineState", MachineDto.class,
+            boolean.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.machinePut(), true)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/datacenters/1/racks/1/machines/1/action/checkstate?sync=true HTTP/1.1");
@@ -943,14 +993,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testCheckMachineIpmiState() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("checkMachineIpmiState", MachineDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.machinePut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "checkMachineIpmiState", MachineDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.machinePut())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/datacenters/1/racks/1/machines/1/action/checkipmistate HTTP/1.1");
@@ -959,15 +1010,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testCreateMachine() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("createMachine", RackDto.class, MachineDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.rackPut(),
-            InfrastructureResources.machinePost());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "createMachine", RackDto.class, MachineDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.rackPut(), InfrastructureResources.machinePost())));
 
       assertRequestLineEquals(request, "POST http://localhost/api/admin/datacenters/1/racks/1/machines HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + MachineDto.BASE_MEDIA_TYPE + "\n");
@@ -976,14 +1027,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testUpdateMachine() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("updateMachine", MachineDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.machinePut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "updateMachine", MachineDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.machinePut())));
 
       assertRequestLineEquals(request, "PUT http://localhost/api/admin/datacenters/1/racks/1/machines/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + MachineDto.BASE_MEDIA_TYPE + "\n");
@@ -992,14 +1044,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeleteMachine() throws SecurityException, NoSuchMethodException {
-      Method method = InfrastructureAsyncApi.class.getMethod("deleteMachine", MachineDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.machinePut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "deleteMachine", MachineDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.machinePut())));
 
       assertRequestLineEquals(request, "DELETE http://localhost/api/admin/datacenters/1/racks/1/machines/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
@@ -1007,15 +1060,16 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testReserveMachine() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("reserveMachine", EnterpriseDto.class, MachineDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.enterprisePut(),
-            InfrastructureResources.machinePut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "reserveMachine", EnterpriseDto.class,
+            MachineDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.enterprisePut(), InfrastructureResources.machinePut())));
 
       assertRequestLineEquals(request, "POST http://localhost/api/admin/enterprises/1/reservedmachines HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + MachineDto.BASE_MEDIA_TYPE + "\n");
@@ -1024,16 +1078,16 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testCancelReservation() throws SecurityException, NoSuchMethodException {
-      Method method = InfrastructureAsyncApi.class
-            .getMethod("cancelReservation", EnterpriseDto.class, MachineDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, EnterpriseResources.enterprisePut(),
-            InfrastructureResources.machinePut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "cancelReservation", EnterpriseDto.class,
+            MachineDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(EnterpriseResources.enterprisePut(), InfrastructureResources.machinePut())));
 
       assertRequestLineEquals(request, "DELETE http://localhost/api/admin/enterprises/1/reservedmachines/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
@@ -1041,7 +1095,7 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -1049,9 +1103,10 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
    public void testListVirtualMachinesByMachine() throws SecurityException, NoSuchMethodException, IOException {
       MachineOptions options = MachineOptions.builder().sync(true).build();
 
-      Method method = InfrastructureAsyncApi.class.getMethod("listVirtualMachinesByMachine", MachineDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listVirtualMachinesByMachine", MachineDto.class,
             MachineOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.machinePut(), options);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.machinePut(), options)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/datacenters/1/racks/1/machines/1/virtualmachines?sync=true HTTP/1.1");
@@ -1060,15 +1115,17 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetVirtualMachineByMachine() throws SecurityException, NoSuchMethodException, IOException {
 
-      Method method = InfrastructureAsyncApi.class.getMethod("getVirtualMachine", MachineDto.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.machinePut(), 1);
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "getVirtualMachine", MachineDto.class,
+            Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.machinePut(), 1)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/datacenters/1/racks/1/machines/1/virtualmachines/1 HTTP/1.1");
@@ -1077,7 +1134,7 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
@@ -1085,8 +1142,9 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
    /*********************** Blade ***********************/
 
    public void testPowerOff() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("powerOff", MachineDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.machinePut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "powerOff", MachineDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.machinePut())));
 
       assertRequestLineEquals(request,
             "PUT http://localhost/api/admin/datacenters/1/racks/1/machines/1/action/poweroff HTTP/1.1");
@@ -1095,14 +1153,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testPowerOn() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("powerOn", MachineDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.machinePut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "powerOn", MachineDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.machinePut())));
 
       assertRequestLineEquals(request,
             "PUT http://localhost/api/admin/datacenters/1/racks/1/machines/1/action/poweron HTTP/1.1");
@@ -1111,14 +1170,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetLogicServer() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("getLogicServer", MachineDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.machinePut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "getLogicServer", MachineDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.machinePut())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/datacenters/1/racks/1/machines/1/logicserver HTTP/1.1");
@@ -1127,14 +1187,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testLedOn() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("ledOn", MachineDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.machinePut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "ledOn", MachineDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.machinePut())));
 
       assertRequestLineEquals(request,
             "POST http://localhost/api/admin/datacenters/1/racks/1/machines/1/action/ledon HTTP/1.1");
@@ -1143,14 +1204,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testLedOff() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("ledOff", MachineDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.machinePut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "ledOff", MachineDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.machinePut())));
 
       assertRequestLineEquals(request,
             "POST http://localhost/api/admin/datacenters/1/racks/1/machines/1/action/ledoff HTTP/1.1");
@@ -1159,14 +1221,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetLocatorLed() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("getLocatorLed", MachineDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.machinePut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "getLocatorLed", MachineDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.machinePut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/racks/1/machines/1/led HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + BladeLocatorLedDto.BASE_MEDIA_TYPE + "\n");
@@ -1174,7 +1237,7 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -1263,8 +1326,9 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
    /*********************** Storage Device ***********************/
 
    public void testListStorageDevices() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("listStorageDevices", DatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listStorageDevices", DatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/storage/devices HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + StorageDevicesDto.BASE_MEDIA_TYPE + "\n");
@@ -1272,14 +1336,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListSupportedStorageDevices() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("listSupportedStorageDevices", DatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listSupportedStorageDevices", DatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/datacenters/1/storage/devices/action/supported HTTP/1.1");
@@ -1288,16 +1353,18 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testCreateStorageDevice() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("createStorageDevice", DatacenterDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "createStorageDevice", DatacenterDto.class,
             StorageDeviceDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(),
-            InfrastructureResources.storageDevicePost());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(
+            method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut(),
+                  InfrastructureResources.storageDevicePost())));
 
       assertRequestLineEquals(request, "POST http://localhost/api/admin/datacenters/1/storage/devices HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + StorageDeviceDto.BASE_MEDIA_TYPE + "\n");
@@ -1306,14 +1373,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeleteStorageDevice() throws SecurityException, NoSuchMethodException {
-      Method method = InfrastructureAsyncApi.class.getMethod("deleteStorageDevice", StorageDeviceDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.storageDevicePut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "deleteStorageDevice", StorageDeviceDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.storageDevicePut())));
 
       assertRequestLineEquals(request, "DELETE http://localhost/api/admin/datacenters/1/storage/devices/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
@@ -1321,14 +1389,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testUpdateStorageDevice() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("updateStorageDevice", StorageDeviceDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.storageDevicePut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "updateStorageDevice", StorageDeviceDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.storageDevicePut())));
 
       assertRequestLineEquals(request, "PUT http://localhost/api/admin/datacenters/1/storage/devices/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + StorageDeviceDto.BASE_MEDIA_TYPE + "\n");
@@ -1337,14 +1406,16 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetStorageDevice() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("getStorageDevice", DatacenterDto.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(), 1);
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "getStorageDevice", DatacenterDto.class,
+            Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut(), 1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/storage/devices/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + StorageDeviceDto.BASE_MEDIA_TYPE + "\n");
@@ -1352,7 +1423,7 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
@@ -1360,8 +1431,9 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
    /*********************** Tier ***********************/
 
    public void testListTiers() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("listTiers", DatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listTiers", DatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/storage/tiers HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + TiersDto.BASE_MEDIA_TYPE + "\n");
@@ -1369,14 +1441,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testUpdateTier() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("updateTier", TierDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.tierPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "updateTier", TierDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.tierPut())));
 
       assertRequestLineEquals(request, "PUT http://localhost/api/admin/datacenters/1/storage/tiers/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + TierDto.BASE_MEDIA_TYPE + "\n");
@@ -1385,14 +1458,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetTier() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("getTier", DatacenterDto.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(), 1);
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "getTier", DatacenterDto.class, Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut(), 1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/storage/tiers/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + TierDto.BASE_MEDIA_TYPE + "\n");
@@ -1400,7 +1474,7 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
@@ -1408,10 +1482,12 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
    /*********************** StoragePool ***********************/
 
    public void testListSyncStoragePools() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("listStoragePools", StorageDeviceDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listStoragePools", StorageDeviceDto.class,
             StoragePoolOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.storageDevicePut(),
-            StoragePoolOptions.builder().sync(true).build());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(
+            method,
+            ImmutableList.<Object> of(InfrastructureResources.storageDevicePut(),
+                  StoragePoolOptions.builder().sync(true).build())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/datacenters/1/storage/devices/1/pools?sync=true HTTP/1.1");
@@ -1420,15 +1496,17 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListStoragePoolsFromTier() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("listStoragePools", TierDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.tierPut(),
-            StoragePoolOptions.builder().sync(true).build());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listStoragePools", TierDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(
+            method,
+            ImmutableList.<Object> of(InfrastructureResources.tierPut(), StoragePoolOptions.builder().sync(true)
+                  .build())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/storage/tiers/1/pools HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + StoragePoolsDto.BASE_MEDIA_TYPE + "\n");
@@ -1436,16 +1514,17 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListStoragePoolsNoParams() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("listStoragePools", StorageDeviceDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listStoragePools", StorageDeviceDto.class,
             StoragePoolOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.storageDevicePut(),
-            StoragePoolOptions.builder().build());
+      GeneratedHttpRequest request = processor
+            .apply(Invocation.create(method, ImmutableList.<Object> of(InfrastructureResources.storageDevicePut(),
+                  StoragePoolOptions.builder().build())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/storage/devices/1/pools HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + StoragePoolsDto.BASE_MEDIA_TYPE + "\n");
@@ -1453,16 +1532,18 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testCreateStoragePool() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("createStoragePool", StorageDeviceDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "createStoragePool", StorageDeviceDto.class,
             StoragePoolDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.storageDevicePut(),
-            InfrastructureResources.storagePoolPost());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(
+            method,
+            ImmutableList.<Object> of(InfrastructureResources.storageDevicePut(),
+                  InfrastructureResources.storagePoolPost())));
 
       assertRequestLineEquals(request, "POST http://localhost/api/admin/datacenters/1/storage/devices/1/pools HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + StoragePoolDto.BASE_MEDIA_TYPE + "\n");
@@ -1471,14 +1552,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testUpdateStoragePool() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("updateStoragePool", StoragePoolDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.storagePoolPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "updateStoragePool", StoragePoolDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.storagePoolPut())));
 
       assertRequestLineEquals(request,
             "PUT http://localhost/api/admin/datacenters/1/storage/devices/1/pools/tururututu HTTP/1.1");
@@ -1488,14 +1570,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeleteStoragePool() throws SecurityException, NoSuchMethodException {
-      Method method = InfrastructureAsyncApi.class.getMethod("deleteStoragePool", StoragePoolDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.storagePoolPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "deleteStoragePool", StoragePoolDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.storagePoolPut())));
 
       assertRequestLineEquals(request,
             "DELETE http://localhost/api/admin/datacenters/1/storage/devices/1/pools/tururututu HTTP/1.1");
@@ -1504,15 +1587,16 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetStoragePool() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("getStoragePool", StorageDeviceDto.class, String.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.storageDevicePut(),
-            InfrastructureResources.storagePoolPut().getIdStorage());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "getStoragePool", StorageDeviceDto.class,
+            String.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
+            InfrastructureResources.storageDevicePut(), InfrastructureResources.storagePoolPut().getIdStorage())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/datacenters/1/storage/devices/1/pools/tururututu HTTP/1.1");
@@ -1521,16 +1605,18 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testRefreshStoragePool() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("refreshStoragePool", StoragePoolDto.class,
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "refreshStoragePool", StoragePoolDto.class,
             StoragePoolOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.storagePoolPut(),
-            StoragePoolOptions.builder().sync(true).build());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(
+            method,
+            ImmutableList.<Object> of(InfrastructureResources.storagePoolPut(), StoragePoolOptions.builder().sync(true)
+                  .build())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/datacenters/1/storage/devices/1/pools/tururututu?sync=true HTTP/1.1");
@@ -1539,7 +1625,7 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, MapHttp4xxCodesToExceptions.class);
+      assertFallbackClassEquals(method, MapHttp4xxCodesToExceptions.class);
 
       checkFilters(request);
    }
@@ -1547,8 +1633,9 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
    /*********************** Network ***********************/
 
    public void testListNetworks() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("listNetworks", DatacenterDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listNetworks", DatacenterDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/network HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VLANNetworksDto.BASE_MEDIA_TYPE + "\n");
@@ -1556,7 +1643,7 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -1564,8 +1651,10 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
    public void testListNetworksWithOptions() throws SecurityException, NoSuchMethodException, IOException {
       NetworkOptions options = NetworkOptions.builder().type(NetworkType.PUBLIC).build();
 
-      Method method = InfrastructureAsyncApi.class.getMethod("listNetworks", DatacenterDto.class, NetworkOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(), options);
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listNetworks", DatacenterDto.class,
+            NetworkOptions.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut(), options)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/network?type=PUBLIC HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VLANNetworksDto.BASE_MEDIA_TYPE + "\n");
@@ -1573,14 +1662,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetNetworks() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("getNetwork", DatacenterDto.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(), 1);
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "getNetwork", DatacenterDto.class, Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut(), 1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/network/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VLANNetworkDto.BASE_MEDIA_TYPE + "\n");
@@ -1588,16 +1678,16 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testCreateNetwork() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class
-            .getMethod("createNetwork", DatacenterDto.class, VLANNetworkDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(),
-            NetworkResources.vlanPost());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "createNetwork", DatacenterDto.class,
+            VLANNetworkDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut(), NetworkResources.vlanPost())));
 
       assertRequestLineEquals(request, "POST http://localhost/api/admin/datacenters/1/network HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VLANNetworkDto.BASE_MEDIA_TYPE + "\n");
@@ -1606,14 +1696,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testUpdateNetwork() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("updateNetwork", VLANNetworkDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, NetworkResources.publicNetworkPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "updateNetwork", VLANNetworkDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(NetworkResources.publicNetworkPut())));
 
       assertRequestLineEquals(request, "PUT http://localhost/api/admin/datacenters/1/network/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VLANNetworkDto.BASE_MEDIA_TYPE + "\n");
@@ -1622,14 +1713,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeleteNetwork() throws SecurityException, NoSuchMethodException {
-      Method method = InfrastructureAsyncApi.class.getMethod("deleteNetwork", VLANNetworkDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, NetworkResources.publicNetworkPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "deleteNetwork", VLANNetworkDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(NetworkResources.publicNetworkPut())));
 
       assertRequestLineEquals(request, "DELETE http://localhost/api/admin/datacenters/1/network/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
@@ -1637,15 +1729,16 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testCheckTagAvailability() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class
-            .getMethod("checkTagAvailability", DatacenterDto.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, InfrastructureResources.datacenterPut(), 2);
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "checkTagAvailability", DatacenterDto.class,
+            Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(InfrastructureResources.datacenterPut(), 2)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/datacenters/1/network/action/checkavailability?tag=2 HTTP/1.1");
@@ -1654,7 +1747,7 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, MapHttp4xxCodesToExceptions.class);
+      assertFallbackClassEquals(method, MapHttp4xxCodesToExceptions.class);
 
       checkFilters(request);
    }
@@ -1662,8 +1755,9 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
    /*********************** Network IPs ***********************/
 
    public void testListPublicIps() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("listPublicIps", VLANNetworkDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, NetworkResources.publicNetworkPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listPublicIps", VLANNetworkDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(NetworkResources.publicNetworkPut())));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/network/1/ips HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + PublicIpsDto.BASE_MEDIA_TYPE + "\n");
@@ -1671,15 +1765,17 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListPublicIpsWithOptions() throws SecurityException, NoSuchMethodException, IOException {
       IpOptions options = IpOptions.builder().startWith(10).build();
-      Method method = InfrastructureAsyncApi.class.getMethod("listPublicIps", VLANNetworkDto.class, IpOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, NetworkResources.publicNetworkPut(), options);
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listPublicIps", VLANNetworkDto.class,
+            IpOptions.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(NetworkResources.publicNetworkPut(), options)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/datacenters/1/network/1/ips?startwith=10 HTTP/1.1");
@@ -1688,14 +1784,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetPublicIp() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("getPublicIp", VLANNetworkDto.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, NetworkResources.publicNetworkPut(), 1);
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "getPublicIp", VLANNetworkDto.class, Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(NetworkResources.publicNetworkPut(), 1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/admin/datacenters/1/network/1/ips/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + PublicIpDto.BASE_MEDIA_TYPE + "\n");
@@ -1703,14 +1800,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListExternalIps() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("listExternalIps", VLANNetworkDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, NetworkResources.externalNetworkPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listExternalIps", VLANNetworkDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(NetworkResources.externalNetworkPut())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/enterprises/1/limits/1/externalnetworks/1/ips HTTP/1.1");
@@ -1719,15 +1817,17 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListExternalIpsWithOptions() throws SecurityException, NoSuchMethodException, IOException {
       IpOptions options = IpOptions.builder().startWith(10).build();
-      Method method = InfrastructureAsyncApi.class.getMethod("listExternalIps", VLANNetworkDto.class, IpOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, NetworkResources.externalNetworkPut(), options);
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listExternalIps", VLANNetworkDto.class,
+            IpOptions.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(NetworkResources.externalNetworkPut(), options)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/enterprises/1/limits/1/externalnetworks/1/ips?startwith=10 HTTP/1.1");
@@ -1736,14 +1836,16 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetExternalIp() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("getExternalIp", VLANNetworkDto.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, NetworkResources.externalNetworkPut(), 1);
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "getExternalIp", VLANNetworkDto.class,
+            Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(NetworkResources.externalNetworkPut(), 1)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/enterprises/1/limits/1/externalnetworks/1/ips/1 HTTP/1.1");
@@ -1752,14 +1854,15 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListUnmanagedIps() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("listUnmanagedIps", VLANNetworkDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, NetworkResources.unmanagedNetworkPut());
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listUnmanagedIps", VLANNetworkDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(NetworkResources.unmanagedNetworkPut())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/enterprises/1/limits/1/externalnetworks/1/ips HTTP/1.1");
@@ -1768,15 +1871,17 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListUnmanagedIpsWithOptions() throws SecurityException, NoSuchMethodException, IOException {
       IpOptions options = IpOptions.builder().startWith(10).build();
-      Method method = InfrastructureAsyncApi.class.getMethod("listUnmanagedIps", VLANNetworkDto.class, IpOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, NetworkResources.unmanagedNetworkPut(), options);
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "listUnmanagedIps", VLANNetworkDto.class,
+            IpOptions.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(NetworkResources.unmanagedNetworkPut(), options)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/enterprises/1/limits/1/externalnetworks/1/ips?startwith=10 HTTP/1.1");
@@ -1785,14 +1890,16 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetUnmanagedIp() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = InfrastructureAsyncApi.class.getMethod("getUnmanagedIp", VLANNetworkDto.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, NetworkResources.externalNetworkPut(), 1);
+      Invokable<?, ?> method = method(InfrastructureAsyncApi.class, "getUnmanagedIp", VLANNetworkDto.class,
+            Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(NetworkResources.externalNetworkPut(), 1)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/enterprises/1/limits/1/externalnetworks/1/ips/1 HTTP/1.1");
@@ -1801,14 +1908,8 @@ public class InfrastructureAsyncApiTest extends BaseAbiquoAsyncApiTest<Infrastru
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
-   }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<InfrastructureAsyncApi>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<InfrastructureAsyncApi>>() {
-      };
    }
 }

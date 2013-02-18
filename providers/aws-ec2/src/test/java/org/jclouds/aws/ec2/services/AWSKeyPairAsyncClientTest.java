@@ -18,21 +18,21 @@
  */
 package org.jclouds.aws.ec2.services;
 
-import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
+import static org.jclouds.reflect.Reflection2.method;
 
+import java.io.IOException;
+
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
 import org.jclouds.ec2.xml.DescribeKeyPairsResponseHandler;
 import org.jclouds.ec2.xml.KeyPairResponseHandler;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.http.functions.ParseSax;
 import org.jclouds.http.functions.ReleasePayloadAndReturn;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
-import com.google.inject.TypeLiteral;
-
+import com.google.common.collect.Lists;
+import com.google.common.reflect.Invokable;
 /**
  * Tests behavior of {@code AWSKeyPairAsyncClient}
  * 
@@ -43,8 +43,8 @@ import com.google.inject.TypeLiteral;
 public class AWSKeyPairAsyncClientTest extends BaseAWSEC2AsyncClientTest<AWSKeyPairAsyncClient> {
 
    public void testCreateKeyPair() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSKeyPairAsyncClient.class.getMethod("createKeyPairInRegion", String.class, String.class);
-      HttpRequest request = processor.createRequest(method, null, "mykey");
+      Invokable<?, ?> method = method(AWSKeyPairAsyncClient.class, "createKeyPairInRegion", String.class, String.class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "mykey"));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -53,31 +53,46 @@ public class AWSKeyPairAsyncClientTest extends BaseAWSEC2AsyncClientTest<AWSKeyP
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, KeyPairResponseHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
+   HttpRequest importKeyPair = HttpRequest.builder().method("POST")
+                                          .endpoint("https://ec2.us-east-1.amazonaws.com/")
+                                          .addHeader("Host", "ec2.us-east-1.amazonaws.com")
+                                          .addFormParam("Action", "ImportKeyPair")
+                                          .addFormParam("KeyName", "mykey")
+                                          .addFormParam("PublicKeyMaterial", "c3NoLXJzYSBBQQ%3D%3D")
+                                          .addFormParam("Signature", "hI3Y8ggtVzXrEMmHp4Kem2/HCAX9hYN2NKjhDBz9SkY=")
+                                          .addFormParam("SignatureMethod", "HmacSHA256")
+                                          .addFormParam("SignatureVersion", "2")
+                                          .addFormParam("Timestamp", "2009-11-08T15%3A54%3A08.897Z")
+                                          .addFormParam("Version", "2011-05-15")
+                                          .addFormParam("AWSAccessKeyId", "identity").build();
+
    public void testImportKeyPair() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSKeyPairAsyncClient.class.getMethod("importKeyPairInRegion", String.class, String.class,
+      Invokable<?, ?> method = method(AWSKeyPairAsyncClient.class, "importKeyPairInRegion", String.class, String.class,
             String.class);
-      HttpRequest request = processor.createRequest(method, null, "mykey", "ssh-rsa AA");
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "mykey", "ssh-rsa AA"));
+
+      request = (GeneratedHttpRequest) request.getFilters().get(0).filter(request);
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
-      assertPayloadEquals(request, "Action=ImportKeyPair&PublicKeyMaterial=c3NoLXJzYSBBQQ%3D%3D&KeyName=mykey",
+      assertPayloadEquals(request, importKeyPair.getPayload().getRawContent().toString(),
             "application/x-www-form-urlencoded", false);
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, KeyPairResponseHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeleteKeyPair() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSKeyPairAsyncClient.class.getMethod("deleteKeyPairInRegion", String.class, String.class);
-      HttpRequest request = processor.createRequest(method, null, "mykey");
+      Invokable<?, ?> method = method(AWSKeyPairAsyncClient.class, "deleteKeyPairInRegion", String.class, String.class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "mykey"));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -86,15 +101,15 @@ public class AWSKeyPairAsyncClientTest extends BaseAWSEC2AsyncClientTest<AWSKeyP
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDescribeKeyPairs() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSKeyPairAsyncClient.class.getMethod("describeKeyPairsInRegion", String.class, Array
-            .newInstance(String.class, 0).getClass());
-      HttpRequest request = processor.createRequest(method, (String) null);
+      Invokable<?, ?> method = method(AWSKeyPairAsyncClient.class, "describeKeyPairsInRegion", String.class,
+            String[].class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList((String) null));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -103,15 +118,15 @@ public class AWSKeyPairAsyncClientTest extends BaseAWSEC2AsyncClientTest<AWSKeyP
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, DescribeKeyPairsResponseHandler.class);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testDescribeKeyPairsArgs() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AWSKeyPairAsyncClient.class.getMethod("describeKeyPairsInRegion", String.class, Array
-            .newInstance(String.class, 0).getClass());
-      HttpRequest request = processor.createRequest(method, null, "1", "2");
+      Invokable<?, ?> method = method(AWSKeyPairAsyncClient.class, "describeKeyPairsInRegion", String.class,
+            String[].class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1", "2"));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -120,15 +135,8 @@ public class AWSKeyPairAsyncClientTest extends BaseAWSEC2AsyncClientTest<AWSKeyP
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, DescribeKeyPairsResponseHandler.class);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(request);
    }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<AWSKeyPairAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<AWSKeyPairAsyncClient>>() {
-      };
-   }
-
 }

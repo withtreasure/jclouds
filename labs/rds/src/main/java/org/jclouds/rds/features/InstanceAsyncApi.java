@@ -20,29 +20,30 @@ package org.jclouds.rds.features;
 
 import static org.jclouds.aws.reference.FormParameters.ACTION;
 
+import javax.inject.Named;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.aws.filters.FormSigner;
 import org.jclouds.collect.IterableWithMarker;
 import org.jclouds.collect.PagedIterable;
+import org.jclouds.rds.RDSFallbacks.NullOnStateDeletingNotFoundOr404;
 import org.jclouds.rds.binders.BindInstanceRequestToFormParams;
 import org.jclouds.rds.domain.Instance;
 import org.jclouds.rds.domain.InstanceRequest;
 import org.jclouds.rds.functions.InstancesToPagedIterable;
-import org.jclouds.rds.functions.ReturnNullOnStateDeletingNotFoundOr404;
 import org.jclouds.rds.options.ListInstancesOptions;
 import org.jclouds.rds.xml.DescribeDBInstancesResultHandler;
 import org.jclouds.rds.xml.InstanceHandler;
 import org.jclouds.rest.annotations.BinderParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.FormParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.Transform;
 import org.jclouds.rest.annotations.VirtualHost;
 import org.jclouds.rest.annotations.XMLResponseParser;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -60,6 +61,7 @@ public interface InstanceAsyncApi {
    /**
     * @see InstanceApi#create
     */
+   @Named("CreateDBInstance")
    @POST
    @Path("/")
    @XMLResponseParser(InstanceHandler.class)
@@ -70,6 +72,7 @@ public interface InstanceAsyncApi {
    /**
     * @see InstanceApi#createInAvailabilityZone
     */
+   @Named("CreateDBInstance")
    @POST
    @Path("/")
    @XMLResponseParser(InstanceHandler.class)
@@ -81,6 +84,7 @@ public interface InstanceAsyncApi {
    /**
     * @see InstanceApi#createMultiAZ
     */
+   @Named("CreateDBInstance")
    @POST
    @Path("/")
    @XMLResponseParser(InstanceHandler.class)
@@ -91,16 +95,18 @@ public interface InstanceAsyncApi {
    /**
     * @see InstanceApi#get()
     */
+   @Named("DescribeDBInstances")
    @POST
    @Path("/")
    @XMLResponseParser(InstanceHandler.class)
    @FormParams(keys = "Action", values = "DescribeDBInstances")
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<Instance> get(@FormParam("DBInstanceIdentifier") String id);
 
    /**
     * @see InstanceApi#list()
     */
+   @Named("DescribeDBInstances")
    @POST
    @Path("/")
    @XMLResponseParser(DescribeDBInstancesResultHandler.class)
@@ -111,6 +117,7 @@ public interface InstanceAsyncApi {
    /**
     * @see InstanceApi#list(ListInstancesOptions)
     */
+   @Named("DescribeDBInstances")
    @POST
    @Path("/")
    @XMLResponseParser(DescribeDBInstancesResultHandler.class)
@@ -120,20 +127,22 @@ public interface InstanceAsyncApi {
    /**
     * @see InstanceApi#delete()
     */
+   @Named("DeleteDBInstance")
    @POST
    @Path("/")
    @XMLResponseParser(InstanceHandler.class)
-   @ExceptionParser(ReturnNullOnStateDeletingNotFoundOr404.class)
+   @Fallback(NullOnStateDeletingNotFoundOr404.class)
    @FormParams(keys = { ACTION, "SkipFinalSnapshot" }, values = { "DeleteDBInstance", "true" })
    ListenableFuture<Instance> delete(@FormParam("DBInstanceIdentifier") String id);
 
    /**
     * @see InstanceApi#deleteAndSaveSnapshot
     */
+   @Named("DeleteDBInstance")
    @POST
    @Path("/")
    @XMLResponseParser(InstanceHandler.class)
-   @ExceptionParser(ReturnNullOnStateDeletingNotFoundOr404.class)
+   @Fallback(NullOnStateDeletingNotFoundOr404.class)
    @FormParams(keys = ACTION, values = "DeleteDBInstance")
    ListenableFuture<Instance> deleteAndSaveSnapshot(@FormParam("DBInstanceIdentifier") String id,
             @FormParam("FinalDBSnapshotIdentifier") String snapshotId);

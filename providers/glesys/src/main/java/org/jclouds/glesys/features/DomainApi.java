@@ -19,9 +19,6 @@
 package org.jclouds.glesys.features;
 
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import org.jclouds.concurrent.Timeout;
 import org.jclouds.glesys.domain.Domain;
 import org.jclouds.glesys.domain.DomainRecord;
 import org.jclouds.glesys.options.AddDomainOptions;
@@ -37,9 +34,8 @@ import com.google.common.collect.FluentIterable;
  *
  * @author Adam Lowe
  * @see DomainAsyncApi
- * @see <a href="https://customer.glesys.com/api.php" />
+ * @see <a href="https://github.com/GleSYS/API/wiki/API-Documentation" />
  */
-@Timeout(duration = 30, timeUnit = TimeUnit.SECONDS)
 public interface DomainApi {
 
    /**

@@ -19,6 +19,7 @@
 package org.jclouds.azureblob;
 
 import static org.jclouds.blobstore.reference.BlobStoreConstants.PROPERTY_USER_METADATA_PREFIX;
+import static org.jclouds.reflect.Reflection2.typeToken;
 
 import java.net.URI;
 import java.util.Properties;
@@ -42,6 +43,7 @@ import com.google.inject.Module;
 public class AzureBlobApiMetadata extends BaseRestApiMetadata {
 
    public static final TypeToken<RestContext<AzureBlobClient, AzureBlobAsyncClient>> CONTEXT_TOKEN = new TypeToken<RestContext<AzureBlobClient, AzureBlobAsyncClient>>() {
+      private static final long serialVersionUID = 1L;
    };
    
    private static Builder builder() {
@@ -67,7 +69,7 @@ public class AzureBlobApiMetadata extends BaseRestApiMetadata {
       return properties;
    }
    
-   public static class Builder extends BaseRestApiMetadata.Builder {
+   public static class Builder extends BaseRestApiMetadata.Builder<Builder> {
       protected Builder(){
          super(AzureBlobClient.class, AzureBlobAsyncClient.class);
          id("azureblob")
@@ -78,7 +80,7 @@ public class AzureBlobApiMetadata extends BaseRestApiMetadata {
          .defaultEndpoint("https://${jclouds.identity}.blob.core.windows.net")
          .documentation(URI.create("http://msdn.microsoft.com/en-us/library/dd135733.aspx"))
          .defaultProperties(AzureBlobApiMetadata.defaultProperties())
-         .view(TypeToken.of(BlobStoreContext.class))
+         .view(typeToken(BlobStoreContext.class))
          .defaultModules(ImmutableSet.<Class<? extends Module>>of(AzureBlobRestClientModule.class, AzureBlobStoreContextModule.class));
       }
       
@@ -88,10 +90,8 @@ public class AzureBlobApiMetadata extends BaseRestApiMetadata {
       }
 
       @Override
-      public Builder fromApiMetadata(ApiMetadata in) {
-         super.fromApiMetadata(in);
+      protected Builder self() {
          return this;
       }
    }
-
 }

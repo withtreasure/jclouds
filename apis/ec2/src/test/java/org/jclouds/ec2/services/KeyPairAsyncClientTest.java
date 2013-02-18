@@ -18,20 +18,19 @@
  */
 package org.jclouds.ec2.services;
 
-import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
+import static org.jclouds.reflect.Reflection2.method;
 
+import java.io.IOException;
+
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
 import org.jclouds.ec2.xml.DescribeKeyPairsResponseHandler;
-import org.jclouds.http.HttpRequest;
 import org.jclouds.http.functions.ParseSax;
 import org.jclouds.http.functions.ReleasePayloadAndReturn;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
-import com.google.inject.TypeLiteral;
-
+import com.google.common.collect.Lists;
+import com.google.common.reflect.Invokable;
 /**
  * Tests behavior of {@code KeyPairAsyncClient}
  * 
@@ -42,8 +41,8 @@ import com.google.inject.TypeLiteral;
 public class KeyPairAsyncClientTest extends BaseEC2AsyncClientTest<KeyPairAsyncClient> {
 
    public void testDeleteKeyPair() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = KeyPairAsyncClient.class.getMethod("deleteKeyPairInRegion", String.class, String.class);
-      HttpRequest request = processor.createRequest(method, null, "mykey");
+      Invokable<?, ?> method = method(KeyPairAsyncClient.class, "deleteKeyPairInRegion", String.class, String.class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "mykey"));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -52,15 +51,14 @@ public class KeyPairAsyncClientTest extends BaseEC2AsyncClientTest<KeyPairAsyncC
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDescribeKeyPairs() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = KeyPairAsyncClient.class.getMethod("describeKeyPairsInRegion", String.class, Array.newInstance(
-            String.class, 0).getClass());
-      HttpRequest request = processor.createRequest(method, (String) null);
+      Invokable<?, ?> method = method(KeyPairAsyncClient.class, "describeKeyPairsInRegion", String.class, String[].class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList((String) null));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -69,15 +67,14 @@ public class KeyPairAsyncClientTest extends BaseEC2AsyncClientTest<KeyPairAsyncC
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, DescribeKeyPairsResponseHandler.class);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testDescribeKeyPairsArgs() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = KeyPairAsyncClient.class.getMethod("describeKeyPairsInRegion", String.class, Array.newInstance(
-            String.class, 0).getClass());
-      HttpRequest request = processor.createRequest(method, null, "1", "2");
+      Invokable<?, ?> method = method(KeyPairAsyncClient.class, "describeKeyPairsInRegion", String.class, String[].class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "1", "2"));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -86,15 +83,8 @@ public class KeyPairAsyncClientTest extends BaseEC2AsyncClientTest<KeyPairAsyncC
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, DescribeKeyPairsResponseHandler.class);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(request);
    }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<KeyPairAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<KeyPairAsyncClient>>() {
-      };
-   }
-
 }

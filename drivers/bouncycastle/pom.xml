@@ -65,9 +65,7 @@
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk16</artifactId>
             <version>1.46</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
-
 
 </project>

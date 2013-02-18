@@ -20,11 +20,7 @@ package org.jclouds.cloudsigma.compute;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Iterables.filter;
 import static org.jclouds.concurrent.FutureIterables.transformParallel;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
 import javax.annotation.Resource;
 import javax.inject.Inject;
@@ -43,6 +39,7 @@ import org.jclouds.cloudsigma.domain.ServerInfo;
 import org.jclouds.cloudsigma.options.CloneDriveOptions;
 import org.jclouds.cloudsigma.reference.CloudSigmaConstants;
 import org.jclouds.cloudsigma.util.Servers;
+import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.ComputeServiceAdapter;
 import org.jclouds.compute.domain.Hardware;
 import org.jclouds.compute.domain.HardwareBuilder;
@@ -55,17 +52,19 @@ import org.jclouds.compute.reference.ComputeServiceConstants;
 import org.jclouds.domain.Location;
 import org.jclouds.domain.LoginCredentials;
 import org.jclouds.logging.Logger;
-import org.jclouds.util.Iterables2;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 /**
@@ -89,7 +88,7 @@ public class CloudSigmaComputeServiceAdapter implements
    private final Predicate<DriveInfo> driveNotClaimed;
    private final String defaultVncPassword;
    private final LoadingCache<String, DriveInfo> cache;
-   private final ExecutorService executor;
+   private final ListeningExecutorService userExecutor;
 
    @Resource
    @Named(ComputeServiceConstants.COMPUTE_LOGGER)
@@ -98,13 +97,13 @@ public class CloudSigmaComputeServiceAdapter implements
    @Inject
    public CloudSigmaComputeServiceAdapter(CloudSigmaClient client, Predicate<DriveInfo> driveNotClaimed,
          @Named(CloudSigmaConstants.PROPERTY_VNC_PASSWORD) String defaultVncPassword,
-         LoadingCache<String, DriveInfo> cache, @Named(Constants.PROPERTY_USER_THREADS) ExecutorService executor) {
+         LoadingCache<String, DriveInfo> cache, @Named(Constants.PROPERTY_USER_THREADS) ListeningExecutorService userExecutor) {
       this.client = checkNotNull(client, "client");
       this.driveNotClaimed = checkNotNull(driveNotClaimed, "driveNotClaimed");
       this.defaultVncPassword = checkNotNull(defaultVncPassword, "defaultVncPassword");
       checkArgument(defaultVncPassword.length() <= 8, "vnc passwords should be less that 8 characters!"); 
       this.cache = checkNotNull(cache, "cache");
-      this.executor = checkNotNull(executor, "executor");
+      this.userExecutor = checkNotNull(userExecutor, "userExecutor");
    }
 
    @Override
@@ -170,11 +169,11 @@ public class CloudSigmaComputeServiceAdapter implements
     */
    @Override
    public Iterable<DriveInfo> listImages() {
-      Iterable<? extends DriveInfo> drives = transformParallel(client.listStandardDrives(),
-            new Function<String, Future<? extends DriveInfo>>() {
+      return FluentIterable.from(transformParallel(client.listStandardDrives(),
+            new Function<String, ListenableFuture<? extends DriveInfo>>() {
 
                @Override
-               public Future<DriveInfo> apply(String input) {
+               public ListenableFuture<DriveInfo> apply(String input) {
                   try {
                      return Futures.immediateFuture(cache.getUnchecked(input));
                   } catch (CacheLoader.InvalidCacheLoadException e) {
@@ -189,8 +188,7 @@ public class CloudSigmaComputeServiceAdapter implements
                public String toString() {
                   return "seedDriveCache()";
                }
-            }, executor, null, logger, "drives");
-      return Iterables2.concreteCopy(filter(drives, PREINSTALLED_DISK));
+            }, userExecutor, null, logger, "drives")).filter(PREINSTALLED_DISK);
    }
 
    @SuppressWarnings("unchecked")

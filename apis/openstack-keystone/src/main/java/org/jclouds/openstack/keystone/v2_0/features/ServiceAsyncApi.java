@@ -20,18 +20,18 @@ package org.jclouds.openstack.keystone.v2_0.features;
 
 import java.util.Set;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
 import org.jclouds.openstack.keystone.v2_0.domain.Tenant;
 import org.jclouds.openstack.keystone.v2_0.filters.AuthenticateRequest;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.SelectJson;
-import org.jclouds.rest.annotations.SkipEncoding;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -45,17 +45,17 @@ import com.google.common.util.concurrent.ListenableFuture;
  *      />
  * @author Adam Lowe
  */
-@SkipEncoding( { '/', '=' })
 public interface ServiceAsyncApi {
 
    /**
     * @see ServiceApi#listTenants()
     */
+   @Named("service:listtenants")
    @GET
    @SelectJson("tenants")
    @Consumes(MediaType.APPLICATION_JSON)
    @Path("/tenants")
    @RequestFilters(AuthenticateRequest.class)
-   @ExceptionParser(ReturnEmptySetOnNotFoundOr404.class)
+   @Fallback(EmptySetOnNotFoundOr404.class)
    ListenableFuture<? extends Set<? extends Tenant>> listTenants();
 }

@@ -20,20 +20,21 @@ package org.jclouds.cloudstack.features;
 
 import java.util.Set;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.cloudstack.domain.ConfigurationEntry;
 import org.jclouds.cloudstack.filters.AuthenticationFilter;
 import org.jclouds.cloudstack.options.ListConfigurationEntriesOptions;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.QueryParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.SelectJson;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -53,21 +54,23 @@ public interface GlobalConfigurationAsyncClient extends ConfigurationAsyncClient
    /**
     * @see GlobalConfigurationClient#listConfigurationEntries
     */
+   @Named("listConfigurations")
    @GET
    @QueryParams(keys = { "command", "listAll" }, values = { "listConfigurations", "true" })
    @SelectJson("configuration")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnEmptySetOnNotFoundOr404.class)
+   @Fallback(EmptySetOnNotFoundOr404.class)
    ListenableFuture<Set<ConfigurationEntry>> listConfigurationEntries(ListConfigurationEntriesOptions... options);
 
    /**
     * @see GlobalConfigurationClient#updateConfigurationEntry
     */
+   @Named("updateConfiguration")
    @GET
    @QueryParams(keys = "command", values = "updateConfiguration")
    @SelectJson("configuration")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<ConfigurationEntry> updateConfigurationEntry(
       @QueryParam("name") String name, @QueryParam("value") String value);
 }

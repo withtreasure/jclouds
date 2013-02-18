@@ -20,25 +20,26 @@ package org.jclouds.cloudstack.features;
 
 import java.util.Set;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.cloudstack.domain.AsyncCreateResponse;
 import org.jclouds.cloudstack.domain.PublicIPAddress;
 import org.jclouds.cloudstack.filters.AuthenticationFilter;
-import org.jclouds.cloudstack.functions.ReturnVoidOnNotFoundOr404OrUnableToFindAccountOwner;
+import org.jclouds.cloudstack.functions.CloudStackFallbacks.VoidOnNotFoundOr404OrUnableToFindAccountOwner;
 import org.jclouds.cloudstack.options.AssociateIPAddressOptions;
 import org.jclouds.cloudstack.options.ListPublicIPAddressesOptions;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.OnlyElement;
 import org.jclouds.rest.annotations.QueryParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.SelectJson;
 import org.jclouds.rest.annotations.Unwrap;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -57,27 +58,30 @@ public interface AddressAsyncClient {
    /**
     * @see AddressClient#listPublicIPAddresses
     */
+   @Named("listPublicIpAddresses")
    @GET
    @QueryParams(keys = { "command", "listAll" }, values = { "listPublicIpAddresses", "true" })
    @SelectJson("publicipaddress")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnEmptySetOnNotFoundOr404.class)
+   @Fallback(EmptySetOnNotFoundOr404.class)
    ListenableFuture<Set<PublicIPAddress>> listPublicIPAddresses(ListPublicIPAddressesOptions... options);
 
    /**
     * @see AddressClient#getPublicIPAddress
     */
+   @Named("listPublicIpAddresses")
    @GET
    @QueryParams(keys = { "command", "listAll" }, values = { "listPublicIpAddresses", "true" })
    @SelectJson("publicipaddress")
    @OnlyElement
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<PublicIPAddress> getPublicIPAddress(@QueryParam("id") String id);
 
    /**
     * @see AddressClient#associateIPAddressInZone
     */
+   @Named("associateIpAddress")
    @GET
    @QueryParams(keys = "command", values = "associateIpAddress")
    @Unwrap
@@ -88,9 +92,10 @@ public interface AddressAsyncClient {
    /**
     * @see AddressClient#disassociateIPAddress
     */
+   @Named("disassociateIpAddress")
    @GET
    @QueryParams(keys = "command", values = "disassociateIpAddress")
-   @ExceptionParser(ReturnVoidOnNotFoundOr404OrUnableToFindAccountOwner.class)
+   @Fallback(VoidOnNotFoundOr404OrUnableToFindAccountOwner.class)
    ListenableFuture<Void> disassociateIPAddress(@QueryParam("id") String id);
 
 }

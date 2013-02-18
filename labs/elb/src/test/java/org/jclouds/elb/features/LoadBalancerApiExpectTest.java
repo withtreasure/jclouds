@@ -24,7 +24,6 @@ import static org.testng.Assert.assertNull;
 
 import java.util.TimeZone;
 
-import org.jclouds.collect.IterableWithMarkers;
 import org.jclouds.elb.ELBApi;
 import org.jclouds.elb.domain.LoadBalancer;
 import org.jclouds.elb.internal.BaseELBApiExpectTest;
@@ -55,7 +54,7 @@ public class LoadBalancerApiExpectTest extends BaseELBApiExpectTest {
                                   payloadFromStringWithContentType(
                                        "Action=DescribeLoadBalancers" +
                                              "&LoadBalancerNames.member.1=name" +
-                                             "&Signature=EYzZgYDMGi9uFZU%2BVh%2FmmsJ9KmHxm5vEAF%2BhGF12BP4%3D" +
+                                             "&Signature=EYzZgYDMGi9uFZU%2BVh/mmsJ9KmHxm5vEAF%2BhGF12BP4%3D" +
                                              "&SignatureMethod=HmacSHA256" +
                                              "&SignatureVersion=2" +
                                              "&Timestamp=2009-11-08T15%3A54%3A08.897Z" +
@@ -93,7 +92,7 @@ public class LoadBalancerApiExpectTest extends BaseELBApiExpectTest {
                                  .payload(
                                     payloadFromStringWithContentType(
                                              "Action=DescribeLoadBalancers" +
-                                             "&Signature=3pErfVJXXe4EndOr3nPMu2%2F5eO8aCvwcOaI%2BL64VMqg%3D" +
+                                             "&Signature=3pErfVJXXe4EndOr3nPMu2/5eO8aCvwcOaI%2BL64VMqg%3D" +
                                              "&SignatureMethod=HmacSHA256" +
                                              "&SignatureVersion=2" +
                                              "&Timestamp=2009-11-08T15%3A54%3A08.897Z" +
@@ -127,7 +126,7 @@ public class LoadBalancerApiExpectTest extends BaseELBApiExpectTest {
                   payloadFromStringWithContentType(
                            "Action=DescribeLoadBalancers" +
                            "&Marker=MARKER" +
-                           "&Signature=%2FJttkIXuYljhZLJOPYyn%2BYIkDhD9skmePH3LYEnqmes%3D" +
+                           "&Signature=/JttkIXuYljhZLJOPYyn%2BYIkDhD9skmePH3LYEnqmes%3D" +
                            "&SignatureMethod=HmacSHA256" +
                            "&SignatureVersion=2" +
                            "&Timestamp=2009-11-08T15%3A54%3A08.897Z" +
@@ -145,7 +144,7 @@ public class LoadBalancerApiExpectTest extends BaseELBApiExpectTest {
       LoadBalancer lb1 = new GetLoadBalancerResponseTest().expected().toBuilder().name("my-load-balancer-1").build();
       LoadBalancer lb2 = new GetLoadBalancerResponseTest().expected();
       
-      assertEquals(apiWhenExist.getLoadBalancerApi().list().concat().toImmutableSet(), ImmutableSet.of(lb1, lb2));
+      assertEquals(apiWhenExist.getLoadBalancerApi().list().concat().toSet(), ImmutableSet.of(lb1, lb2));
    }
    
    public void testList2PagesWhenResponseIs2xxInEU() throws Exception {
@@ -157,7 +156,7 @@ public class LoadBalancerApiExpectTest extends BaseELBApiExpectTest {
                .payload(
                   payloadFromStringWithContentType(
                            "Action=DescribeLoadBalancers" +
-                           "&Signature=%2FT6QECRsE52DT6mA7AkBy4%2Bdnvy4RXU3nNt56td0GTo%3D" +
+                           "&Signature=/T6QECRsE52DT6mA7AkBy4%2Bdnvy4RXU3nNt56td0GTo%3D" +
                            "&SignatureMethod=HmacSHA256" +
                            "&SignatureVersion=2" +
                            "&Timestamp=2009-11-08T15%3A54%3A08.897Z" +
@@ -204,7 +203,7 @@ public class LoadBalancerApiExpectTest extends BaseELBApiExpectTest {
       ELBApi apiWhenDontExist = requestSendsResponse(
             list, listResponse);
 
-      assertEquals(apiWhenDontExist.getLoadBalancerApi().list().get(0), IterableWithMarkers.EMPTY);
+      assertEquals(apiWhenDontExist.getLoadBalancerApi().list().get(0).toSet(), ImmutableSet.of());
 
    }
    
@@ -217,7 +216,7 @@ public class LoadBalancerApiExpectTest extends BaseELBApiExpectTest {
                        .payload(payloadFromStringWithContentType(
                                                   "Action=DescribeLoadBalancers" +
                                                   "&Marker=MARKER" +
-                                                  "&Signature=%2FJttkIXuYljhZLJOPYyn%2BYIkDhD9skmePH3LYEnqmes%3D" +
+                                                  "&Signature=/JttkIXuYljhZLJOPYyn%2BYIkDhD9skmePH3LYEnqmes%3D" +
                                                   "&SignatureMethod=HmacSHA256" +
                                                   "&SignatureVersion=2" +
                                                   "&Timestamp=2009-11-08T15%3A54%3A08.897Z" +

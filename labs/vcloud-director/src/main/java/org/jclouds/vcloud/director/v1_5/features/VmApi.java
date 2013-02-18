@@ -19,15 +19,12 @@
 package org.jclouds.vcloud.director.v1_5.features;
 
 import java.net.URI;
-import java.util.concurrent.TimeUnit;
 
-import org.jclouds.concurrent.Timeout;
-import org.jclouds.rest.annotations.Delegate;
-import org.jclouds.rest.annotations.EndpointParam;
 import org.jclouds.vcloud.director.v1_5.domain.ProductSectionList;
 import org.jclouds.vcloud.director.v1_5.domain.RasdItemsList;
 import org.jclouds.vcloud.director.v1_5.domain.ScreenTicket;
 import org.jclouds.vcloud.director.v1_5.domain.Task;
+import org.jclouds.vcloud.director.v1_5.domain.VApp;
 import org.jclouds.vcloud.director.v1_5.domain.Vm;
 import org.jclouds.vcloud.director.v1_5.domain.VmPendingQuestion;
 import org.jclouds.vcloud.director.v1_5.domain.VmQuestionAnswer;
@@ -41,7 +38,6 @@ import org.jclouds.vcloud.director.v1_5.domain.section.NetworkConnectionSection;
 import org.jclouds.vcloud.director.v1_5.domain.section.OperatingSystemSection;
 import org.jclouds.vcloud.director.v1_5.domain.section.RuntimeInfoSection;
 import org.jclouds.vcloud.director.v1_5.domain.section.VirtualHardwareSection;
-import org.jclouds.vcloud.director.v1_5.functions.href.VmURNToHref;
 
 /**
  * Provides synchronous access to {@link Vm} objects.
@@ -50,7 +46,6 @@ import org.jclouds.vcloud.director.v1_5.functions.href.VmURNToHref;
  * @see VmAsyncApi
  * @version 1.5
  */
-@Timeout(duration = 180, timeUnit = TimeUnit.SECONDS)
 public interface VmApi {
 
    /**
@@ -602,14 +597,4 @@ public interface VmApi {
    Task editVirtualHardwareSectionSerialPorts(String vmUrn, RasdItemsList rasdItemsList);
 
    Task editVirtualHardwareSectionSerialPorts(URI vmHref, RasdItemsList rasdItemsList);
-
-   /**
-    * Synchronous access to {@link Vm} {@link Metadata} features.
-    */
-   @Delegate
-   MetadataApi.Writeable getMetadataApi(@EndpointParam(parser = VmURNToHref.class) String vmUrn);
-
-   @Delegate
-   MetadataApi.Writeable getMetadataApi(@EndpointParam URI vmHref);
-
 }

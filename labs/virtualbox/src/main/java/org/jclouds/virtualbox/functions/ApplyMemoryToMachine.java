@@ -19,14 +19,14 @@
 
 package org.jclouds.virtualbox.functions;
 
-import org.virtualbox_4_1.IMachine;
+import org.virtualbox_4_2.IMachine;
 
 import com.google.common.base.Function;
 
 /**
  * @author Mattias Holmqvist
  */
-public class ApplyMemoryToMachine implements Function<IMachine, Object> {
+public class ApplyMemoryToMachine implements Function<IMachine, Void> {
 
    private long memorySize;
 
@@ -35,7 +35,7 @@ public class ApplyMemoryToMachine implements Function<IMachine, Object> {
    }
 
    @Override
-   public Object apply(IMachine machine) {
+   public Void apply(IMachine machine) {
       machine.setMemorySize(memorySize);
       machine.saveSettings();
       return null;

@@ -20,6 +20,7 @@ package org.jclouds.openstack.keystone.v2_0.features;
 
 import java.util.Set;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
@@ -27,18 +28,17 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
+import org.jclouds.Fallbacks.FalseOnNotFoundOr404;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.openstack.keystone.v2_0.domain.Endpoint;
 import org.jclouds.openstack.keystone.v2_0.domain.Token;
 import org.jclouds.openstack.keystone.v2_0.domain.User;
 import org.jclouds.openstack.keystone.v2_0.filters.AuthenticateRequest;
 import org.jclouds.openstack.v2_0.services.Identity;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.SelectJson;
-import org.jclouds.rest.annotations.SkipEncoding;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnFalseOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -52,43 +52,46 @@ import com.google.common.util.concurrent.ListenableFuture;
  *      />
  * @author Adam Lowe
  */
-@SkipEncoding({ '/', '=' })
 @org.jclouds.rest.annotations.Endpoint(Identity.class)
 public interface TokenAsyncApi {
 
    
    /** @see TokenApi#get(String) */
+   @Named("token:get")
    @GET
    @SelectJson("token")
    @Consumes(MediaType.APPLICATION_JSON)
    @Path("/tokens/{token}")
    @RequestFilters(AuthenticateRequest.class)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<? extends Token> get(@PathParam("token") String token);
 
    /** @see TokenApi#getUserOfToken(String) */
+   @Named("token:getuser")
    @GET
    @SelectJson("user")
    @Consumes(MediaType.APPLICATION_JSON)
    @Path("/tokens/{token}")
    @RequestFilters(AuthenticateRequest.class)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<? extends User> getUserOfToken(@PathParam("token") String token);
 
    /** @see TokenApi#isValid(String) */
+   @Named("token:valid")
    @HEAD
    @Path("/tokens/{token}")
    @RequestFilters(AuthenticateRequest.class)
-   @ExceptionParser(ReturnFalseOnNotFoundOr404.class)
+   @Fallback(FalseOnNotFoundOr404.class)
    ListenableFuture<Boolean> isValid(@PathParam("token") String token);
 
    /** @see TokenApi#listEndpointsForToken(String) */
+   @Named("token:listendpoints")
    @GET
    @SelectJson("endpoints")
    @Consumes(MediaType.APPLICATION_JSON)
    @Path("/tokens/{token}/endpoints")
    @RequestFilters(AuthenticateRequest.class)
-   @ExceptionParser(ReturnEmptySetOnNotFoundOr404.class)
+   @Fallback(EmptySetOnNotFoundOr404.class)
    ListenableFuture<? extends Set<? extends Endpoint>> listEndpointsForToken(@PathParam("token") String token);
 
 }

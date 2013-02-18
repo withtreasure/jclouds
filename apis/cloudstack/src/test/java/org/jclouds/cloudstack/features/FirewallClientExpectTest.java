@@ -24,6 +24,7 @@ import static org.testng.Assert.assertNull;
 import java.net.URI;
 import java.util.Set;
 
+import org.jclouds.cloudstack.CloudStackApiMetadata;
 import org.jclouds.cloudstack.CloudStackContext;
 import org.jclouds.cloudstack.domain.AsyncCreateResponse;
 import org.jclouds.cloudstack.domain.FirewallRule;
@@ -131,7 +132,7 @@ public class FirewallClientExpectTest extends BaseCloudStackExpectTest<FirewallC
             .method("GET")
             .endpoint(
                URI.create("http://localhost:8080/client/api?response=json&command=createFirewallRule&" +
-                  "ipaddressid=2&protocol=TCP&apiKey=identity&signature=d0MZ%2FyhQPAaV%2BYQmfZsQtQL2C28%3D"))
+                  "ipaddressid=2&protocol=TCP&apiKey=identity&signature=d0MZ/yhQPAaV%2BYQmfZsQtQL2C28%3D"))
             .addHeader("Accept", "application/json")
             .build(),
          HttpResponse.builder()
@@ -150,7 +151,7 @@ public class FirewallClientExpectTest extends BaseCloudStackExpectTest<FirewallC
             .method("GET")
             .endpoint(
                URI.create("http://localhost:8080/client/api?response=json&" +
-                  "command=deleteFirewallRule&id=2015&apiKey=identity&signature=%2FT5FAO2yGPctaPmg7TEtIEFW3EU%3D"))
+                  "command=deleteFirewallRule&id=2015&apiKey=identity&signature=/T5FAO2yGPctaPmg7TEtIEFW3EU%3D"))
             .build(),
          HttpResponse.builder()
             .statusCode(200)
@@ -243,14 +244,19 @@ public class FirewallClientExpectTest extends BaseCloudStackExpectTest<FirewallC
 
    public void testCreatePortForwardingRuleForVirtualMachine() {
       FirewallClient client = requestSendsResponse(
-         HttpRequest.builder()
-            .method("GET")
-            .endpoint(
-               URI.create("http://localhost:8080/client/api?response=json&command=createPortForwardingRule&" +
-                  "ipaddressid=2&publicport=22&protocol=tcp&virtualmachineid=1234&privateport=22&" +
-                  "apiKey=identity&signature=84dtGzQp0G6k3z3Gkc3F%2FHBNS2Y%3D"))
-            .addHeader("Accept", "application/json")
-            .build(),
+         HttpRequest.builder().method("GET")
+                    .endpoint("http://localhost:8080/client/api")
+                    .addQueryParam("response", "json")
+                    .addQueryParam("command", "createPortForwardingRule")
+                    .addQueryParam("ipaddressid", "2")
+                    .addQueryParam("protocol", "tcp")
+                    .addQueryParam("publicport", "22")
+                    .addQueryParam("virtualmachineid", "1234")
+                    .addQueryParam("privateport", "22")
+                    .addQueryParam("apiKey", "identity")
+                    .addQueryParam("signature", "84dtGzQp0G6k3z3Gkc3F/HBNS2Y%3D")
+                    .addHeader("Accept", "application/json")
+                    .build(),
          HttpResponse.builder()
             .statusCode(200)
             .payload(payloadFromResource("/createportforwardingrulesresponse.json"))
@@ -280,6 +286,6 @@ public class FirewallClientExpectTest extends BaseCloudStackExpectTest<FirewallC
    
    @Override
    protected FirewallClient clientFrom(CloudStackContext context) {
-      return context.getProviderSpecificContext().getApi().getFirewallClient();
+      return context.unwrap(CloudStackApiMetadata.CONTEXT_TOKEN).getApi().getFirewallClient();
    }
 }

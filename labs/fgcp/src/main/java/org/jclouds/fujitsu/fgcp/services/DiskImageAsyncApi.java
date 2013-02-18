@@ -18,14 +18,12 @@
  */
 package org.jclouds.fujitsu.fgcp.services;
 
-import java.util.concurrent.TimeUnit;
-
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
-import org.jclouds.concurrent.Timeout;
 import org.jclouds.fujitsu.fgcp.FGCPAsyncApi;
 import org.jclouds.fujitsu.fgcp.compute.functions.SingleElementResponseToElement;
 import org.jclouds.fujitsu.fgcp.domain.DiskImage;
@@ -48,15 +46,16 @@ import com.google.common.util.concurrent.ListenableFuture;
 @QueryParams(keys = RequestParameters.VERSION, values = FGCPAsyncApi.VERSION)
 @PayloadParams(keys = RequestParameters.VERSION, values = FGCPAsyncApi.VERSION)
 @Consumes(MediaType.TEXT_XML)
-@Timeout(duration = 60, timeUnit = TimeUnit.SECONDS)
 public interface DiskImageAsyncApi {
 
+   @Named("GetDiskImageAttributes")
    @GET
    @JAXBResponseParser
    @QueryParams(keys = "Action", values = "GetDiskImageAttributes")
    @Transform(SingleElementResponseToElement.class)
    ListenableFuture<DiskImage> get(@QueryParam("diskImageId") String id);
 
+   @Named("UpdateDiskImageAttribute")
    @GET
    @JAXBResponseParser
    @QueryParams(keys = "Action", values = "UpdateDiskImageAttribute")
@@ -66,6 +65,7 @@ public interface DiskImageAsyncApi {
          @QueryParam("attributeName") String name,
          @QueryParam("attributeValue") String value);
 
+   @Named("UnregisterDiskImage")
    @GET
    @JAXBResponseParser
    @QueryParams(keys = "Action", values = "UnregisterDiskImage")

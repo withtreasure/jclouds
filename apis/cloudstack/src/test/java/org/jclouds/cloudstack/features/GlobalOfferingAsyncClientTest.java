@@ -17,9 +17,9 @@
  * under the License.
  */
 package org.jclouds.cloudstack.features;
+import static org.jclouds.reflect.Reflection2.method;
 
-import java.lang.reflect.Method;
-
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.cloudstack.internal.BaseCloudStackAsyncClientTest;
 import org.jclouds.cloudstack.options.CreateDiskOfferingOptions;
 import org.jclouds.cloudstack.options.CreateServiceOfferingOptions;
@@ -29,11 +29,11 @@ import org.jclouds.cloudstack.options.UpdateServiceOfferingOptions;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.http.functions.ParseFirstJsonValueNamed;
 import org.jclouds.http.functions.ReleasePayloadAndReturn;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
-import com.google.inject.TypeLiteral;
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 
 /**
  * Tests behavior of {@code GlobalOfferingAsyncClient}
@@ -43,27 +43,36 @@ import com.google.inject.TypeLiteral;
 @Test(groups = "unit", testName = "GlobalOfferingAsyncClientTest")
 public class GlobalOfferingAsyncClientTest extends BaseCloudStackAsyncClientTest<GlobalOfferingAsyncClient> {
 
-   public void testCreateServiceOffering() throws Exception {
-      Method method = GlobalOfferingAsyncClient.class.getMethod("createServiceOffering",
-         String.class, String.class, int.class, int.class, int.class, CreateServiceOfferingOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method, "name", "displayText", 1, 2, 3);
+   HttpRequest createServiceOffering = HttpRequest.builder().method("GET")
+                                                  .endpoint("http://localhost:8080/client/api")
+                                                  .addQueryParam("response", "json")
+                                                  .addQueryParam("command", "createServiceOffering")
+                                                  .addQueryParam("name", "name")
+                                                  .addQueryParam("displaytext", "displayText")
+                                                  .addQueryParam("cpunumber", "1")
+                                                  .addQueryParam("cpuspeed", "2")
+                                                  .addQueryParam("memory", "3").build();
 
-      assertRequestLineEquals(httpRequest,
-         "GET http://localhost:8080/client/api?response=json&command=createServiceOffering&name=name&cpunumber=1&displaytext=displayText&cpuspeed=2&memory=3 HTTP/1.1");
+   public void testCreateServiceOffering() throws Exception {
+      Invokable<?, ?> method = method(GlobalOfferingAsyncClient.class, "createServiceOffering",
+         String.class, String.class, int.class, int.class, int.class, CreateServiceOfferingOptions[].class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of("name", "displayText", 1, 2, 3));
+
+      assertRequestLineEquals(httpRequest, createServiceOffering.getRequestLine());
       assertNonPayloadHeadersEqual(httpRequest, "Accept: application/json\n");
       assertPayloadEquals(httpRequest, null, null, false);
 
       assertResponseParserClassEquals(method, httpRequest, ParseFirstJsonValueNamed.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
    }
 
    public void testUpdateServiceOffering() throws Exception {
-      Method method = GlobalOfferingAsyncClient.class.getMethod("updateServiceOffering",
+      Invokable<?, ?> method = method(GlobalOfferingAsyncClient.class, "updateServiceOffering",
          String.class, UpdateServiceOfferingOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method, 1L);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(1L));
 
       assertRequestLineEquals(httpRequest,
          "GET http://localhost:8080/client/api?response=json&command=updateServiceOffering&id=1 HTTP/1.1");
@@ -72,14 +81,14 @@ public class GlobalOfferingAsyncClientTest extends BaseCloudStackAsyncClientTest
 
       assertResponseParserClassEquals(method, httpRequest, ParseFirstJsonValueNamed.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
    }
 
    public void testDeleteServiceOffering() throws Exception {
-      Method method = GlobalOfferingAsyncClient.class.getMethod("deleteServiceOffering", String.class);
-      HttpRequest httpRequest = processor.createRequest(method, 1L);
+      Invokable<?, ?> method = method(GlobalOfferingAsyncClient.class, "deleteServiceOffering", String.class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(1L));
 
       assertRequestLineEquals(httpRequest,
          "GET http://localhost:8080/client/api?response=json&command=deleteServiceOffering&id=1 HTTP/1.1");
@@ -88,15 +97,15 @@ public class GlobalOfferingAsyncClientTest extends BaseCloudStackAsyncClientTest
 
       assertResponseParserClassEquals(method, httpRequest, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
    }
 
    public void testCreateDiskOffering() throws Exception {
-      Method method = GlobalOfferingAsyncClient.class.getMethod("createDiskOffering",
+      Invokable<?, ?> method = method(GlobalOfferingAsyncClient.class, "createDiskOffering",
          String.class, String.class, CreateDiskOfferingOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method, "name", "displayText");
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of("name", "displayText"));
 
       assertRequestLineEquals(httpRequest,
          "GET http://localhost:8080/client/api?response=json&command=createDiskOffering&name=name&displaytext=displayText HTTP/1.1");
@@ -105,15 +114,15 @@ public class GlobalOfferingAsyncClientTest extends BaseCloudStackAsyncClientTest
 
       assertResponseParserClassEquals(method, httpRequest, ParseFirstJsonValueNamed.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
    }
 
    public void testUpdateDiskOffering() throws Exception {
-      Method method = GlobalOfferingAsyncClient.class.getMethod("updateDiskOffering",
+      Invokable<?, ?> method = method(GlobalOfferingAsyncClient.class, "updateDiskOffering",
          String.class, UpdateDiskOfferingOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method, 1L);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(1L));
 
       assertRequestLineEquals(httpRequest,
          "GET http://localhost:8080/client/api?response=json&command=updateDiskOffering&id=1 HTTP/1.1");
@@ -122,14 +131,14 @@ public class GlobalOfferingAsyncClientTest extends BaseCloudStackAsyncClientTest
 
       assertResponseParserClassEquals(method, httpRequest, ParseFirstJsonValueNamed.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
    }
 
    public void testDeleteDiskOffering() throws Exception {
-      Method method = GlobalOfferingAsyncClient.class.getMethod("deleteDiskOffering", String.class);
-      HttpRequest httpRequest = processor.createRequest(method, 1L);
+      Invokable<?, ?> method = method(GlobalOfferingAsyncClient.class, "deleteDiskOffering", String.class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(1L));
 
       assertRequestLineEquals(httpRequest,
          "GET http://localhost:8080/client/api?response=json&command=deleteDiskOffering&id=1 HTTP/1.1");
@@ -138,15 +147,15 @@ public class GlobalOfferingAsyncClientTest extends BaseCloudStackAsyncClientTest
 
       assertResponseParserClassEquals(method, httpRequest, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
    }
 
    public void testUpdateNetworkOffering() throws Exception {
-      Method method = GlobalOfferingAsyncClient.class.getMethod("updateNetworkOffering",
+      Invokable<?, ?> method = method(GlobalOfferingAsyncClient.class, "updateNetworkOffering",
          String.class, UpdateNetworkOfferingOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method, 1L);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(1L));
 
       assertRequestLineEquals(httpRequest,
          "GET http://localhost:8080/client/api?response=json&command=updateNetworkOffering&id=1 HTTP/1.1");
@@ -155,14 +164,8 @@ public class GlobalOfferingAsyncClientTest extends BaseCloudStackAsyncClientTest
 
       assertResponseParserClassEquals(method, httpRequest, ParseFirstJsonValueNamed.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
-   }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<GlobalOfferingAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<GlobalOfferingAsyncClient>>() {
-      };
    }
 }

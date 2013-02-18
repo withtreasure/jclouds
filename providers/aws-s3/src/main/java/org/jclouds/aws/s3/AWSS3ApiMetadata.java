@@ -18,6 +18,8 @@
  */
 package org.jclouds.aws.s3;
 
+import static org.jclouds.reflect.Reflection2.typeToken;
+
 import java.util.Properties;
 
 import org.jclouds.apis.ApiMetadata;
@@ -39,19 +41,16 @@ import com.google.inject.Module;
 public class AWSS3ApiMetadata extends S3ApiMetadata {
    
    public static final TypeToken<RestContext<AWSS3Client, AWSS3AsyncClient>> CONTEXT_TOKEN = new TypeToken<RestContext<AWSS3Client, AWSS3AsyncClient>>() {
+      private static final long serialVersionUID = 1L;
    };
-   
-   private static Builder builder() {
-      return new Builder();
-   }
 
    @Override
    public Builder toBuilder() {
-      return builder().fromApiMetadata(this);
+      return new Builder().fromApiMetadata(this);
    }
 
    public AWSS3ApiMetadata() {
-      this(builder());
+      this(new Builder());
    }
 
    protected AWSS3ApiMetadata(Builder builder) {
@@ -63,14 +62,14 @@ public class AWSS3ApiMetadata extends S3ApiMetadata {
       return properties;
    }
 
-   public static class Builder extends S3ApiMetadata.Builder {
+   public static class Builder extends S3ApiMetadata.Builder<Builder> {
       protected Builder(){
          super(AWSS3Client.class, AWSS3AsyncClient.class);
          id("aws-s3")
          .name("Amazon-specific S3 API")
          .defaultProperties(AWSS3ApiMetadata.defaultProperties())
          .context(CONTEXT_TOKEN)
-         .view(TypeToken.of(AWSS3BlobStoreContext.class))
+         .view(typeToken(AWSS3BlobStoreContext.class))
          .defaultModules(ImmutableSet.<Class<? extends Module>>of(AWSS3RestClientModule.class, AWSS3BlobStoreContextModule.class));
       }
       
@@ -80,10 +79,8 @@ public class AWSS3ApiMetadata extends S3ApiMetadata {
       }
 
       @Override
-      public Builder fromApiMetadata(ApiMetadata in) {
-         super.fromApiMetadata(in);
+      protected Builder self() {
          return this;
       }
    }
-
 }

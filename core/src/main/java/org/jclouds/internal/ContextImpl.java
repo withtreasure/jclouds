@@ -18,26 +18,31 @@
  */
 package org.jclouds.internal;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.io.Closeables;
-import com.google.inject.Singleton;
+import static com.google.common.base.Objects.equal;
+import static com.google.common.base.Objects.toStringHelper;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.io.Closeables.closeQuietly;
+
+import java.net.URI;
+import java.util.Map;
+import java.util.Set;
+
+import javax.inject.Inject;
+
 import org.jclouds.Context;
 import org.jclouds.annotations.Name;
 import org.jclouds.domain.Credentials;
 import org.jclouds.domain.Location;
 import org.jclouds.domain.LocationScope;
 import org.jclouds.lifecycle.Closer;
+import org.jclouds.location.Provider;
 import org.jclouds.providers.ProviderMetadata;
 import org.jclouds.rest.Utils;
-import org.jclouds.rest.annotations.Identity;
 
-import javax.inject.Inject;
-import java.net.URI;
-import java.util.Map;
-import java.util.Set;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.base.Objects;
+import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableMap;
+import com.google.inject.Singleton;
 
 /**
  * @author Adrian Cole
@@ -46,15 +51,16 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class ContextImpl implements Context {
 
    private final ProviderMetadata providerMetadata;
-   private final String identity;
+   private final Supplier<Credentials> creds;
    private final Utils utils;
    private final Closer closer;
    private final String name;
 
    @Inject
-   protected ContextImpl(@Name String name, ProviderMetadata providerMetadata, @Identity String identity, Utils utils, Closer closer) {
+   protected ContextImpl(@Name String name, ProviderMetadata providerMetadata, @Provider Supplier<Credentials> creds,
+         Utils utils, Closer closer) {
       this.providerMetadata = checkNotNull(providerMetadata, "providerMetadata");
-      this.identity = checkNotNull(identity, "identity");
+      this.creds = checkNotNull(creds, "creds");
       this.utils = checkNotNull(utils, "utils");
       this.closer = checkNotNull(closer, "closer");
       this.name = checkNotNull(name, "name");
@@ -65,7 +71,7 @@ public class ContextImpl implements Context {
     */
    @Override
    public void close() {
-      Closeables.closeQuietly(closer);
+      closeQuietly(closer);
    }
 
    /**
@@ -89,15 +95,7 @@ public class ContextImpl implements Context {
     */
    @Override
    public String getIdentity() {
-      return identity;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public URI getEndpoint() {
-      return URI.create(providerMetadata.getEndpoint());
+      return creds.get().identity;
    }
 
    /**
@@ -117,24 +115,8 @@ public class ContextImpl implements Context {
     * {@inheritDoc}
     */
    @Override
-   public String getApiVersion() {
-      return providerMetadata.getApiMetadata().getVersion();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public String getBuildVersion() {
-      return providerMetadata.getApiMetadata().getBuildVersion().orNull();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
    public int hashCode() {
-      return Objects.hashCode(providerMetadata, identity);
+      return Objects.hashCode(providerMetadata, creds);
    }
 
    /**
@@ -149,7 +131,7 @@ public class ContextImpl implements Context {
       if (getClass() != obj.getClass())
          return false;
       ContextImpl that = ContextImpl.class.cast(obj);
-      return Objects.equal(this.providerMetadata, that.providerMetadata) && Objects.equal(this.identity, that.identity);
+      return equal(this.providerMetadata, that.providerMetadata) && equal(this.creds, that.creds);
    }
 
    /**
@@ -157,7 +139,7 @@ public class ContextImpl implements Context {
     */
    @Override
    public String toString() {
-      return Objects.toStringHelper("").add("providerMetadata", providerMetadata).add("identity", identity).toString();
+      return toStringHelper("").add("providerMetadata", providerMetadata).add("identity", getIdentity()).toString();
    }
 
    /**
@@ -191,7 +173,7 @@ public class ContextImpl implements Context {
    public Map<String, Object> getMetadata() {
       return ImmutableMap.<String, Object> of("endpoint", URI.create(providerMetadata.getEndpoint()), "apiVersion",
                providerMetadata.getApiMetadata().getVersion(), "buildVersion", providerMetadata.getApiMetadata()
-                        .getBuildVersion().or(""), "identity", identity);
+                        .getBuildVersion().or(""), "identity", getIdentity());
    }
 
    /**
@@ -208,22 +190,6 @@ public class ContextImpl implements Context {
    @Override
    public LocationScope getScope() {
       return LocationScope.PROVIDER;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public Map<String, Credentials> credentialStore() {
-      return utils().credentialStore();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public Map<String, Credentials> getCredentialStore() {
-      return utils().credentialStore();
    }
 
 }

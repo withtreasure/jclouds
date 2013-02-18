@@ -18,6 +18,7 @@
  */
 package org.jclouds.ssh.jsch;
 
+import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -25,10 +26,10 @@ import static com.google.common.base.Predicates.instanceOf;
 import static com.google.common.base.Predicates.or;
 import static com.google.common.base.Throwables.getCausalChain;
 import static com.google.common.collect.Iterables.any;
-import static org.jclouds.crypto.CryptoStreams.hex;
-import static org.jclouds.crypto.CryptoStreams.md5;
-import static org.jclouds.crypto.SshKeys.fingerprintPrivateKey;
-import static org.jclouds.crypto.SshKeys.sha1PrivateKey;
+import static com.google.common.hash.Hashing.md5;
+import static com.google.common.io.BaseEncoding.base16;
+import static org.jclouds.ssh.SshKeys.fingerprintPrivateKey;
+import static org.jclouds.ssh.SshKeys.sha1PrivateKey;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -49,6 +50,7 @@ import org.jclouds.http.handlers.BackoffLimitedRetryHandler;
 import org.jclouds.io.Payload;
 import org.jclouds.io.Payloads;
 import org.jclouds.logging.Logger;
+import org.jclouds.proxy.ProxyConfig;
 import org.jclouds.rest.AuthorizationException;
 import org.jclouds.ssh.SshClient;
 import org.jclouds.ssh.SshException;
@@ -122,7 +124,8 @@ public class JschSshClient implements SshClient {
    final String user;
    final String host;
 
-   public JschSshClient(BackoffLimitedRetryHandler backoffLimitedRetryHandler, HostAndPort socket,
+
+   public JschSshClient(ProxyConfig proxyConfig, BackoffLimitedRetryHandler backoffLimitedRetryHandler, HostAndPort socket,
             LoginCredentials loginCredentials, int timeout) {
       this.user = checkNotNull(loginCredentials, "loginCredentials").getUser();
       this.host = checkNotNull(socket, "socket").getHostText();
@@ -131,8 +134,9 @@ public class JschSshClient implements SshClient {
                "you must specify a password or a key");
       this.backoffLimitedRetryHandler = checkNotNull(backoffLimitedRetryHandler, "backoffLimitedRetryHandler");
       if (loginCredentials.getPrivateKey() == null) {
-         this.toString = String.format("%s:pw[%s]@%s:%d", loginCredentials.getUser(), hex(md5(loginCredentials
-                  .getPassword().getBytes())), host, socket.getPort());
+         this.toString = String.format("%s:pw[%s]@%s:%d", loginCredentials.getUser(),
+               base16().lowerCase().encode(md5().hashString(loginCredentials.getPassword(), UTF_8).asBytes()), host,
+               socket.getPort());
       } else {
          String fingerPrint = fingerprintPrivateKey(loginCredentials.getPrivateKey());
          String sha1 = sha1PrivateKey(loginCredentials.getPrivateKey());
@@ -140,7 +144,7 @@ public class JschSshClient implements SshClient {
                   fingerPrint, sha1, host, socket.getPort());
       }
       sessionConnection = SessionConnection.builder().hostAndPort(HostAndPort.fromParts(host, socket.getPort())).loginCredentials(
-               loginCredentials).connectTimeout(timeout).sessionTimeout(timeout).build();
+               loginCredentials).proxy(checkNotNull(proxyConfig, "proxyConfig")).connectTimeout(timeout).sessionTimeout(timeout).build();
    }
 
    @Override
@@ -465,8 +469,8 @@ public class JschSshClient implements SshClient {
 
       @Override
       public ExecChannel create() throws Exception {
-         this.sessionConnection = acquire(SessionConnection.builder().fromSessionConnection(
-                  JschSshClient.this.sessionConnection).sessionTimeout(0).build());
+         this.sessionConnection = acquire(SessionConnection.builder().from(JschSshClient.this.sessionConnection)
+               .sessionTimeout(0).build());
          String channel = "exec";
          executor = (ChannelExec) sessionConnection.openChannel(channel);
          executor.setCommand(command);

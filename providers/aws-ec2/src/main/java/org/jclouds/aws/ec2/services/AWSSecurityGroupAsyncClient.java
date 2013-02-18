@@ -22,10 +22,13 @@ import static org.jclouds.aws.reference.FormParameters.ACTION;
 
 import java.util.Set;
 
+import javax.inject.Named;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
+import org.jclouds.Fallbacks.VoidOnNotFoundOr404;
 import org.jclouds.aws.ec2.options.CreateSecurityGroupOptions;
 import org.jclouds.aws.ec2.xml.CreateSecurityGroupResponseHandler;
 import org.jclouds.aws.filters.FormSigner;
@@ -40,13 +43,11 @@ import org.jclouds.javax.annotation.Nullable;
 import org.jclouds.location.functions.RegionToEndpointOrProviderIfNull;
 import org.jclouds.rest.annotations.BinderParam;
 import org.jclouds.rest.annotations.EndpointParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.FormParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.VirtualHost;
 import org.jclouds.rest.annotations.XMLResponseParser;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnVoidOnNotFoundOr404;
 
 import com.google.common.annotations.Beta;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -64,6 +65,7 @@ public interface AWSSecurityGroupAsyncClient extends SecurityGroupAsyncClient {
    /**
     * @see AWSSecurityGroupClient#createSecurityGroupInRegion
     */
+   @Named("CreateSecurityGroup")
    @POST
    @Path("/")
    @XMLResponseParser(CreateSecurityGroupResponseHandler.class)
@@ -77,6 +79,7 @@ public interface AWSSecurityGroupAsyncClient extends SecurityGroupAsyncClient {
     * @see AWSSecurityGroupClient#authorizeSecurityGroupIngressInRegion(String,
     *      String,IpPermission)
     */
+   @Named("AuthorizeSecurityGroupIngress")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "AuthorizeSecurityGroupIngress")
@@ -88,6 +91,7 @@ public interface AWSSecurityGroupAsyncClient extends SecurityGroupAsyncClient {
     * @see AWSSecurityGroupClient#authorizeSecurityGroupIngressInRegion(String,
     *      String,Iterable)
     */
+   @Named("AuthorizeSecurityGroupIngress")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "AuthorizeSecurityGroupIngress")
@@ -100,6 +104,7 @@ public interface AWSSecurityGroupAsyncClient extends SecurityGroupAsyncClient {
     * @see AWSSecurityGroupClient#revokeSecurityGroupIngressInRegion(@Nullable
     *      Region, String,IpPermission)
     */
+   @Named("RevokeSecurityGroupIngress")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "RevokeSecurityGroupIngress")
@@ -111,6 +116,7 @@ public interface AWSSecurityGroupAsyncClient extends SecurityGroupAsyncClient {
     * @see AWSSecurityGroupClient#revokeSecurityGroupIngressInRegion(@Nullable
     *      Region, String,Iterable)
     */
+   @Named("RevokeSecurityGroupIngress")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "RevokeSecurityGroupIngress")
@@ -122,21 +128,23 @@ public interface AWSSecurityGroupAsyncClient extends SecurityGroupAsyncClient {
    /**
     * @see AWSSecurityGroupClient#deleteSecurityGroupInRegionById
     */
+   @Named("DeleteSecurityGroup")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "DeleteSecurityGroup")
-   @ExceptionParser(ReturnVoidOnNotFoundOr404.class)
+   @Fallback(VoidOnNotFoundOr404.class)
    ListenableFuture<Void> deleteSecurityGroupInRegionById(
             @EndpointParam(parser = RegionToEndpointOrProviderIfNull.class) @Nullable String region, @FormParam("GroupId") String name);
 
    /**
     * @see AWSSecurityGroupClient#describeSecurityGroupsInRegionById
     */
+   @Named("DescribeSecurityGroups")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "DescribeSecurityGroups")
    @XMLResponseParser(DescribeSecurityGroupsResponseHandler.class)
-   @ExceptionParser(ReturnEmptySetOnNotFoundOr404.class)
+   @Fallback(EmptySetOnNotFoundOr404.class)
    ListenableFuture<? extends Set<SecurityGroup>> describeSecurityGroupsInRegionById(
             @EndpointParam(parser = RegionToEndpointOrProviderIfNull.class) @Nullable String region,
             @BinderParam(BindGroupIdsToIndexedFormParams.class) String... securityGroupNames);

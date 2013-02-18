@@ -19,10 +19,10 @@
 package org.jclouds.cloudstack.features;
 
 import static org.jclouds.cloudstack.options.ListISOsOptions.Builder.accountInDomain;
-
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
 
+import org.jclouds.cloudstack.CloudStackApiMetadata;
 import org.jclouds.cloudstack.CloudStackContext;
 import org.jclouds.cloudstack.domain.ISO;
 import org.jclouds.cloudstack.internal.BaseCloudStackExpectTest;
@@ -81,7 +81,7 @@ public class ISOClientExpectTest extends BaseCloudStackExpectTest<ISOClient> {
                                      .addQueryParam("command", "listIsos")
                                      .addQueryParam("listAll", "true")
                                      .addQueryParam("apiKey", "identity")
-                                     .addQueryParam("signature", "qUUF6hCDc57Bc%2FnHriS9umbZBKA%3D")
+                                     .addQueryParam("signature", "qUUF6hCDc57Bc/nHriS9umbZBKA%3D")
                                      .addHeader("Accept", "application/json")
                                      .build();
    
@@ -121,7 +121,7 @@ public class ISOClientExpectTest extends BaseCloudStackExpectTest<ISOClient> {
                                             .addQueryParam("name", "bob%27s%20iso")
                                             .addQueryParam("zoneid", "7")
                                             .addQueryParam("apiKey", "identity")
-                                            .addQueryParam("signature", "4S5ustbaBErEnpymWLSj1rEJ%2Fnk%3D")
+                                            .addQueryParam("signature", "4S5ustbaBErEnpymWLSj1rEJ/nk%3D")
                                             .addHeader("Accept", "application/json")
                                             .build();
    
@@ -166,24 +166,24 @@ public class ISOClientExpectTest extends BaseCloudStackExpectTest<ISOClient> {
    }
 
    HttpRequest registerIso = HttpRequest.builder().method("GET")
-           .endpoint("http://localhost:8080/client/api")
-           .addQueryParam("response", "json")
-           .addQueryParam("command", "registerIso")
-           .addQueryParam("name", "ubuntu10.10")
-           .addQueryParam("url", "http://ubuntu/ubuntu-10.10.iso")
-           .addQueryParam("displaytext", "ubuntu 10.10 (32 bit)")
-           .addQueryParam("zoneid", "1e0335d9-b6cc-4805-bddf-0828e66a0d01")
-           .addQueryParam("account", "root")
-           .addQueryParam("domainid", "99f4159b-c698-4bd9-b8c5-5ac462f101eb")
-           .addQueryParam("bootable", "true")
-           .addQueryParam("isextractable", "true")
-           .addQueryParam("isfeatured", "true")
-           .addQueryParam("ispublic", "true")
-           .addQueryParam("ostypeid", "1234-abcd")
-           .addQueryParam("apiKey", "identity")
-           .addQueryParam("signature", "YpFMYUUu0daLgwxNFubVfkV0Nw8%3D")
-           .addHeader("Accept", "application/json") 
-           .build();
+                                        .endpoint("http://localhost:8080/client/api")
+                                        .addQueryParam("response", "json")
+                                        .addQueryParam("command", "registerIso")
+                                        .addQueryParam("name", "ubuntu10.10")
+                                        .addQueryParam("displaytext", "ubuntu 10.10 (32 bit)")
+                                        .addQueryParam("url", "http://ubuntu/ubuntu-10.10.iso")
+                                        .addQueryParam("zoneid", "1e0335d9-b6cc-4805-bddf-0828e66a0d01")
+                                        .addQueryParam("account", "root")
+                                        .addQueryParam("domainid", "99f4159b-c698-4bd9-b8c5-5ac462f101eb")
+                                        .addQueryParam("bootable", "true")
+                                        .addQueryParam("isextractable", "true")
+                                        .addQueryParam("isfeatured", "true")
+                                        .addQueryParam("ispublic", "true")
+                                        .addQueryParam("ostypeid", "1234-abcd")
+                                        .addQueryParam("apiKey", "identity")
+                                        .addQueryParam("signature", "YpFMYUUu0daLgwxNFubVfkV0Nw8%3D")
+                                        .addHeader("Accept", "application/json") 
+                                        .build();
    
    RegisterISOOptions registerISOOptions = RegisterISOOptions.Builder
            .accountInDomain("root", "99f4159b-c698-4bd9-b8c5-5ac462f101eb")
@@ -221,6 +221,6 @@ public class ISOClientExpectTest extends BaseCloudStackExpectTest<ISOClient> {
    
    @Override
    protected ISOClient clientFrom(CloudStackContext context) {
-      return context.getProviderSpecificContext().getApi().getISOClient();
+      return context.unwrap(CloudStackApiMetadata.CONTEXT_TOKEN).getApi().getISOClient();
    }
 }

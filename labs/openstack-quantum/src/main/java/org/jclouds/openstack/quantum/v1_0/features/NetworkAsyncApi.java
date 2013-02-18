@@ -28,18 +28,17 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.EmptyFluentIterableOnNotFoundOr404;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.openstack.keystone.v2_0.filters.AuthenticateRequest;
 import org.jclouds.openstack.quantum.v1_0.domain.Network;
 import org.jclouds.openstack.quantum.v1_0.domain.NetworkDetails;
 import org.jclouds.openstack.quantum.v1_0.domain.Reference;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.PayloadParam;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.SelectJson;
-import org.jclouds.rest.annotations.SkipEncoding;
 import org.jclouds.rest.annotations.WrapWith;
-import org.jclouds.rest.functions.ReturnEmptyFluentIterableOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.google.common.collect.FluentIterable;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -51,7 +50,6 @@ import com.google.common.util.concurrent.ListenableFuture;
  * @see org.jclouds.openstack.quantum.v1_0.features.NetworkApi
  * @see <a href="http://docs.openstack.org/api/openstack-network/1.0/content/Networks.html">api doc</a>
  */
-@SkipEncoding({'/', '='})
 @RequestFilters(AuthenticateRequest.class)
 @Consumes(MediaType.APPLICATION_JSON)
 @Path("/networks")
@@ -62,7 +60,7 @@ public interface NetworkAsyncApi {
     */
    @GET
    @SelectJson("networks")
-   @ExceptionParser(ReturnEmptyFluentIterableOnNotFoundOr404.class)
+   @Fallback(EmptyFluentIterableOnNotFoundOr404.class)
    ListenableFuture<? extends FluentIterable<? extends Reference>> listReferences();
 
    /**
@@ -71,7 +69,7 @@ public interface NetworkAsyncApi {
    @GET
    @SelectJson("networks")
    @Path("/detail")
-   @ExceptionParser(ReturnEmptyFluentIterableOnNotFoundOr404.class)
+   @Fallback(EmptyFluentIterableOnNotFoundOr404.class)
    ListenableFuture<? extends FluentIterable<? extends Network>> list();
 
    /**
@@ -80,7 +78,7 @@ public interface NetworkAsyncApi {
    @GET
    @SelectJson("network")
    @Path("/{id}")
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<? extends Network> get(@PathParam("id") String id);
 
    /**
@@ -89,7 +87,7 @@ public interface NetworkAsyncApi {
    @GET
    @SelectJson("network")
    @Path("/{id}/detail")
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<? extends NetworkDetails> getDetails(@PathParam("id") String id);
 
    /**

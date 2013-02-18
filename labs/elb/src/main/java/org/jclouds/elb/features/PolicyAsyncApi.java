@@ -20,10 +20,13 @@ package org.jclouds.elb.features;
 
 import java.util.Set;
 
+import javax.inject.Named;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.aws.filters.FormSigner;
 import org.jclouds.elb.binders.BindPolicyTypeNamesToIndexedFormParams;
 import org.jclouds.elb.domain.Policy;
@@ -34,13 +37,11 @@ import org.jclouds.elb.xml.DescribeLoadBalancerPolicyTypesResultHandler;
 import org.jclouds.elb.xml.PolicyHandler;
 import org.jclouds.elb.xml.PolicyTypeHandler;
 import org.jclouds.rest.annotations.BinderParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.FormParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.VirtualHost;
 import org.jclouds.rest.annotations.XMLResponseParser;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -59,30 +60,33 @@ public interface PolicyAsyncApi {
    /**
     * @see PolicyApi#get()
     */
+   @Named("DescribeLoadBalancerPolicies")
    @POST
    @Path("/")
    @XMLResponseParser(PolicyHandler.class)
    @FormParams(keys = "Action", values = "DescribeLoadBalancerPolicies")
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<Policy> get(@FormParam("PolicyNames.member.1") String name);
    
    /**
     * @see PolicyApi#list()
     */
+   @Named("DescribeLoadBalancerPolicies")
    @POST
    @Path("/")
    @XMLResponseParser(DescribeLoadBalancerPoliciesResultHandler.class)
-   @ExceptionParser(ReturnEmptySetOnNotFoundOr404.class)
+   @Fallback(EmptySetOnNotFoundOr404.class)
    @FormParams(keys = "Action", values = "DescribeLoadBalancerPolicies")
    ListenableFuture<Set<Policy>> list();
 
    /**
     * @see PolicyApi#list(ListPoliciesOptions)
     */
+   @Named("DescribeLoadBalancerPolicies")
    @POST
    @Path("/")
    @XMLResponseParser(DescribeLoadBalancerPoliciesResultHandler.class)
-   @ExceptionParser(ReturnEmptySetOnNotFoundOr404.class)
+   @Fallback(EmptySetOnNotFoundOr404.class)
    @FormParams(keys = "Action", values = "DescribeLoadBalancerPolicies")
    ListenableFuture<Set<Policy>> list(ListPoliciesOptions options);
 
@@ -90,30 +94,33 @@ public interface PolicyAsyncApi {
    /**
     * @see PolicyApi#getType()
     */
+   @Named("DescribeLoadBalancerPolicyTypes")
    @POST
    @Path("/")
    @XMLResponseParser(PolicyTypeHandler.class)
    @FormParams(keys = "Action", values = "DescribeLoadBalancerPolicyTypes")
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<PolicyType> getType(@FormParam("PolicyTypeNames.member.1") String name);
    
    /**
     * @see PolicyApi#listTypes()
     */
+   @Named("DescribeLoadBalancerPolicyTypes")
    @POST
    @Path("/")
    @XMLResponseParser(DescribeLoadBalancerPolicyTypesResultHandler.class)
-   @ExceptionParser(ReturnEmptySetOnNotFoundOr404.class)
+   @Fallback(EmptySetOnNotFoundOr404.class)
    @FormParams(keys = "Action", values = "DescribeLoadBalancerPolicyTypes")
    ListenableFuture<Set<PolicyType>> listTypes();
 
    /**
     * @see PolicyApi#listTypes(Iterable<String>)
     */
+   @Named("DescribeLoadBalancerPolicyTypes")
    @POST
    @Path("/")
    @XMLResponseParser(DescribeLoadBalancerPolicyTypesResultHandler.class)
-   @ExceptionParser(ReturnEmptySetOnNotFoundOr404.class)
+   @Fallback(EmptySetOnNotFoundOr404.class)
    @FormParams(keys = "Action", values = "DescribeLoadBalancerPolicyTypes")
    ListenableFuture<Set<PolicyType>> listTypes(@BinderParam(BindPolicyTypeNamesToIndexedFormParams.class) Iterable<String> names);
    

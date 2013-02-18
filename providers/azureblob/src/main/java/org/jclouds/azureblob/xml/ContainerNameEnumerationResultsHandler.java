@@ -18,6 +18,9 @@
  */
 package org.jclouds.azureblob.xml;
 
+import static com.google.common.io.BaseEncoding.base64;
+import static org.jclouds.http.Uris.uriBuilder;
+
 import java.net.URI;
 import java.util.Date;
 import java.util.Map;
@@ -31,9 +34,7 @@ import org.jclouds.azureblob.domain.LeaseStatus;
 import org.jclouds.azureblob.domain.ListBlobsResponse;
 import org.jclouds.azureblob.domain.internal.BlobPropertiesImpl;
 import org.jclouds.azureblob.domain.internal.HashSetListBlobsResponse;
-import org.jclouds.crypto.CryptoStreams;
 import org.jclouds.date.DateService;
-import org.jclouds.http.HttpUtils;
 import org.jclouds.http.functions.ParseSax;
 import org.jclouds.io.ContentMetadataCodec;
 import org.xml.sax.Attributes;
@@ -152,7 +153,7 @@ public class ContainerNameEnumerationResultsHandler extends ParseSax.HandlerWith
          currentExpires = null;
          currentMetadata = Maps.newHashMap();
       } else if (qName.equals("Url")) {
-         currentUrl = HttpUtils.createUri(currentText.toString().trim());
+         currentUrl = uriBuilder(currentText.toString().trim()).build();
       } else if (qName.equals("Last-Modified")) {
          currentLastModified = dateParser.rfc822DateParse(currentText.toString().trim());
       } else if (qName.equals("Etag")) {
@@ -166,7 +167,7 @@ public class ContainerNameEnumerationResultsHandler extends ParseSax.HandlerWith
          currentSize = Long.parseLong(currentText.toString().trim());
       } else if (qName.equals("Content-MD5")) {
          if (!currentText.toString().trim().equals(""))
-            currentContentMD5 = CryptoStreams.base64(currentText.toString().trim());
+            currentContentMD5 = base64().decode(currentText.toString().trim());
       } else if (qName.equals("Content-Type")) {
          currentContentType = currentText.toString().trim();
       } else if (qName.equals("Content-Encoding")) {

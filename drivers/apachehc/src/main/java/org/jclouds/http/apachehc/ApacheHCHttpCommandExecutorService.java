@@ -17,10 +17,13 @@
  * under the License.
  */
 package org.jclouds.http.apachehc;
+import static com.google.common.hash.Hashing.md5;
+import static com.google.common.io.BaseEncoding.base64;
+import static org.jclouds.http.HttpUtils.filterOutContentHeaders;
+import static org.jclouds.io.ByteSources.asByteSource;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.concurrent.ExecutorService;
 
 import javax.inject.Named;
 
@@ -30,7 +33,6 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.jclouds.Constants;
-import org.jclouds.crypto.CryptoStreams;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.http.HttpResponse;
 import org.jclouds.http.HttpUtils;
@@ -42,10 +44,10 @@ import org.jclouds.http.internal.HttpWire;
 import org.jclouds.io.ContentMetadataCodec;
 import org.jclouds.io.Payload;
 import org.jclouds.io.Payloads;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.Inject;
 
 /**
@@ -60,10 +62,10 @@ public class ApacheHCHttpCommandExecutorService extends BaseHttpCommandExecutorS
 
    @Inject
    ApacheHCHttpCommandExecutorService(HttpUtils utils, ContentMetadataCodec contentMetadataCodec,
-         @Named(Constants.PROPERTY_IO_WORKER_THREADS) ExecutorService ioWorkerExecutor,
+         @Named(Constants.PROPERTY_IO_WORKER_THREADS) ListeningExecutorService ioExecutor,
          DelegatingRetryHandler retryHandler, IOExceptionRetryHandler ioRetryHandler,
          DelegatingErrorHandler errorHandler, HttpWire wire, HttpClient client) {
-      super(utils, contentMetadataCodec, ioWorkerExecutor, retryHandler, ioRetryHandler, errorHandler, wire);
+      super(utils, contentMetadataCodec, ioExecutor, retryHandler, ioRetryHandler, errorHandler, wire);
       this.client = client;
       this.apacheHCUtils = new ApacheHCUtils(contentMetadataCodec);
    }
@@ -71,8 +73,11 @@ public class ApacheHCHttpCommandExecutorService extends BaseHttpCommandExecutorS
    @Override
    protected HttpUriRequest convert(HttpRequest request) throws IOException {
       HttpUriRequest returnVal = apacheHCUtils.convertToApacheRequest(request);
-      if (request.getPayload() != null && request.getPayload().getContentMetadata().getContentMD5() != null)
-         returnVal.addHeader("Content-MD5", CryptoStreams.md5Base64(request.getPayload()));
+      if (request.getPayload() != null && request.getPayload().getContentMetadata().getContentMD5() != null){
+         String md5 = base64().encode(asByteSource(request.getPayload().getInput()).hash(md5()).asBytes());
+         returnVal.addHeader("Content-MD5", md5);
+      }
+
       return returnVal;
    }
 
@@ -102,7 +107,7 @@ public class ApacheHCHttpCommandExecutorService extends BaseHttpCommandExecutorS
       return HttpResponse.builder().statusCode(apacheResponse.getStatusLine().getStatusCode())
                                    .message(apacheResponse.getStatusLine().getReasonPhrase())
                                    .payload(payload)
-                                   .headers(RestAnnotationProcessor.filterOutContentHeaders(headers)).build();
+                                   .headers(filterOutContentHeaders(headers)).build();
    }
 
    private org.apache.http.HttpResponse executeRequest(HttpUriRequest nativeRequest) throws IOException,

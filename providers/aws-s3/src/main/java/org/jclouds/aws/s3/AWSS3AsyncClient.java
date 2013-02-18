@@ -22,6 +22,7 @@ import static org.jclouds.blobstore.attr.BlobScopes.CONTAINER;
 
 import java.util.Map;
 
+import javax.inject.Named;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -29,28 +30,27 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 
+import org.jclouds.Fallbacks.VoidOnNotFoundOr404;
 import org.jclouds.aws.s3.binders.BindIterableAsPayloadToDeleteRequest;
 import org.jclouds.aws.s3.binders.BindObjectMetadataToRequest;
 import org.jclouds.aws.s3.binders.BindPartIdsAndETagsToRequest;
 import org.jclouds.aws.s3.domain.DeleteResult;
-import org.jclouds.aws.s3.xml.DeleteResultHandler;
 import org.jclouds.aws.s3.functions.ETagFromHttpResponseViaRegex;
 import org.jclouds.aws.s3.functions.ObjectMetadataKey;
 import org.jclouds.aws.s3.functions.UploadIdFromHttpResponseViaRegex;
+import org.jclouds.aws.s3.xml.DeleteResultHandler;
 import org.jclouds.blobstore.attr.BlobScope;
 import org.jclouds.http.functions.ParseETagHeader;
 import org.jclouds.io.Payload;
 import org.jclouds.rest.annotations.BinderParam;
 import org.jclouds.rest.annotations.EndpointParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.ParamParser;
 import org.jclouds.rest.annotations.ParamValidators;
 import org.jclouds.rest.annotations.QueryParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.ResponseParser;
-import org.jclouds.rest.annotations.SkipEncoding;
 import org.jclouds.rest.annotations.XMLResponseParser;
-import org.jclouds.rest.functions.ReturnVoidOnNotFoundOr404;
 import org.jclouds.s3.Bucket;
 import org.jclouds.s3.S3AsyncClient;
 import org.jclouds.s3.binders.BindAsHostPrefixIfConfigured;
@@ -67,7 +67,6 @@ import com.google.common.util.concurrent.ListenableFuture;
  * 
  * @author Adrian Cole, Jeremy Whitlock
  */
-@SkipEncoding('/')
 @RequestFilters(RequestAuthorizeSignature.class)
 @BlobScope(CONTAINER)
 public interface AWSS3AsyncClient extends S3AsyncClient {
@@ -75,6 +74,7 @@ public interface AWSS3AsyncClient extends S3AsyncClient {
    /**
     * @see AWSS3Client#initiateMultipartUpload
     */
+   @Named("PutObject")
    @POST
    @QueryParams(keys = "uploads")
    @Path("/{key}")
@@ -87,9 +87,10 @@ public interface AWSS3AsyncClient extends S3AsyncClient {
    /**
     * @see AWSS3Client#abortMultipartUpload
     */
+   @Named("AbortMultipartUpload")
    @DELETE
    @Path("/{key}")
-   @ExceptionParser(ReturnVoidOnNotFoundOr404.class)
+   @Fallback(VoidOnNotFoundOr404.class)
    ListenableFuture<Void> abortMultipartUpload(
             @Bucket @EndpointParam(parser = AssignCorrectHostnameForBucket.class) @BinderParam(BindAsHostPrefixIfConfigured.class) @ParamValidators(BucketNameValidator.class) String bucketName,
             @PathParam("key") String key, @QueryParam("uploadId") String uploadId);
@@ -97,6 +98,7 @@ public interface AWSS3AsyncClient extends S3AsyncClient {
    /**
     * @see AWSS3Client#uploadPart
     */
+   @Named("PutObject")
    @PUT
    @Path("/{key}")
    @ResponseParser(ParseETagHeader.class)
@@ -108,6 +110,7 @@ public interface AWSS3AsyncClient extends S3AsyncClient {
    /**
     * @see AWSS3Client#completeMultipartUpload
     */
+   @Named("PutObject")
    @POST
    @Path("/{key}")
    @ResponseParser(ETagFromHttpResponseViaRegex.class)
@@ -119,6 +122,7 @@ public interface AWSS3AsyncClient extends S3AsyncClient {
    /**
     * @see AWSS3Client#deleteObjects
     */
+   @Named("DeleteObject")
    @POST                              
    @Path("/")
    @QueryParams(keys = "delete")

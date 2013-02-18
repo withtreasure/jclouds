@@ -21,6 +21,7 @@ package org.jclouds.abiquo.config;
 
 import static org.jclouds.Constants.PROPERTY_SESSION_INTERVAL;
 import static org.jclouds.abiquo.domain.DomainWrapper.wrap;
+import static org.jclouds.rest.config.BinderUtils.bindHttpApi;
 
 import java.util.List;
 import java.util.Map;
@@ -65,13 +66,12 @@ import org.jclouds.rest.AuthorizationException;
 import org.jclouds.rest.ConfiguresRestClient;
 import org.jclouds.rest.RestContext;
 import org.jclouds.rest.Utils;
-import org.jclouds.rest.config.BinderUtils;
 import org.jclouds.rest.config.RestClientModule;
 import org.jclouds.rest.suppliers.MemoizedRetryOnTimeOutButNotOnAuthorizationExceptionSupplier;
-import org.jclouds.util.Suppliers2;
 
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.inject.Provides;
@@ -101,21 +101,9 @@ public class AbiquoRestClientModule extends RestClientModule<AbiquoApi, AbiquoAs
    }
 
    @Override
-   protected void bindAsyncClient() {
-      super.bindAsyncClient();
-      BinderUtils.bindAsyncClient(binder(), AbiquoHttpAsyncClient.class);
-   }
-
-   @Override
-   protected void bindClient() {
-      super.bindClient();
-      BinderUtils.bindClient(binder(), AbiquoHttpClient.class, AbiquoHttpAsyncClient.class,
-            ImmutableMap.<Class<?>, Class<?>> of(AbiquoHttpClient.class, AbiquoHttpAsyncClient.class));
-   }
-
-   @Override
    protected void configure() {
       super.configure();
+      bindHttpApi(binder(), AbiquoHttpClient.class, AbiquoHttpAsyncClient.class);
       bind(Utils.class).to(ExtendedUtils.class);
    }
 
@@ -159,7 +147,7 @@ public class AbiquoRestClientModule extends RestClientModule<AbiquoApi, AbiquoAs
    public Supplier<Map<Integer, Datacenter>> getAvailableRegionsIndexedById(
          final AtomicReference<AuthorizationException> authException,
          @Named(PROPERTY_SESSION_INTERVAL) final long seconds, @Memoized final Supplier<Enterprise> currentEnterprise) {
-      Supplier<Map<Integer, Datacenter>> availableRegionsMapSupplier = Suppliers2.compose(
+      Supplier<Map<Integer, Datacenter>> availableRegionsMapSupplier = Suppliers.compose(
             new Function<List<Datacenter>, Map<Integer, Datacenter>>() {
                @Override
                public Map<Integer, Datacenter> apply(final List<Datacenter> datacenters) {

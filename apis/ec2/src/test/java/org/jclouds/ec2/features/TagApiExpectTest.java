@@ -20,7 +20,6 @@ package org.jclouds.ec2.features;
 import static org.testng.Assert.assertEquals;
 
 import java.util.Properties;
-import java.util.TimeZone;
 
 import org.jclouds.Constants;
 import org.jclouds.ec2.EC2Api;
@@ -42,10 +41,6 @@ import com.google.common.collect.ImmutableSet;
 @Test(groups = "unit")
 public class TagApiExpectTest extends BaseEC2ApiExpectTest<EC2Api> {
 
-   public TagApiExpectTest() {
-      TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
-   }
-   
    /**
     * @see TagApi
     * @see SinceApiVersion
@@ -102,7 +97,7 @@ public class TagApiExpectTest extends BaseEC2ApiExpectTest<EC2Api> {
                payloadFromStringWithContentType(
                         "Action=CreateTags" +
                         "&ResourceId.1=i-43532" +
-                        "&Signature=jwCQr50j%2BvGkav4t0BN0G8RmNJ7VaFK6%2F7N%2FHKUmHL8%3D" +
+                        "&Signature=jwCQr50j%2BvGkav4t0BN0G8RmNJ7VaFK6/7N/HKUmHL8%3D" +
                         "&SignatureMethod=HmacSHA256" +
                         "&SignatureVersion=2" +
                         "&Tag.1.Key=tag" +
@@ -166,7 +161,7 @@ public class TagApiExpectTest extends BaseEC2ApiExpectTest<EC2Api> {
       EC2Api apiWhenDontExist = requestSendsResponse(
             list, listResponse);
 
-      assertEquals(apiWhenDontExist.getTagApi().get().list().toImmutableSet(), ImmutableSet.of());
+      assertEquals(apiWhenDontExist.getTagApi().get().list().toSet(), ImmutableSet.of());
    }
    
    HttpRequest filter =
@@ -180,7 +175,7 @@ public class TagApiExpectTest extends BaseEC2ApiExpectTest<EC2Api> {
                                                "&Filter.1.Value.1=instance" +
                                                "&Filter.2.Name=key" +
                                                "&Filter.2.Value.1=stack" +
-                                               "&Signature=doNEEZHEzXV%2FSD2eSZ6PpB1PADcsAF99lXGvsh3MbS4%3D" +
+                                               "&Signature=doNEEZHEzXV/SD2eSZ6PpB1PADcsAF99lXGvsh3MbS4%3D" +
                                                "&SignatureMethod=HmacSHA256" +
                                                "&SignatureVersion=2" +
                                                "&Timestamp=2012-04-16T15%3A54%3A08.897Z" +
@@ -212,7 +207,7 @@ public class TagApiExpectTest extends BaseEC2ApiExpectTest<EC2Api> {
       assertEquals(apiWhenDontExist.getTagApi().get().filter(ImmutableMultimap.<String, String> builder()
             .put("resource-type", "instance")
             .put("key", "stack")
-            .build()).toImmutableSet(), ImmutableSet.of());
+            .build()).toSet(), ImmutableSet.of());
    }
    
    HttpRequest delete = HttpRequest.builder()
@@ -223,7 +218,7 @@ public class TagApiExpectTest extends BaseEC2ApiExpectTest<EC2Api> {
                payloadFromStringWithContentType(
                         "Action=DeleteTags" +
                         "&ResourceId.1=i-43532" +
-                        "&Signature=ytM605menR00re60wXMgBDpozrQCi0lVupf755%2FMpck%3D" +
+                        "&Signature=ytM605menR00re60wXMgBDpozrQCi0lVupf755/Mpck%3D" +
                         "&SignatureMethod=HmacSHA256" +
                         "&SignatureVersion=2" +
                         "&Tag.1.Key=tag" +
@@ -261,7 +256,7 @@ public class TagApiExpectTest extends BaseEC2ApiExpectTest<EC2Api> {
                payloadFromStringWithContentType(
                         "Action=DeleteTags" +
                         "&ResourceId.1=i-43532" +
-                        "&Signature=vRvgPegVDDjIEKudZ5Tpck0GQrVts%2F%2F1jzk4W5RgI9k%3D" +
+                        "&Signature=vRvgPegVDDjIEKudZ5Tpck0GQrVts//1jzk4W5RgI9k%3D" +
                         "&SignatureMethod=HmacSHA256" +
                         "&SignatureVersion=2" +
                         "&Tag.1.Key=tag" +

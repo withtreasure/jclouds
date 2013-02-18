@@ -20,16 +20,16 @@
 package org.jclouds.abiquo.features;
 
 import static org.jclouds.abiquo.domain.DomainUtils.withHeader;
+import static org.jclouds.reflect.Reflection2.method;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.abiquo.domain.PricingResources;
 import org.jclouds.http.functions.ParseXMLWithJAXB;
 import org.jclouds.http.functions.ReleasePayloadAndReturn;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
+import org.jclouds.reflect.Invocation;
 import org.jclouds.rest.internal.GeneratedHttpRequest;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
 import org.testng.annotations.Test;
 
 import com.abiquo.server.core.pricing.CostCodeCurrenciesDto;
@@ -43,7 +43,8 @@ import com.abiquo.server.core.pricing.PricingTemplateDto;
 import com.abiquo.server.core.pricing.PricingTemplatesDto;
 import com.abiquo.server.core.pricing.PricingTierDto;
 import com.abiquo.server.core.pricing.PricingTiersDto;
-import com.google.inject.TypeLiteral;
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 
 /**
  * Tests annotation parsing of {@code PricingAsyncApi}.
@@ -56,8 +57,8 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
    /*********************** Currency ***********************/
 
    public void testListCurrencies() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PricingAsyncApi.class.getMethod("listCurrencies");
-      GeneratedHttpRequest request = processor.createRequest(method);
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "listCurrencies");
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.of()));
 
       assertRequestLineEquals(request, "GET http://localhost/api/config/currencies HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + CurrenciesDto.BASE_MEDIA_TYPE + "\n");
@@ -65,14 +66,14 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetCurrency() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PricingAsyncApi.class.getMethod("getCurrency", Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, 1);
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "getCurrency", Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/config/currencies/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + CurrencyDto.BASE_MEDIA_TYPE + "\n");
@@ -80,14 +81,15 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testCreateCurrency() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PricingAsyncApi.class.getMethod("createCurrency", CurrencyDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, PricingResources.currencyPost());
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "createCurrency", CurrencyDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(PricingResources.currencyPost())));
 
       assertRequestLineEquals(request, "POST http://localhost/api/config/currencies HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + CurrencyDto.BASE_MEDIA_TYPE + "\n");
@@ -96,14 +98,15 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testUpdateCurrency() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PricingAsyncApi.class.getMethod("updateCurrency", CurrencyDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, PricingResources.currencyPut());
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "updateCurrency", CurrencyDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(PricingResources.currencyPut())));
 
       assertRequestLineEquals(request, "PUT http://localhost/api/config/currencies/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + CurrencyDto.BASE_MEDIA_TYPE + "\n");
@@ -112,14 +115,15 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeleteCurrency() throws SecurityException, NoSuchMethodException {
-      Method method = PricingAsyncApi.class.getMethod("deleteCurrency", CurrencyDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, PricingResources.currencyPut());
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "deleteCurrency", CurrencyDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(PricingResources.currencyPut())));
 
       assertRequestLineEquals(request, "DELETE http://localhost/api/config/currencies/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
@@ -127,7 +131,7 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -135,8 +139,8 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
    /*********************** Cost Code ***********************/
 
    public void testListCostCodes() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PricingAsyncApi.class.getMethod("listCostCodes");
-      GeneratedHttpRequest request = processor.createRequest(method);
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "listCostCodes");
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.of()));
 
       assertRequestLineEquals(request, "GET http://localhost/api/config/costcodes HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + CostCodesDto.BASE_MEDIA_TYPE + "\n");
@@ -144,14 +148,14 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetCostCode() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PricingAsyncApi.class.getMethod("getCostCode", Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, 1);
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "getCostCode", Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/config/costcodes/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + CostCodeDto.BASE_MEDIA_TYPE + "\n");
@@ -159,14 +163,15 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testCreateCostCode() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PricingAsyncApi.class.getMethod("createCostCode", CostCodeDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, PricingResources.costcodePost());
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "createCostCode", CostCodeDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(PricingResources.costcodePost())));
 
       assertRequestLineEquals(request, "POST http://localhost/api/config/costcodes HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + CostCodeDto.BASE_MEDIA_TYPE + "\n");
@@ -175,14 +180,15 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testUpdateCostCode() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PricingAsyncApi.class.getMethod("updateCostCode", CostCodeDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, PricingResources.costcodePut());
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "updateCostCode", CostCodeDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(PricingResources.costcodePut())));
 
       assertRequestLineEquals(request, "PUT http://localhost/api/config/costcodes/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + CostCodeDto.BASE_MEDIA_TYPE + "\n");
@@ -191,14 +197,15 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeleteCostCode() throws SecurityException, NoSuchMethodException {
-      Method method = PricingAsyncApi.class.getMethod("deleteCostCode", CostCodeDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, PricingResources.costcodePut());
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "deleteCostCode", CostCodeDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(PricingResources.costcodePut())));
 
       assertRequestLineEquals(request, "DELETE http://localhost/api/config/costcodes/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
@@ -206,7 +213,7 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -214,8 +221,8 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
    /*********************** Pricing Template ***********************/
 
    public void testListPricingTemplates() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PricingAsyncApi.class.getMethod("listPricingTemplates");
-      GeneratedHttpRequest request = processor.createRequest(method);
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "listPricingTemplates");
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.of()));
 
       assertRequestLineEquals(request, "GET http://localhost/api/config/pricingtemplates HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + PricingTemplatesDto.BASE_MEDIA_TYPE + "\n");
@@ -223,14 +230,14 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetPricingTemplate() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PricingAsyncApi.class.getMethod("getPricingTemplate", Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, 1);
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "getPricingTemplate", Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/config/pricingtemplates/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + PricingTemplateDto.BASE_MEDIA_TYPE + "\n");
@@ -238,14 +245,15 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testCreatePricingTemplate() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PricingAsyncApi.class.getMethod("createPricingTemplate", PricingTemplateDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, PricingResources.pricingtemplatePost());
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "createPricingTemplate", PricingTemplateDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(PricingResources.pricingtemplatePost())));
 
       assertRequestLineEquals(request, "POST http://localhost/api/config/pricingtemplates HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + PricingTemplateDto.BASE_MEDIA_TYPE + "\n");
@@ -254,14 +262,15 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testUpdatePricingTemplate() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PricingAsyncApi.class.getMethod("updatePricingTemplate", PricingTemplateDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, PricingResources.pricingtemplatePut());
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "updatePricingTemplate", PricingTemplateDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(PricingResources.pricingtemplatePut())));
 
       assertRequestLineEquals(request, "PUT http://localhost/api/config/pricingtemplates/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + PricingTemplateDto.BASE_MEDIA_TYPE + "\n");
@@ -270,14 +279,15 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeletePricingTemplate() throws SecurityException, NoSuchMethodException {
-      Method method = PricingAsyncApi.class.getMethod("deletePricingTemplate", PricingTemplateDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, PricingResources.pricingtemplatePut());
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "deletePricingTemplate", PricingTemplateDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(PricingResources.pricingtemplatePut())));
 
       assertRequestLineEquals(request, "DELETE http://localhost/api/config/pricingtemplates/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
@@ -285,22 +295,16 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
-   }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<PricingAsyncApi>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<PricingAsyncApi>>() {
-      };
    }
 
    /*********************** Cost Code Currency ***********************/
 
    public void testGetCostCodeCurrencies() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PricingAsyncApi.class.getMethod("getCostCodeCurrencies", Integer.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, 1, 1);
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "getCostCodeCurrencies", Integer.class, Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(1, 1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/config/costcodes/1/currencies?idCurrency=1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + CostCodeCurrenciesDto.BASE_MEDIA_TYPE + "\n");
@@ -308,15 +312,16 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testUpdateCostCodeCurrencies() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PricingAsyncApi.class.getMethod("updateCostCodeCurrencies", Integer.class,
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "updateCostCodeCurrencies", Integer.class,
             CostCodeCurrenciesDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, 1, PricingResources.costcodecurrencyPut());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(1, PricingResources.costcodecurrencyPut())));
 
       assertRequestLineEquals(request, "PUT http://localhost/api/config/costcodes/1/currencies HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + CostCodeCurrenciesDto.BASE_MEDIA_TYPE + "\n");
@@ -325,7 +330,7 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -333,8 +338,8 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
    /*********************** Pricing Cost Code ***********************/
 
    public void testGetPricingCostCodes() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PricingAsyncApi.class.getMethod("getPricingCostCodes", Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, 1);
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "getPricingCostCodes", Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/config/pricingtemplates/1/costcodes HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + PricingCostCodesDto.BASE_MEDIA_TYPE + "\n");
@@ -342,14 +347,14 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testGetPricingCostCode() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PricingAsyncApi.class.getMethod("getPricingCostCode", Integer.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, 1, 1);
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "getPricingCostCode", Integer.class, Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(1, 1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/config/pricingtemplates/1/costcodes/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + PricingCostCodeDto.BASE_MEDIA_TYPE + "\n");
@@ -357,15 +362,16 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testUpdatePricingCostCode() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PricingAsyncApi.class.getMethod("updatePricingCostCode", PricingCostCodeDto.class, Integer.class,
-            Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, PricingResources.pricingCostcodePut(), 1, 1);
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "updatePricingCostCode", PricingCostCodeDto.class,
+            Integer.class, Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(PricingResources.pricingCostcodePut(), 1, 1)));
 
       assertRequestLineEquals(request, "PUT http://localhost/api/config/pricingtemplates/1/costcodes/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + PricingCostCodeDto.BASE_MEDIA_TYPE + "\n");
@@ -374,7 +380,7 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -382,8 +388,8 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
    /*********************** Pricing Tier ***************************/
 
    public void testGetPricingTiers() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PricingAsyncApi.class.getMethod("getPricingTiers", Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, 1);
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "getPricingTiers", Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/config/pricingtemplates/1/tiers HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + PricingTiersDto.BASE_MEDIA_TYPE + "\n");
@@ -391,14 +397,14 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testGetPricingTier() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PricingAsyncApi.class.getMethod("getPricingTier", Integer.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, 1, 1);
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "getPricingTier", Integer.class, Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(1, 1)));
 
       assertRequestLineEquals(request, "GET http://localhost/api/config/pricingtemplates/1/tiers/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + PricingTierDto.BASE_MEDIA_TYPE + "\n");
@@ -406,15 +412,16 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testUpdatePricingTier() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = PricingAsyncApi.class.getMethod("updatePricingTier", PricingTierDto.class, Integer.class,
+      Invokable<?, ?> method = method(PricingAsyncApi.class, "updatePricingTier", PricingTierDto.class, Integer.class,
             Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, PricingResources.pricingTierPut(), 1, 2);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(PricingResources.pricingTierPut(), 1, 2)));
 
       assertRequestLineEquals(request, "PUT http://localhost/api/config/pricingtemplates/1/tiers/2 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + PricingTierDto.BASE_MEDIA_TYPE + "\n");
@@ -423,7 +430,7 @@ public class PricingAsyncApiTest extends BaseAbiquoAsyncApiTest<PricingAsyncApi>
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }

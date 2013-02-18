@@ -18,10 +18,10 @@
  */
 
 package org.jclouds.abiquo;
-
 import static org.jclouds.Constants.PROPERTY_MAX_REDIRECTS;
 import static org.jclouds.abiquo.config.AbiquoProperties.ASYNC_TASK_MONITOR_DELAY;
 import static org.jclouds.abiquo.config.AbiquoProperties.CREDENTIAL_IS_TOKEN;
+import static org.jclouds.reflect.Reflection2.typeToken;
 
 import java.net.URI;
 import java.util.Properties;
@@ -46,7 +46,7 @@ import com.google.inject.Module;
 public class AbiquoApiMetadata extends BaseRestApiMetadata {
 
    /** The token describing the rest api context. */
-   public static final TypeToken<RestContext<AbiquoApi, AbiquoAsyncApi>> CONTEXT_TOKEN = new TypeToken<RestContext<AbiquoApi, AbiquoAsyncApi>>() {
+   public static TypeToken<RestContext<AbiquoApi, AbiquoAsyncApi>> CONTEXT_TOKEN = new TypeToken<RestContext<AbiquoApi, AbiquoAsyncApi>>() {
       private static final long serialVersionUID = -2098594161943130770L;
    };
 
@@ -54,7 +54,12 @@ public class AbiquoApiMetadata extends BaseRestApiMetadata {
       this(new Builder());
    }
 
-   protected AbiquoApiMetadata(final Builder builder) {
+   @Override
+   public Builder toBuilder() {
+      return new Builder().fromApiMetadata(this);
+   }
+   
+   protected AbiquoApiMetadata(Builder builder) {
       super(builder);
    }
 
@@ -69,12 +74,7 @@ public class AbiquoApiMetadata extends BaseRestApiMetadata {
       return properties;
    }
 
-   @Override
-   public Builder toBuilder() {
-      return new Builder().fromApiMetadata(this);
-   }
-
-   public static class Builder extends BaseRestApiMetadata.Builder {
+   public static class Builder extends BaseRestApiMetadata.Builder<Builder> {
       private static final String DOCUMENTATION_ROOT = "http://community.abiquo.com/display/ABI"
             + CharMatcher.DIGIT.retainFrom(AbiquoAsyncApi.API_VERSION);
 
@@ -88,7 +88,7 @@ public class AbiquoApiMetadata extends BaseRestApiMetadata {
                .defaultEndpoint("http://localhost/api")
                .version(AbiquoAsyncApi.API_VERSION)
                .buildVersion(AbiquoAsyncApi.BUILD_VERSION)
-               .view(TypeToken.of(AbiquoContext.class))
+               .view(typeToken(AbiquoContext.class))
                .defaultProperties(AbiquoApiMetadata.defaultProperties())
                .defaultModules(
                      ImmutableSet.<Class<? extends Module>> of(AbiquoRestClientModule.class,
@@ -101,10 +101,10 @@ public class AbiquoApiMetadata extends BaseRestApiMetadata {
       }
 
       @Override
-      public Builder fromApiMetadata(final ApiMetadata in) {
-         super.fromApiMetadata(in);
+      protected Builder self() {
          return this;
       }
+
    }
 
 }

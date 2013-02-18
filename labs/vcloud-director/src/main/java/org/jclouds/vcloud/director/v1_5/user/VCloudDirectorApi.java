@@ -18,14 +18,25 @@
  */
 package org.jclouds.vcloud.director.v1_5.user;
 
-import java.util.concurrent.TimeUnit;
+import java.net.URI;
 
-import org.jclouds.concurrent.Timeout;
 import org.jclouds.rest.annotations.Delegate;
+import org.jclouds.rest.annotations.EndpointParam;
+import org.jclouds.vcloud.director.v1_5.domain.Catalog;
 import org.jclouds.vcloud.director.v1_5.domain.Entity;
+import org.jclouds.vcloud.director.v1_5.domain.Media;
+import org.jclouds.vcloud.director.v1_5.domain.Metadata;
 import org.jclouds.vcloud.director.v1_5.domain.Session;
+import org.jclouds.vcloud.director.v1_5.domain.Task;
+import org.jclouds.vcloud.director.v1_5.domain.VApp;
+import org.jclouds.vcloud.director.v1_5.domain.VAppTemplate;
+import org.jclouds.vcloud.director.v1_5.domain.Vdc;
+import org.jclouds.vcloud.director.v1_5.domain.Vm;
+import org.jclouds.vcloud.director.v1_5.domain.network.Network;
+import org.jclouds.vcloud.director.v1_5.domain.org.Org;
 import org.jclouds.vcloud.director.v1_5.features.CatalogApi;
 import org.jclouds.vcloud.director.v1_5.features.MediaApi;
+import org.jclouds.vcloud.director.v1_5.features.MetadataApi;
 import org.jclouds.vcloud.director.v1_5.features.NetworkApi;
 import org.jclouds.vcloud.director.v1_5.features.OrgApi;
 import org.jclouds.vcloud.director.v1_5.features.QueryApi;
@@ -35,6 +46,7 @@ import org.jclouds.vcloud.director.v1_5.features.VAppApi;
 import org.jclouds.vcloud.director.v1_5.features.VAppTemplateApi;
 import org.jclouds.vcloud.director.v1_5.features.VdcApi;
 import org.jclouds.vcloud.director.v1_5.features.VmApi;
+import org.jclouds.vcloud.director.v1_5.functions.URNToHref;
 
 import com.google.inject.Provides;
 
@@ -44,7 +56,6 @@ import com.google.inject.Provides;
  * @see VCloudDirectorAsyncApi
  * @author danikov
  */
-@Timeout(duration = 60, timeUnit = TimeUnit.SECONDS)
 public interface VCloudDirectorApi {
 
    /**
@@ -127,4 +138,13 @@ public interface VCloudDirectorApi {
     */
    @Delegate
    VmApi getVmApi();
+   
+   /**
+    * @return synchronous access to {@link Metadata} features
+    */
+   @Delegate
+   MetadataApi getMetadataApi(@EndpointParam(parser = URNToHref.class) String urn);
+
+   @Delegate
+   MetadataApi getMetadataApi(@EndpointParam URI href);
 }

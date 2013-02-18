@@ -18,9 +18,6 @@
  */
 package org.jclouds.glesys.features;
 
-import java.util.concurrent.TimeUnit;
-
-import org.jclouds.concurrent.Timeout;
 import org.jclouds.glesys.domain.EmailAccount;
 import org.jclouds.glesys.domain.EmailAlias;
 import org.jclouds.glesys.domain.EmailOverview;
@@ -35,9 +32,8 @@ import com.google.common.collect.FluentIterable;
  *
  * @author Adam Lowe
  * @see org.jclouds.glesys.features.EmailAccountAsyncApi
- * @see <a href="https://customer.glesys.com/api.php" />
+ * @see <a href="https://github.com/GleSYS/API/wiki/API-Documentation" />
  */
-@Timeout(duration = 30, timeUnit = TimeUnit.SECONDS)
 public interface EmailAccountApi {
 
    /**

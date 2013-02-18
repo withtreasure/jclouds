@@ -20,7 +20,9 @@ package org.jclouds.ec2.compute.functions;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.not;
+import static com.google.common.base.Strings.emptyToNull;
 import static com.google.common.collect.Iterables.filter;
+import static org.jclouds.compute.util.ComputeServiceUtils.addMetadataAndParseTagsFromValuesOfEmptyString;
 
 import java.util.List;
 import java.util.Map;
@@ -55,7 +57,6 @@ import org.jclouds.util.InetAddresses2.IsPrivateIPAddress;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -101,11 +102,8 @@ public class RunningInstanceToNodeMetadata implements Function<RunningInstance, 
       if (instance == null || instance.getId() == null)
          return null;
       NodeMetadataBuilder builder = new NodeMetadataBuilder();
-      builder = buildInstance(instance, builder);
-      return builder.build();
-   }
-
-   protected NodeMetadataBuilder buildInstance(final RunningInstance instance, NodeMetadataBuilder builder) {
+      builder.name(instance.getTags().get("Name"));
+      addMetadataAndParseTagsFromValuesOfEmptyString(builder, instance.getTags());
       builder.providerId(instance.getId());
       builder.id(instance.getRegion() + "/" + instance.getId());
       String group = getGroupForInstance(instance);
@@ -120,13 +118,9 @@ public class RunningInstanceToNodeMetadata implements Function<RunningInstance, 
       // collect all ip addresses into one bundle in case the api mistakenly put a private address
       // into the public address field
       Builder<String> addressesBuilder = ImmutableSet.builder();
-      if (Strings.emptyToNull(instance.getIpAddress()) != null)
+      if (emptyToNull(instance.getIpAddress()) != null)
          addressesBuilder.add(instance.getIpAddress());
-      //Add dnsName (if available) to addresses, when the IPAddress is null
-      // happens on Eucalyptus sometimes.
-      else if(Strings.emptyToNull(instance.getDnsName()) != null)
-         addressesBuilder.add(instance.getDnsName());
-      if (Strings.emptyToNull(instance.getPrivateIpAddress()) != null)
+      if (emptyToNull(instance.getPrivateIpAddress()) != null)
          addressesBuilder.add(instance.getPrivateIpAddress());
 
       Set<String> addresses = addressesBuilder.build();
@@ -149,7 +143,7 @@ public class RunningInstanceToNodeMetadata implements Function<RunningInstance, 
       } catch (UncheckedExecutionException e) {
          logger.debug("error getting image for %s: %s", regionAndName, e);
       }
-      return builder;
+      return builder.build();
    }
 
    protected void addCredentialsForInstance(NodeMetadataBuilder builder, RunningInstance instance) {

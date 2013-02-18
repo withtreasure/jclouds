@@ -18,6 +18,7 @@
  */
 package org.jclouds.openstack.nova.v2_0.extensions;
 
+import static org.jclouds.util.Predicates2.retry;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
@@ -30,7 +31,6 @@ import org.jclouds.openstack.nova.v2_0.domain.VolumeSnapshot;
 import org.jclouds.openstack.nova.v2_0.internal.BaseNovaApiLiveTest;
 import org.jclouds.openstack.nova.v2_0.options.CreateVolumeOptions;
 import org.jclouds.openstack.nova.v2_0.options.CreateVolumeSnapshotOptions;
-import org.jclouds.predicates.RetryablePredicate;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -69,8 +69,7 @@ public class VolumeApiLiveTest extends BaseNovaApiLiveTest {
          if (testSnapshot != null) {
             final String snapshotId = testSnapshot.getId();
             assertTrue(volumeOption.get().deleteSnapshot(snapshotId));
-            assertTrue(new RetryablePredicate<VolumeApi>(new Predicate<VolumeApi>() {
-               @Override
+            assertTrue(retry(new Predicate<VolumeApi>() {
                public boolean apply(VolumeApi volumeApi) {
                   return volumeOption.get().getSnapshot(snapshotId) == null;
                }
@@ -79,8 +78,7 @@ public class VolumeApiLiveTest extends BaseNovaApiLiveTest {
          if (testVolume != null) {
             final String volumeId = testVolume.getId();
             assertTrue(volumeOption.get().delete(volumeId));
-            assertTrue(new RetryablePredicate<VolumeApi>(new Predicate<VolumeApi>() {
-               @Override
+            assertTrue(retry(new Predicate<VolumeApi>() {
                public boolean apply(VolumeApi volumeApi) {
                   return volumeOption.get().get(volumeId) == null;
                }
@@ -93,11 +91,10 @@ public class VolumeApiLiveTest extends BaseNovaApiLiveTest {
    public void testCreateVolume() {
       if (volumeOption.isPresent()) {
          testVolume = volumeOption.get().create(
-                  1,
-                  CreateVolumeOptions.Builder.name("jclouds-test-volume").description("description of test volume")
-                           .availabilityZone(zone));
-         assertTrue(new RetryablePredicate<VolumeApi>(new Predicate<VolumeApi>() {
-            @Override
+               1,
+               CreateVolumeOptions.Builder.name("jclouds-test-volume").description("description of test volume")
+                     .availabilityZone(zone));
+         assertTrue(retry(new Predicate<VolumeApi>() {
             public boolean apply(VolumeApi volumeApi) {
                return volumeOption.get().get(testVolume.getId()).getStatus() == Volume.Status.AVAILABLE;
             }
@@ -108,7 +105,7 @@ public class VolumeApiLiveTest extends BaseNovaApiLiveTest {
    @Test(dependsOnMethods = "testCreateVolume")
    public void testListVolumes() {
       if (volumeOption.isPresent()) {
-         Set<? extends Volume> volumes = volumeOption.get().list().toImmutableSet();
+         Set<? extends Volume> volumes = volumeOption.get().list().toSet();
          assertNotNull(volumes);
          boolean foundIt = false;
          for (Volume vol : volumes) {
@@ -125,7 +122,7 @@ public class VolumeApiLiveTest extends BaseNovaApiLiveTest {
    @Test(dependsOnMethods = "testCreateVolume")
    public void testListVolumesInDetail() {
       if (volumeOption.isPresent()) {
-         Set<? extends Volume> volumes = volumeOption.get().listInDetail().toImmutableSet();
+         Set<? extends Volume> volumes = volumeOption.get().listInDetail().toSet();
          assertNotNull(volumes);
          boolean foundIt = false;
          for (Volume vol : volumes) {
@@ -162,8 +159,7 @@ public class VolumeApiLiveTest extends BaseNovaApiLiveTest {
          assertTrue(testSnapshot.getSize() > -1);
          assertNotNull(testSnapshot.getCreated());
 
-         assertTrue(new RetryablePredicate<VolumeApi>(new Predicate<VolumeApi>() {
-            @Override
+         assertTrue(retry(new Predicate<VolumeApi>() {
             public boolean apply(VolumeApi volumeApi) {
                return volumeOption.get().getSnapshot(snapshotId).getStatus() == Volume.Status.AVAILABLE;
             }
@@ -174,7 +170,7 @@ public class VolumeApiLiveTest extends BaseNovaApiLiveTest {
    @Test(dependsOnMethods = "testCreateSnapshot")
    public void testListSnapshots() {
       if (volumeOption.isPresent()) {
-         Set<? extends VolumeSnapshot> snapshots = volumeOption.get().listSnapshots().toImmutableSet();
+         Set<? extends VolumeSnapshot> snapshots = volumeOption.get().listSnapshots().toSet();
          assertNotNull(snapshots);
          boolean foundIt = false;
          for (VolumeSnapshot snap : snapshots) {
@@ -193,7 +189,7 @@ public class VolumeApiLiveTest extends BaseNovaApiLiveTest {
    @Test(dependsOnMethods = "testCreateSnapshot")
    public void testListSnapshotsInDetail() {
       if (volumeOption.isPresent()) {
-         Set<? extends VolumeSnapshot> snapshots = volumeOption.get().listSnapshotsInDetail().toImmutableSet();
+         Set<? extends VolumeSnapshot> snapshots = volumeOption.get().listSnapshotsInDetail().toSet();
          assertNotNull(snapshots);
          boolean foundIt = false;
          for (VolumeSnapshot snap : snapshots) {
@@ -225,7 +221,7 @@ public class VolumeApiLiveTest extends BaseNovaApiLiveTest {
          try {
             final String serverId = server_id = createServerInZone(zone).getId();
 
-            Set<? extends VolumeAttachment> attachments = volumeOption.get().listAttachmentsOnServer(serverId).toImmutableSet();
+            Set<? extends VolumeAttachment> attachments = volumeOption.get().listAttachmentsOnServer(serverId).toSet();
             assertNotNull(attachments);
             final int before = attachments.size();
 
@@ -234,14 +230,13 @@ public class VolumeApiLiveTest extends BaseNovaApiLiveTest {
             assertNotNull(testAttachment.getId());
             assertEquals(testAttachment.getVolumeId(), testVolume.getId());
 
-            assertTrue(new RetryablePredicate<VolumeApi>(new Predicate<VolumeApi>() {
-               @Override
+            assertTrue(retry(new Predicate<VolumeApi>() {
                public boolean apply(VolumeApi volumeApi) {
                   return volumeOption.get().listAttachmentsOnServer(serverId).size() > before;
                }
             }, 60 * 1000L).apply(volumeOption.get()));
 
-            attachments = volumeOption.get().listAttachmentsOnServer(serverId).toImmutableSet();
+            attachments = volumeOption.get().listAttachmentsOnServer(serverId).toSet();
             assertNotNull(attachments);
             assertEquals(attachments.size(), before + 1);
 
@@ -265,8 +260,7 @@ public class VolumeApiLiveTest extends BaseNovaApiLiveTest {
             assertTrue(foundIt, "Failed to find the attachment we created in listAttachments() response");
 
             volumeOption.get().detachVolumeFromServer(testVolume.getId(), serverId);
-            assertTrue(new RetryablePredicate<VolumeApi>(new Predicate<VolumeApi>() {
-               @Override
+            assertTrue(retry(new Predicate<VolumeApi>() {
                public boolean apply(VolumeApi volumeApi) {
                   return volumeOption.get().listAttachmentsOnServer(serverId).size() == before;
                }

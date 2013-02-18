@@ -69,6 +69,7 @@ import com.abiquo.server.core.infrastructure.storage.DvdManagementDto;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.inject.TypeLiteral;
@@ -322,11 +323,11 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    public List<Ip<?, ?>> listAttachedNics() {
       // The strategy will refresh the vm. There is no need to do it here
       ListAttachedNics strategy = context.getUtils().getInjector().getInstance(ListAttachedNics.class);
-      return Lists.newLinkedList(strategy.execute(this));
+      return ImmutableList.copyOf(strategy.execute(this));
    }
 
    public List<Ip<?, ?>> listAttachedNics(final Predicate<Ip<?, ?>> filter) {
-      return Lists.newLinkedList(filter(listAttachedNics(), filter));
+      return ImmutableList.copyOf(filter(listAttachedNics(), filter));
    }
 
    public Ip<?, ?> findAttachedNic(final Predicate<Ip<?, ?>> filter) {

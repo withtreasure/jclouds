@@ -19,17 +19,11 @@
 package org.jclouds.vcloud.director.v1_5.features.admin;
 
 import java.net.URI;
-import java.util.concurrent.TimeUnit;
 
-import org.jclouds.concurrent.Timeout;
-import org.jclouds.rest.annotations.Delegate;
-import org.jclouds.rest.annotations.EndpointParam;
 import org.jclouds.vcloud.director.v1_5.domain.Task;
 import org.jclouds.vcloud.director.v1_5.domain.network.Network;
 import org.jclouds.vcloud.director.v1_5.domain.org.OrgNetwork;
-import org.jclouds.vcloud.director.v1_5.features.MetadataApi;
 import org.jclouds.vcloud.director.v1_5.features.NetworkApi;
-import org.jclouds.vcloud.director.v1_5.functions.href.NetworkURNToAdminHref;
 
 /**
  * Provides synchronous access to admin {@link Network} objects.
@@ -37,7 +31,6 @@ import org.jclouds.vcloud.director.v1_5.functions.href.NetworkURNToAdminHref;
  * @see AdminNetworkAsyncApi
  * @author danikov, Adrian Cole
  */
-@Timeout(duration = 180, timeUnit = TimeUnit.SECONDS)
 public interface AdminNetworkApi extends NetworkApi {
 
    /**
@@ -93,16 +86,4 @@ public interface AdminNetworkApi extends NetworkApi {
    Task reset(String networkUrn);
    
    Task reset(URI networkAdminHref);
-
-   /**
-    * @return synchronous access to admin {@link MetadataApi.Writeable} features
-    */
-   @Override
-   @Delegate
-   MetadataApi.Writeable getMetadataApi(@EndpointParam(parser = NetworkURNToAdminHref.class) String networkUrn);
-
-   @Override
-   @Delegate
-   MetadataApi.Writeable getMetadataApi(@EndpointParam URI networkAdminHref);
-
 }

@@ -33,11 +33,12 @@ import org.jclouds.cloudwatch.domain.Unit;
 import org.jclouds.cloudwatch.internal.BaseCloudWatchApiExpectTest;
 import org.jclouds.cloudwatch.options.GetMetricStatisticsOptions;
 import org.jclouds.cloudwatch.options.ListMetricsOptions;
-import org.jclouds.collect.IterableWithMarkers;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.http.HttpResponse;
 import org.jclouds.rest.ResourceNotFoundException;
 import org.testng.annotations.Test;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @author Jeremy Whitlock, Adrian Cole
@@ -56,7 +57,7 @@ public class MetricApiExpectTest extends BaseCloudWatchApiExpectTest {
                                        .payload(
                                           payloadFromStringWithContentType(
                                                 "Action=ListMetrics" +
-                                                      "&Signature=KSh9oQydCR0HMAV6QPYwDzqwQIpxs8I%2Fig7brYgHVZU%3D" +
+                                                      "&Signature=KSh9oQydCR0HMAV6QPYwDzqwQIpxs8I/ig7brYgHVZU%3D" +
                                                       "&SignatureMethod=HmacSHA256" +
                                                       "&SignatureVersion=2" +
                                                       "&Timestamp=2009-11-08T15%3A54%3A08.897Z" +
@@ -84,7 +85,7 @@ public class MetricApiExpectTest extends BaseCloudWatchApiExpectTest {
       CloudWatchApi apiWhenMetricsDontExist = requestSendsResponse(
             listMetrics, listMetricsResponse);
 
-      assertEquals(apiWhenMetricsDontExist.getMetricApiForRegion(null).list().get(0), IterableWithMarkers.EMPTY);
+      assertEquals(apiWhenMetricsDontExist.getMetricApiForRegion(null).list().get(0).toSet(), ImmutableSet.of());
    }
    
    public void testListMetrics2PagesWhenResponseIs2xx() throws Exception {
@@ -100,7 +101,7 @@ public class MetricApiExpectTest extends BaseCloudWatchApiExpectTest {
                   payloadFromStringWithContentType(
                         "Action=ListMetrics" +
                               "&NextToken=MARKER" +
-                              "&Signature=RpBdQydXD1jQhEUnXoqT60NEuCP%2FZgdvO6Hf3uf%2Fwy0%3D" +
+                              "&Signature=RpBdQydXD1jQhEUnXoqT60NEuCP/ZgdvO6Hf3uf/wy0%3D" +
                               "&SignatureMethod=HmacSHA256" +
                               "&SignatureVersion=2" +
                               "&Timestamp=2009-11-08T15%3A54%3A08.897Z" +
@@ -132,8 +133,8 @@ public class MetricApiExpectTest extends BaseCloudWatchApiExpectTest {
                                    "&Dimensions.member.1.Value=SOMEINSTANCEID" +
                                    "&MetricName=CPUUtilization" +
                                    "&Namespace=SOMENEXTTOKEN" +
-                                   "&NextToken=AWS%2FEC2" +
-                                   "&Signature=G05HKEx9FJpGZBk02OVYwt3u4g%2FilAY9nU5hJI9LDXA%3D" +
+                                   "&NextToken=AWS/EC2" +
+                                   "&Signature=G05HKEx9FJpGZBk02OVYwt3u4g/ilAY9nU5hJI9LDXA%3D" +
                                    "&SignatureMethod=HmacSHA256" +
                                    "&SignatureVersion=2" +
                                    "&Timestamp=2009-11-08T15%3A54%3A08.897Z" +
@@ -178,9 +179,9 @@ public class MetricApiExpectTest extends BaseCloudWatchApiExpectTest {
                                                 "Action=GetMetricStatistics" +
                                                       "&EndTime=1970-01-01T02%3A46%3A40Z" +
                                                       "&MetricName=CPUUtilization" +
-                                                      "&Namespace=AWS%2FEC2" +
+                                                      "&Namespace=AWS/EC2" +
                                                       "&Period=60" +
-                                                      "&Signature=rmg8%2Ba7w4ycy%2FKfO8rnuj6rDL0jNE96m8GKfjh3SWcw%3D" +
+                                                      "&Signature=rmg8%2Ba7w4ycy/KfO8rnuj6rDL0jNE96m8GKfjh3SWcw%3D" +
                                                       "&SignatureMethod=HmacSHA256" +
                                                       "&SignatureVersion=2" +
                                                       "&StartTime=1970-01-01T02%3A46%3A40Z" +
@@ -235,9 +236,9 @@ public class MetricApiExpectTest extends BaseCloudWatchApiExpectTest {
                                    "&Dimensions.member.2.Value=t1.micro" +
                                    "&EndTime=1970-01-01T02%3A46%3A40Z" +
                                    "&MetricName=CPUUtilization" +
-                                   "&Namespace=AWS%2FEC2" +
+                                   "&Namespace=AWS/EC2" +
                                    "&Period=60" +
-                                   "&Signature=e0WyI%2FNm4hN2%2BMEm1mjRUzsvgvMCdFXbVJWi4ORpwic%3D" +
+                                   "&Signature=e0WyI/Nm4hN2%2BMEm1mjRUzsvgvMCdFXbVJWi4ORpwic%3D" +
                                    "&SignatureMethod=HmacSHA256" +
                                    "&SignatureVersion=2" +
                                    "&StartTime=1970-01-01T02%3A46%3A40Z" +

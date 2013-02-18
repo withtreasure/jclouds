@@ -20,6 +20,7 @@ package org.jclouds.azure.management.features;
 
 import java.util.Set;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -27,16 +28,15 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.azure.management.domain.Disk;
 import org.jclouds.azure.management.functions.ParseRequestIdHeader;
 import org.jclouds.azure.management.xml.ListDisksHandler;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.Headers;
 import org.jclouds.rest.annotations.ResponseParser;
-import org.jclouds.rest.annotations.SkipEncoding;
 import org.jclouds.rest.annotations.XMLResponseParser;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -48,20 +48,27 @@ import com.google.common.util.concurrent.ListenableFuture;
  * @see DiskApi
  * @author Gerald Pereira
  */
-@SkipEncoding('/')
 @Headers(keys = "x-ms-version", values = "2012-03-01")
 public interface DiskAsyncApi {
 
+   /**
+    * @see DiskApi#list()
+    */
+   @Named("ListDisks")
    @GET
    @Path("/services/disks")
    @XMLResponseParser(ListDisksHandler.class)
-   @ExceptionParser(ReturnEmptySetOnNotFoundOr404.class)
+   @Fallback(EmptySetOnNotFoundOr404.class)
    @Consumes(MediaType.APPLICATION_XML)
    ListenableFuture<Set<Disk>> list();
 
+   /**
+    * @see DiskApi#delete
+    */
+   @Named("DeleteDisk")
    @DELETE
    @Path("/services/disks/{diskName}")
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    @ResponseParser(ParseRequestIdHeader.class)
    ListenableFuture<String> delete(@PathParam("diskName") String imageName);
 }

@@ -18,16 +18,16 @@
  */
 package org.jclouds.vcloud.features;
 
+import static org.jclouds.reflect.Reflection2.method;
+
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URI;
 
-import org.jclouds.http.HttpRequest;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
+import org.jclouds.Fallbacks.VoidOnNotFoundOr404;
 import org.jclouds.http.functions.ParseSax;
 import org.jclouds.http.functions.ReleasePayloadAndReturn;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnVoidOnNotFoundOr404;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.jclouds.util.Strings2;
 import org.jclouds.vcloud.internal.BaseVCloudAsyncClientTest;
 import org.jclouds.vcloud.options.CloneVAppOptions;
@@ -35,8 +35,8 @@ import org.jclouds.vcloud.xml.TaskHandler;
 import org.jclouds.vcloud.xml.VAppHandler;
 import org.testng.annotations.Test;
 
-import com.google.inject.TypeLiteral;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 /**
  * Tests behavior of {@code VAppAsyncClient}
  * 
@@ -47,18 +47,12 @@ import com.google.inject.TypeLiteral;
 @Test(groups = "unit", testName = "VAppAsyncClientTest")
 public class VAppAsyncClientTest extends BaseVCloudAsyncClientTest<VAppAsyncClient> {
 
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<VAppAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<VAppAsyncClient>>() {
-      };
-   }
-
    public void testopyVAppToVDCAndName() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VAppAsyncClient.class.getMethod("copyVAppToVDCAndName", URI.class, URI.class, String.class,
+      Invokable<?, ?> method = method(VAppAsyncClient.class, "copyVAppToVDCAndName", URI.class, URI.class, String.class,
                CloneVAppOptions[].class);
-      HttpRequest request = processor.createRequest(method, URI
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
                .create("https://vcenterprise.bluelock.com/api/v1.0/vapp/4181"), URI
-               .create("https://vcenterprise.bluelock.com/api/v1.0/vdc/1"), "my-vapp");
+               .create("https://vcenterprise.bluelock.com/api/v1.0/vdc/1"), "my-vapp"));
 
       assertRequestLineEquals(request,
                "POST https://vcenterprise.bluelock.com/api/v1.0/vdc/1/action/cloneVApp HTTP/1.1");
@@ -68,18 +62,18 @@ public class VAppAsyncClientTest extends BaseVCloudAsyncClientTest<VAppAsyncClie
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, TaskHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testCopyVAppToVDCAndNameOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VAppAsyncClient.class.getMethod("copyVAppToVDCAndName", URI.class, URI.class, String.class,
+      Invokable<?, ?> method = method(VAppAsyncClient.class, "copyVAppToVDCAndName", URI.class, URI.class, String.class,
                CloneVAppOptions[].class);
-      HttpRequest request = processor.createRequest(method, URI
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
                .create("https://vcenterprise.bluelock.com/api/v1.0/vapp/201"), URI
                .create("https://vcenterprise.bluelock.com/api/v1.0/vdc/1"), "new-linux-server", new CloneVAppOptions()
-               .deploy().powerOn().description("The description of the new vApp"));
+               .deploy().powerOn().description("The description of the new vApp")));
 
       assertRequestLineEquals(request,
                "POST https://vcenterprise.bluelock.com/api/v1.0/vdc/1/action/cloneVApp HTTP/1.1");
@@ -89,18 +83,18 @@ public class VAppAsyncClientTest extends BaseVCloudAsyncClientTest<VAppAsyncClie
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, TaskHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testMoveVAppToVDCAndRenameOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VAppAsyncClient.class.getMethod("moveVAppToVDCAndRename", URI.class, URI.class, String.class,
+      Invokable<?, ?> method = method(VAppAsyncClient.class, "moveVAppToVDCAndRename", URI.class, URI.class, String.class,
                CloneVAppOptions[].class);
-      HttpRequest request = processor.createRequest(method, URI
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
                .create("https://vcenterprise.bluelock.com/api/v1.0/vapp/201"), URI
                .create("https://vcenterprise.bluelock.com/api/v1.0/vdc/1"), "new-linux-server", new CloneVAppOptions()
-               .deploy().powerOn().description("The description of the new vApp"));
+               .deploy().powerOn().description("The description of the new vApp")));
 
       assertRequestLineEquals(request,
                "POST https://vcenterprise.bluelock.com/api/v1.0/vdc/1/action/cloneVApp HTTP/1.1");
@@ -110,15 +104,15 @@ public class VAppAsyncClientTest extends BaseVCloudAsyncClientTest<VAppAsyncClie
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, TaskHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeployVApp() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VAppAsyncClient.class.getMethod("deployVApp", URI.class);
-      HttpRequest request = processor.createRequest(method, URI
-               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1"));
+      Invokable<?, ?> method = method(VAppAsyncClient.class, "deployVApp", URI.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
+               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1")));
 
       assertRequestLineEquals(request, "POST https://vcenterprise.bluelock.com/api/v1.0/vApp/1/action/deploy HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: application/vnd.vmware.vcloud.task+xml\n");
@@ -127,15 +121,15 @@ public class VAppAsyncClientTest extends BaseVCloudAsyncClientTest<VAppAsyncClie
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, TaskHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeployAndPowerOnVApp() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VAppAsyncClient.class.getMethod("deployAndPowerOnVApp", URI.class);
-      HttpRequest request = processor.createRequest(method, URI
-               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1"));
+      Invokable<?, ?> method = method(VAppAsyncClient.class, "deployAndPowerOnVApp", URI.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
+               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1")));
 
       assertRequestLineEquals(request, "POST https://vcenterprise.bluelock.com/api/v1.0/vApp/1/action/deploy HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: application/vnd.vmware.vcloud.task+xml\n");
@@ -144,15 +138,15 @@ public class VAppAsyncClientTest extends BaseVCloudAsyncClientTest<VAppAsyncClie
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, TaskHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetVApp() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VAppAsyncClient.class.getMethod("getVApp", URI.class);
-      HttpRequest request = processor.createRequest(method, URI
-               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1"));
+      Invokable<?, ?> method = method(VAppAsyncClient.class, "getVApp", URI.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
+               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1")));
 
       assertRequestLineEquals(request, "GET https://vcenterprise.bluelock.com/api/v1.0/vApp/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: application/vnd.vmware.vcloud.vApp+xml\n");
@@ -160,15 +154,15 @@ public class VAppAsyncClientTest extends BaseVCloudAsyncClientTest<VAppAsyncClie
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, VAppHandler.class);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testRebootVApp() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VAppAsyncClient.class.getMethod("rebootVApp", URI.class);
-      HttpRequest request = processor.createRequest(method, URI
-               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1"));
+      Invokable<?, ?> method = method(VAppAsyncClient.class, "rebootVApp", URI.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
+               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1")));
 
       assertRequestLineEquals(request,
                "POST https://vcenterprise.bluelock.com/api/v1.0/vApp/1/power/action/reboot HTTP/1.1");
@@ -177,15 +171,15 @@ public class VAppAsyncClientTest extends BaseVCloudAsyncClientTest<VAppAsyncClie
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testUndeployVApp() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VAppAsyncClient.class.getMethod("undeployVApp", URI.class);
-      HttpRequest request = processor.createRequest(method, URI
-               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1"));
+      Invokable<?, ?> method = method(VAppAsyncClient.class, "undeployVApp", URI.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
+               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1")));
 
       assertRequestLineEquals(request,
                "POST https://vcenterprise.bluelock.com/api/v1.0/vApp/1/action/undeploy HTTP/1.1");
@@ -195,15 +189,15 @@ public class VAppAsyncClientTest extends BaseVCloudAsyncClientTest<VAppAsyncClie
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, TaskHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testUndeployAndSaveStateOfVAppSaveState() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VAppAsyncClient.class.getMethod("undeployAndSaveStateOfVApp", URI.class);
-      HttpRequest request = processor.createRequest(method, URI
-               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1"));
+      Invokable<?, ?> method = method(VAppAsyncClient.class, "undeployAndSaveStateOfVApp", URI.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
+               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1")));
 
       assertRequestLineEquals(request,
                "POST https://vcenterprise.bluelock.com/api/v1.0/vApp/1/action/undeploy HTTP/1.1");
@@ -214,15 +208,15 @@ public class VAppAsyncClientTest extends BaseVCloudAsyncClientTest<VAppAsyncClie
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, TaskHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeleteVApp() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VAppAsyncClient.class.getMethod("deleteVApp", URI.class);
-      HttpRequest request = processor.createRequest(method, URI
-               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1"));
+      Invokable<?, ?> method = method(VAppAsyncClient.class, "deleteVApp", URI.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
+               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1")));
 
       assertRequestLineEquals(request, "DELETE https://vcenterprise.bluelock.com/api/v1.0/vApp/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: application/vnd.vmware.vcloud.task+xml\n");
@@ -230,15 +224,15 @@ public class VAppAsyncClientTest extends BaseVCloudAsyncClientTest<VAppAsyncClie
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, TaskHandler.class);
-      assertExceptionParserClassEquals(method, ReturnVoidOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, VoidOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testPowerOnVApp() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VAppAsyncClient.class.getMethod("powerOnVApp", URI.class);
-      HttpRequest request = processor.createRequest(method, URI
-               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1"));
+      Invokable<?, ?> method = method(VAppAsyncClient.class, "powerOnVApp", URI.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
+               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1")));
 
       assertRequestLineEquals(request,
                "POST https://vcenterprise.bluelock.com/api/v1.0/vApp/1/power/action/powerOn HTTP/1.1");
@@ -247,15 +241,15 @@ public class VAppAsyncClientTest extends BaseVCloudAsyncClientTest<VAppAsyncClie
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, TaskHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testPowerOffVApp() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VAppAsyncClient.class.getMethod("powerOffVApp", URI.class);
-      HttpRequest request = processor.createRequest(method, URI
-               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1"));
+      Invokable<?, ?> method = method(VAppAsyncClient.class, "powerOffVApp", URI.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
+               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1")));
 
       assertRequestLineEquals(request,
                "POST https://vcenterprise.bluelock.com/api/v1.0/vApp/1/power/action/powerOff HTTP/1.1");
@@ -264,15 +258,15 @@ public class VAppAsyncClientTest extends BaseVCloudAsyncClientTest<VAppAsyncClie
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, TaskHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testResetVApp() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VAppAsyncClient.class.getMethod("resetVApp", URI.class);
-      HttpRequest request = processor.createRequest(method, URI
-               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1"));
+      Invokable<?, ?> method = method(VAppAsyncClient.class, "resetVApp", URI.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
+               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1")));
 
       assertRequestLineEquals(request,
                "POST https://vcenterprise.bluelock.com/api/v1.0/vApp/1/power/action/reset HTTP/1.1");
@@ -281,15 +275,15 @@ public class VAppAsyncClientTest extends BaseVCloudAsyncClientTest<VAppAsyncClie
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, TaskHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testSuspendVApp() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VAppAsyncClient.class.getMethod("suspendVApp", URI.class);
-      HttpRequest request = processor.createRequest(method, URI
-               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1"));
+      Invokable<?, ?> method = method(VAppAsyncClient.class, "suspendVApp", URI.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
+               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1")));
 
       assertRequestLineEquals(request,
                "POST https://vcenterprise.bluelock.com/api/v1.0/vApp/1/power/action/suspend HTTP/1.1");
@@ -298,15 +292,15 @@ public class VAppAsyncClientTest extends BaseVCloudAsyncClientTest<VAppAsyncClie
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, TaskHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testShutdownVApp() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VAppAsyncClient.class.getMethod("shutdownVApp", URI.class);
-      HttpRequest request = processor.createRequest(method, URI
-               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1"));
+      Invokable<?, ?> method = method(VAppAsyncClient.class, "shutdownVApp", URI.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
+               .create("https://vcenterprise.bluelock.com/api/v1.0/vApp/1")));
 
       assertRequestLineEquals(request,
                "POST https://vcenterprise.bluelock.com/api/v1.0/vApp/1/power/action/shutdown HTTP/1.1");
@@ -315,7 +309,7 @@ public class VAppAsyncClientTest extends BaseVCloudAsyncClientTest<VAppAsyncClie
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }

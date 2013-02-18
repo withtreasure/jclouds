@@ -18,6 +18,8 @@
  */
 package org.jclouds.json.config;
 
+import static com.google.common.io.BaseEncoding.base16;
+
 import java.beans.ConstructorProperties;
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -32,22 +34,22 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import org.jclouds.crypto.CryptoStreams;
 import org.jclouds.date.DateService;
 import org.jclouds.domain.JsonBall;
 import org.jclouds.json.Json;
 import org.jclouds.json.internal.DeserializationConstructorAndReflectiveTypeAdapterFactory;
 import org.jclouds.json.internal.EnumTypeAdapterThatReturnsFromValue;
 import org.jclouds.json.internal.GsonWrapper;
-import org.jclouds.json.internal.IgnoreNullFluentIterableTypeAdapterFactory;
-import org.jclouds.json.internal.IgnoreNullIterableTypeAdapterFactory;
-import org.jclouds.json.internal.IgnoreNullMapTypeAdapterFactory;
-import org.jclouds.json.internal.IgnoreNullMultimapTypeAdapterFactory;
-import org.jclouds.json.internal.IgnoreNullSetTypeAdapterFactory;
 import org.jclouds.json.internal.NamingStrategies.AnnotationConstructorNamingStrategy;
 import org.jclouds.json.internal.NamingStrategies.AnnotationOrNameFieldNamingStrategy;
 import org.jclouds.json.internal.NamingStrategies.ExtractNamed;
 import org.jclouds.json.internal.NamingStrategies.ExtractSerializedName;
+import org.jclouds.json.internal.NullFilteringTypeAdapterFactories.CollectionTypeAdapterFactory;
+import org.jclouds.json.internal.NullFilteringTypeAdapterFactories.FluentIterableTypeAdapterFactory;
+import org.jclouds.json.internal.NullFilteringTypeAdapterFactories.IterableTypeAdapterFactory;
+import org.jclouds.json.internal.NullFilteringTypeAdapterFactories.MapTypeAdapterFactory;
+import org.jclouds.json.internal.NullFilteringTypeAdapterFactories.MultimapTypeAdapterFactory;
+import org.jclouds.json.internal.NullFilteringTypeAdapterFactories.SetTypeAdapterFactory;
 import org.jclouds.json.internal.NullHackJsonLiteralAdapter;
 import org.jclouds.json.internal.OptionalTypeAdapterFactory;
 
@@ -57,6 +59,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Bytes;
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
 import com.google.gson.FieldNamingStrategy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -83,16 +87,17 @@ public class GsonModule extends AbstractModule {
    @Provides
    @Singleton
    Gson provideGson(TypeAdapter<JsonBall> jsonAdapter, DateAdapter adapter, ByteListAdapter byteListAdapter,
-            ByteArrayAdapter byteArrayAdapter, PropertiesAdapter propertiesAdapter, JsonAdapterBindings bindings,
-            OptionalTypeAdapterFactory optional, IgnoreNullSetTypeAdapterFactory set,
-            IgnoreNullMapTypeAdapterFactory map, IgnoreNullMultimapTypeAdapterFactory multimap,
-            IgnoreNullIterableTypeAdapterFactory iterable, IgnoreNullFluentIterableTypeAdapterFactory fluentIterable)
-            throws Exception {
+         ByteArrayAdapter byteArrayAdapter, PropertiesAdapter propertiesAdapter, JsonAdapterBindings bindings,
+         OptionalTypeAdapterFactory optional, SetTypeAdapterFactory set, MapTypeAdapterFactory map,
+         MultimapTypeAdapterFactory multimap, IterableTypeAdapterFactory iterable,
+         CollectionTypeAdapterFactory collection, FluentIterableTypeAdapterFactory fluentIterable,
+         DefaultExclusionStrategy exclusionStrategy) {
 
-      FieldNamingStrategy serializationPolicy = new AnnotationOrNameFieldNamingStrategy(new ExtractSerializedName(),
-            new ExtractNamed());
+      FieldNamingStrategy serializationPolicy = new AnnotationOrNameFieldNamingStrategy(ImmutableSet.of(
+            new ExtractSerializedName(), new ExtractNamed()));
 
-      GsonBuilder builder = new GsonBuilder().setFieldNamingStrategy(serializationPolicy);
+      GsonBuilder builder = new GsonBuilder().setFieldNamingStrategy(serializationPolicy)
+                                             .setExclusionStrategies(exclusionStrategy);
 
       // simple (type adapters)
       builder.registerTypeAdapter(Properties.class, propertiesAdapter.nullSafe());
@@ -103,18 +108,17 @@ public class GsonModule extends AbstractModule {
       builder.registerTypeAdapter(JsonBall.class, jsonAdapter.nullSafe());
       builder.registerTypeAdapterFactory(optional);
       builder.registerTypeAdapterFactory(iterable);
+      builder.registerTypeAdapterFactory(collection);
       builder.registerTypeAdapterFactory(set);
       builder.registerTypeAdapterFactory(map);
       builder.registerTypeAdapterFactory(multimap);
       builder.registerTypeAdapterFactory(fluentIterable);
 
-      AnnotationConstructorNamingStrategy deserializationPolicy =
-            new AnnotationConstructorNamingStrategy(
-                  ImmutableSet.of(ConstructorProperties.class, Inject.class), ImmutableSet.of(new ExtractNamed()));
+      AnnotationConstructorNamingStrategy deserializationPolicy = new AnnotationConstructorNamingStrategy(
+            ImmutableSet.of(ConstructorProperties.class, Inject.class), ImmutableSet.of(new ExtractNamed()));
 
-      builder.registerTypeAdapterFactory(
-            new DeserializationConstructorAndReflectiveTypeAdapterFactory(new ConstructorConstructor(),
-            serializationPolicy, Excluder.DEFAULT, deserializationPolicy));
+      builder.registerTypeAdapterFactory(new DeserializationConstructorAndReflectiveTypeAdapterFactory(
+            new ConstructorConstructor(), serializationPolicy, Excluder.DEFAULT, deserializationPolicy));
 
       // complicated (serializers/deserializers as they need context to operate)
       builder.registerTypeHierarchyAdapter(Enum.class, new EnumTypeAdapterThatReturnsFromValue());
@@ -130,6 +134,20 @@ public class GsonModule extends AbstractModule {
       return builder.create();
    }
 
+   @ImplementedBy(NoExclusions.class)
+   public static interface DefaultExclusionStrategy extends ExclusionStrategy {
+   }
+
+   public static class NoExclusions implements DefaultExclusionStrategy {
+      public boolean shouldSkipField(FieldAttributes f) {
+         return false;
+      }
+
+      public boolean shouldSkipClass(Class<?> clazz) {
+         return false;
+      }
+   }
+   
    @ImplementedBy(CDateAdapter.class)
    public abstract static class DateAdapter extends TypeAdapter<Date> {
 
@@ -165,12 +183,12 @@ public class GsonModule extends AbstractModule {
 
       @Override
       public void write(JsonWriter writer, List<Byte> value) throws IOException {
-         writer.value(CryptoStreams.hex(Bytes.toArray(value)));
+         writer.value(base16().lowerCase().encode(Bytes.toArray(value)));
       }
 
       @Override
       public List<Byte> read(JsonReader reader) throws IOException {
-         return Bytes.asList(CryptoStreams.hex(reader.nextString()));
+         return Bytes.asList(base16().lowerCase().decode(reader.nextString()));
       }
 
    }
@@ -180,12 +198,12 @@ public class GsonModule extends AbstractModule {
 
       @Override
       public void write(JsonWriter writer, byte[] value) throws IOException {
-         writer.value(CryptoStreams.hex(value));
+         writer.value(base16().lowerCase().encode(value));
       }
 
       @Override
       public byte[] read(JsonReader reader) throws IOException {
-         return CryptoStreams.hex(reader.nextString());
+         return base16().lowerCase().decode(reader.nextString());
       }
    }
 

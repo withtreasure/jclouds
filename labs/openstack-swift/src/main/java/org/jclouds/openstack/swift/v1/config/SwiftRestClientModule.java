@@ -17,6 +17,7 @@
  * under the License.
  */
 package org.jclouds.openstack.swift.v1.config;
+import static org.jclouds.reflect.Reflection2.typeToken;
 
 import java.net.URI;
 import java.util.Map;
@@ -75,7 +76,7 @@ public class SwiftRestClientModule<S extends SwiftApi, A extends SwiftAsyncApi> 
 
    @SuppressWarnings("unchecked")
    public SwiftRestClientModule() {
-      super(TypeToken.class.cast(TypeToken.of(SwiftApi.class)), TypeToken.class.cast(TypeToken.of(SwiftAsyncApi.class)), DELEGATE_MAP);
+      super(TypeToken.class.cast(typeToken(SwiftApi.class)), TypeToken.class.cast(typeToken(SwiftAsyncApi.class)), DELEGATE_MAP);
    }
 
    protected SwiftRestClientModule(TypeToken<S> syncClientType, TypeToken<A> asyncClientType, Map<Class<?>, Class<?>> sync2Async) {

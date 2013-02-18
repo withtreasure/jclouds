@@ -18,18 +18,18 @@
  */
 package org.jclouds.cloudstack.features;
 
+import static org.jclouds.reflect.Reflection2.method;
+
 import java.io.IOException;
-import java.lang.reflect.Method;
 
 import org.jclouds.cloudstack.internal.BaseCloudStackAsyncClientTest;
-import org.jclouds.http.HttpRequest;
+import org.jclouds.fallbacks.MapHttp4xxCodesToExceptions;
 import org.jclouds.http.functions.ParseFirstJsonValueNamed;
-import org.jclouds.rest.functions.MapHttp4xxCodesToExceptions;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
-import com.google.inject.TypeLiteral;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 /**
  * Tests behavior of {@code ConfigurationAsyncClient}
  * 
@@ -41,8 +41,8 @@ import com.google.inject.TypeLiteral;
 public class ConfigurationAsyncClientTest extends BaseCloudStackAsyncClientTest<ConfigurationAsyncClient> {
 
    public void testListCapabilities() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = ConfigurationAsyncClient.class.getMethod("listCapabilities");
-      HttpRequest httpRequest = processor.createRequest(method);
+      Invokable<?, ?> method = method(ConfigurationAsyncClient.class, "listCapabilities");
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.of());
 
       assertRequestLineEquals(httpRequest,
             "GET http://localhost:8080/client/api?response=json&listAll=true&command=listCapabilities HTTP/1.1");
@@ -51,15 +51,9 @@ public class ConfigurationAsyncClientTest extends BaseCloudStackAsyncClientTest<
 
       assertResponseParserClassEquals(method, httpRequest, ParseFirstJsonValueNamed.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, MapHttp4xxCodesToExceptions.class);
+      assertFallbackClassEquals(method, MapHttp4xxCodesToExceptions.class);
 
       checkFilters(httpRequest);
 
-   }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<ConfigurationAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<ConfigurationAsyncClient>>() {
-      };
    }
 }

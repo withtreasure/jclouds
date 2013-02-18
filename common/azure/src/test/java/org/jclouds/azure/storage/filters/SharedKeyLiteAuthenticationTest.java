@@ -18,6 +18,7 @@
  */
 package org.jclouds.azure.storage.filters;
 
+import static org.jclouds.reflect.Reflection2.typeToken;
 import static org.testng.Assert.assertEquals;
 
 import java.io.IOException;
@@ -39,7 +40,6 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.reflect.TypeToken;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 
@@ -140,9 +140,9 @@ public class SharedKeyLiteAuthenticationTest {
             .credentials(ACCOUNT, "credential")
             .modules(
                   ImmutableSet.<Module> of(new MockModule(), new NullLoggingModule(),
-                        new AzureStorageRestClientModule<IntegrationTestClient, IntegrationTestAsyncClient>(TypeToken
-                                 .of(IntegrationTestClient.class), TypeToken.of(IntegrationTestAsyncClient.class))))
-               .buildInjector();
+                        new AzureStorageRestClientModule<IntegrationTestClient, IntegrationTestAsyncClient>(
+                              typeToken(IntegrationTestClient.class), typeToken(IntegrationTestAsyncClient.class))))
+            .buildInjector();
       filter = injector.getInstance(SharedKeyLiteAuthentication.class);
    }
 }

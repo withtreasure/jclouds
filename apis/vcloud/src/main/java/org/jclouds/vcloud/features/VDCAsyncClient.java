@@ -25,15 +25,17 @@ import java.net.URI;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.javax.annotation.Nullable;
 import org.jclouds.rest.annotations.EndpointParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
+import org.jclouds.rest.annotations.MapBinder;
+import org.jclouds.rest.annotations.PayloadParam;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.XMLResponseParser;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
+import org.jclouds.vcloud.binders.OrgNameAndVDCNameToEndpoint;
 import org.jclouds.vcloud.domain.VDC;
 import org.jclouds.vcloud.filters.AddVCloudAuthorizationAndCookieToRequest;
-import org.jclouds.vcloud.functions.OrgNameAndVDCNameToEndpoint;
 import org.jclouds.vcloud.xml.VDCHandler;
 
 import com.google.common.util.concurrent.ListenableFuture;
@@ -53,7 +55,7 @@ public interface VDCAsyncClient {
    @GET
    @XMLResponseParser(VDCHandler.class)
    @Consumes(VDC_XML)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<VDC> getVDC(@EndpointParam URI vdc);
 
    /**
@@ -62,8 +64,8 @@ public interface VDCAsyncClient {
    @GET
    @XMLResponseParser(VDCHandler.class)
    @Consumes(VDC_XML)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
-   ListenableFuture<VDC> findVDCInOrgNamed(
-            @Nullable @EndpointParam(parser = OrgNameAndVDCNameToEndpoint.class) String orgName,
-            @Nullable @EndpointParam(parser = OrgNameAndVDCNameToEndpoint.class) String vdcName);
+   @Fallback(NullOnNotFoundOr404.class)
+   @MapBinder(OrgNameAndVDCNameToEndpoint.class)
+   ListenableFuture<VDC> findVDCInOrgNamed(@Nullable @PayloadParam("orgName") String orgName,
+         @Nullable @PayloadParam("vdcName") String vdcName);
 }

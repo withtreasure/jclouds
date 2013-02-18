@@ -18,39 +18,33 @@
  */
 package org.jclouds.util;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
 
 import com.google.common.base.Optional;
+import com.google.common.reflect.Invokable;
+import com.google.common.reflect.TypeToken;
 
 /**
  * 
  * @author Adrian Cole
  */
 public class Optionals2 {
-
-   public static Class<?> returnTypeOrTypeOfOptional(Method method) {
-      boolean optional = isReturnTypeOptional(method);
-      Class<?> syncClass;
-      if (optional) {
-         ParameterizedType futureType = ParameterizedType.class.cast(method.getGenericReturnType());
+   public static Class<?> unwrapIfOptional(TypeToken<?> type) {
+      if (type.getRawType().isAssignableFrom(Optional.class)) {
+         ParameterizedType futureType = ParameterizedType.class.cast(type.getType());
          // TODO: error checking in case this is a type, not a class.
          Type t = futureType.getActualTypeArguments()[0];
          if (t instanceof WildcardType) {
             t = ((WildcardType) t).getUpperBounds()[0];
          }
-         syncClass = Class.class.cast(t);
-      } else {
-         syncClass = method.getReturnType();
+         return Class.class.cast(t);
       }
-      return syncClass;
+      return type.getRawType();
    }
 
-   public static boolean isReturnTypeOptional(Method method) {
-      boolean optional = method.getReturnType().isAssignableFrom(Optional.class);
-      return optional;
+   public static boolean isReturnTypeOptional(Invokable<?, ?> method) {
+      return method.getReturnType().getRawType().isAssignableFrom(Optional.class);
    }
-
 }

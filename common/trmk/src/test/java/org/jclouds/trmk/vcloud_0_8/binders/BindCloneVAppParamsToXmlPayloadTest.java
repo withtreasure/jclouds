@@ -18,17 +18,13 @@
  */
 package org.jclouds.trmk.vcloud_0_8.binders;
 
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
+import static org.testng.Assert.assertEquals;
 
-import java.io.IOException;
-import java.net.URI;
 import java.util.Map;
 import java.util.Properties;
 
 import org.jclouds.rest.internal.GeneratedHttpRequest;
+import org.jclouds.trmk.vcloud_0_8.internal.BasePayloadTest;
 import org.jclouds.trmk.vcloud_0_8.internal.TerremarkVCloudApiMetadata;
 import org.jclouds.trmk.vcloud_0_8.options.CloneVAppOptions;
 import org.jclouds.util.Strings2;
@@ -47,7 +43,7 @@ import com.google.inject.name.Names;
  * @author Adrian Cole
  */
 @Test(groups = "unit")
-public class BindCloneVAppParamsToXmlPayloadTest {
+public class BindCloneVAppParamsToXmlPayloadTest extends BasePayloadTest {
    Injector injector = Guice.createInjector(new AbstractModule() {
 
       @Override
@@ -58,42 +54,32 @@ public class BindCloneVAppParamsToXmlPayloadTest {
          Names.bindProperties(binder(), props);
       }
    });
-
-   public void testWithDescriptionDeployOn() throws IOException {
+   
+   public void testWithDescriptionDeployOn() throws Exception {
       String expected = Strings2.toStringAndClose(getClass().getResourceAsStream("/cloneVApp.xml"));
 
       CloneVAppOptions options = new CloneVAppOptions().deploy().powerOn().withDescription(
                "The description of the new vApp");
-      GeneratedHttpRequest request = createMock(GeneratedHttpRequest.class);
-      expect(request.getEndpoint()).andReturn(URI.create("http://localhost/key")).anyTimes();
-      expect(request.getArgs()).andReturn(ImmutableList.<Object> of(options)).atLeastOnce();
-      request.setPayload(expected);
-      replay(request);
+      GeneratedHttpRequest request = requestForArgs(ImmutableList.<Object> of(options));
 
       BindCloneVAppParamsToXmlPayload binder = injector.getInstance(BindCloneVAppParamsToXmlPayload.class);
 
       Map<String, Object> map = Maps.newHashMap();
       map.put("newName", "new-linux-server");
       map.put("vApp", "https://vcloud.safesecureweb.com/api/v0.8/vapp/201");
-      binder.bindToRequest(request, map);
-      verify(request);
+      assertEquals(binder.bindToRequest(request, map).getPayload().getRawContent(), expected);
    }
 
-   public void testDefault() throws IOException {
+   public void testDefault() throws Exception {
       String expected = Strings2.toStringAndClose(getClass().getResourceAsStream("/cloneVApp-default.xml"));
 
-      GeneratedHttpRequest request = createMock(GeneratedHttpRequest.class);
-      expect(request.getEndpoint()).andReturn(URI.create("http://localhost/key")).anyTimes();
-      expect(request.getArgs()).andReturn(ImmutableList.<Object> of()).atLeastOnce();
-      request.setPayload(expected);
-      replay(request);
+      GeneratedHttpRequest request = requestForArgs(ImmutableList.<Object> of());
 
       BindCloneVAppParamsToXmlPayload binder = injector.getInstance(BindCloneVAppParamsToXmlPayload.class);
 
       Map<String, Object> map = Maps.newHashMap();
       map.put("newName", "my-vapp");
       map.put("vApp", "https://vcloud.safesecureweb.com/api/v0.8/vapp/4181");
-      binder.bindToRequest(request, map);
-      verify(request);
+      assertEquals(binder.bindToRequest(request, map).getPayload().getRawContent(), expected);
    }
 }

@@ -21,9 +21,6 @@ package org.jclouds.vcloud.functions;
 import static com.google.common.collect.Iterables.filter;
 import static org.jclouds.concurrent.FutureIterables.transformParallel;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-
 import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -31,7 +28,6 @@ import javax.inject.Singleton;
 
 import org.jclouds.Constants;
 import org.jclouds.logging.Logger;
-import org.jclouds.util.Iterables2;
 import org.jclouds.vcloud.VCloudAsyncClient;
 import org.jclouds.vcloud.VCloudMediaType;
 import org.jclouds.vcloud.domain.Catalog;
@@ -40,6 +36,8 @@ import org.jclouds.vcloud.domain.ReferenceType;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 
 /**
  * @author Adrian Cole
@@ -50,33 +48,25 @@ public class CatalogItemsInCatalog implements Function<Catalog, Iterable<Catalog
    public Logger logger = Logger.NULL;
 
    private final VCloudAsyncClient aclient;
-   private final ExecutorService executor;
+   private final ListeningExecutorService userExecutor;
 
    @Inject
-   CatalogItemsInCatalog(VCloudAsyncClient aclient, @Named(Constants.PROPERTY_USER_THREADS) ExecutorService executor) {
+   CatalogItemsInCatalog(VCloudAsyncClient aclient, @Named(Constants.PROPERTY_USER_THREADS) ListeningExecutorService userExecutor) {
       this.aclient = aclient;
-      this.executor = executor;
+      this.userExecutor = userExecutor;
    }
 
    @Override
    public Iterable<CatalogItem> apply(Catalog from) {
-
-      Iterable<? extends CatalogItem> catalogItems = transformParallel(filter(from.values(), new Predicate<ReferenceType>() {
-
-         @Override
+      return transformParallel(filter(from.values(), new Predicate<ReferenceType>() {
          public boolean apply(ReferenceType input) {
             return input.getType().equals(VCloudMediaType.CATALOGITEM_XML);
          }
-
-      }), new Function<ReferenceType, Future<? extends CatalogItem>>() {
-
-         @Override
-         public Future<CatalogItem> apply(ReferenceType from) {
+      }), new Function<ReferenceType, ListenableFuture<? extends CatalogItem>>() {
+         public ListenableFuture<CatalogItem> apply(ReferenceType from) {
             return aclient.getCatalogClient().getCatalogItem(from.getHref());
          }
-
-      }, executor, null, logger, "catalogItems in " + from.getHref());
-      return Iterables2.concreteCopy(catalogItems);
+      }, userExecutor, null, logger, "catalogItems in " + from.getHref());
    }
 
 }

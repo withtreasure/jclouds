@@ -22,22 +22,23 @@ import static org.jclouds.aws.reference.FormParameters.ACTION;
 
 import java.util.Set;
 
+import javax.inject.Named;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
 import org.jclouds.aws.filters.FormSigner;
 import org.jclouds.elb.binders.BindInstanceIdsToIndexedFormParams;
 import org.jclouds.elb.domain.InstanceHealth;
 import org.jclouds.elb.xml.DescribeInstanceHealthResultHandler;
 import org.jclouds.elb.xml.InstancesResultHandler;
 import org.jclouds.rest.annotations.BinderParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.FormParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.VirtualHost;
 import org.jclouds.rest.annotations.XMLResponseParser;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -57,10 +58,11 @@ public interface InstanceAsyncApi {
    /**
     * @see InstanceApi#getHealthOfInstancesOfLoadBalancer(String)
     */
+   @Named("DescribeInstanceHealth")
    @POST
    @Path("/")
    @XMLResponseParser(DescribeInstanceHealthResultHandler.class)
-   @ExceptionParser(ReturnEmptySetOnNotFoundOr404.class)
+   @Fallback(EmptySetOnNotFoundOr404.class)
    @FormParams(keys = "Action", values = "DescribeInstanceHealth")
    ListenableFuture<Set<InstanceHealth>> getHealthOfInstancesOfLoadBalancer(
             @FormParam("LoadBalancerName") String loadBalancerName);
@@ -68,10 +70,11 @@ public interface InstanceAsyncApi {
    /**
     * @see InstanceApi#getHealthOfInstancesOfLoadBalancer(Iterable, String)
     */
+   @Named("DescribeInstanceHealth")
    @POST
    @Path("/")
    @XMLResponseParser(DescribeInstanceHealthResultHandler.class)
-   @ExceptionParser(ReturnEmptySetOnNotFoundOr404.class)
+   @Fallback(EmptySetOnNotFoundOr404.class)
    @FormParams(keys = "Action", values = "DescribeInstanceHealth")
    ListenableFuture<Set<InstanceHealth>> getHealthOfInstancesOfLoadBalancer(
             @BinderParam(BindInstanceIdsToIndexedFormParams.class) Iterable<String> instanceIds,
@@ -81,6 +84,7 @@ public interface InstanceAsyncApi {
    /**
     * @see InstanceApi#registerInstancesWithLoadBalancer
     */
+   @Named("RegisterInstancesWithLoadBalancer")
    @POST
    @Path("/")
    @XMLResponseParser(InstancesResultHandler.class)
@@ -93,6 +97,7 @@ public interface InstanceAsyncApi {
    /**
     * @see InstanceApi#registerInstanceWithLoadBalancer
     */
+   @Named("RegisterInstancesWithLoadBalancer")
    @POST
    @Path("/")
    @XMLResponseParser(InstancesResultHandler.class)
@@ -104,6 +109,7 @@ public interface InstanceAsyncApi {
    /**
     * @see InstanceApi#deregisterInstancesFromLoadBalancer
     */
+   @Named("DeregisterInstancesFromLoadBalancer")
    @POST
    @Path("/")
    @XMLResponseParser(InstancesResultHandler.class)
@@ -115,6 +121,7 @@ public interface InstanceAsyncApi {
    /**
     * @see InstanceApi#deregisterInstanceFromLoadBalancer
     */
+   @Named("DeregisterInstancesFromLoadBalancer")
    @POST
    @Path("/")
    @XMLResponseParser(InstancesResultHandler.class)

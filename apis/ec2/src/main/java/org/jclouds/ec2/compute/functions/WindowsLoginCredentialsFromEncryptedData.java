@@ -18,6 +18,8 @@
  */
 package org.jclouds.ec2.compute.functions;
 
+import static com.google.common.io.BaseEncoding.base64;
+
 import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.spec.KeySpec;
@@ -26,7 +28,6 @@ import javax.crypto.Cipher;
 import javax.inject.Inject;
 
 import org.jclouds.crypto.Crypto;
-import org.jclouds.crypto.CryptoStreams;
 import org.jclouds.crypto.Pems;
 import org.jclouds.domain.LoginCredentials;
 import org.jclouds.ec2.compute.domain.PasswordDataAndPrivateKey;
@@ -62,9 +63,9 @@ public class WindowsLoginCredentialsFromEncryptedData implements Function<Passwo
          KeyFactory kf = crypto.rsaKeyFactory();
          PrivateKey privKey = kf.generatePrivate(keySpec);
 
-         Cipher cipher = crypto.cipher("RSA/NONE/PKCS1Padding");
+         Cipher cipher = crypto.cipher("RSA");
          cipher.init(Cipher.DECRYPT_MODE, privKey);
-         byte[] cipherText = CryptoStreams.base64(dataAndKey.getPasswordData().getPasswordData());
+         byte[] cipherText = base64().decode(dataAndKey.getPasswordData().getPasswordData());
          byte[] plainText = cipher.doFinal(cipherText);
          String password = new String(plainText, Charsets.US_ASCII);
 

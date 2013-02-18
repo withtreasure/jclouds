@@ -17,20 +17,19 @@
  * under the License.
  */
 package org.jclouds.s3.binders;
-
+import static org.jclouds.reflect.Reflection2.method;
 import static org.jclouds.s3.reference.S3Constants.PROPERTY_S3_VIRTUAL_HOST_BUCKETS;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Properties;
 
 import org.jclouds.rest.internal.GeneratedHttpRequest;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
 import org.jclouds.s3.S3AsyncClient;
 import org.jclouds.s3.internal.BaseS3AsyncClientTest;
 import org.testng.annotations.Test;
 
-import com.google.inject.TypeLiteral;
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 
 /**
  * Tests behavior of {@code BindAsHostPrefixIfConfigured}
@@ -41,16 +40,10 @@ import com.google.inject.TypeLiteral;
 @Test(groups = "unit", testName = "BindAsHostPrefixIfConfiguredNoPathTest")
 public class BindAsHostPrefixIfConfiguredNoPathTest extends BaseS3AsyncClientTest<S3AsyncClient> {
 
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<S3AsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<S3AsyncClient>>() {
-      };
-   }
-
    public void testBucketWithHostnameStyle() throws IOException, SecurityException, NoSuchMethodException {
 
-      Method method = S3AsyncClient.class.getMethod("deleteObject", String.class, String.class);
-      GeneratedHttpRequest request = processor.createRequest(method, "testbucket.example.com", "test.jpg");
+      Invokable<?, ?> method = method(S3AsyncClient.class, "deleteObject", String.class, String.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of("testbucket.example.com", "test.jpg"));
       assertRequestLineEquals(request, "DELETE https://s3.amazonaws.com/testbucket.example.com/test.jpg HTTP/1.1");
    }
 

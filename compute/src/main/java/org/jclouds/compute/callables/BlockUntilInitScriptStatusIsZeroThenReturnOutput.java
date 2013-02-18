@@ -19,11 +19,11 @@
 package org.jclouds.compute.callables;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.jclouds.util.Predicates2.retry;
 
-import java.util.Date;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -35,7 +35,7 @@ import org.jclouds.compute.events.StatementOnNodeCompletion;
 import org.jclouds.compute.events.StatementOnNodeFailure;
 import org.jclouds.compute.reference.ComputeServiceConstants;
 import org.jclouds.logging.Logger;
-import org.jclouds.predicates.RetryablePredicate;
+import org.jclouds.scriptbuilder.InitScript;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
@@ -44,6 +44,7 @@ import com.google.common.base.Predicates;
 import com.google.common.eventbus.EventBus;
 import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.AbstractFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.name.Named;
@@ -63,7 +64,7 @@ public class BlockUntilInitScriptStatusIsZeroThenReturnOutput extends AbstractFu
    @Named(ComputeServiceConstants.COMPUTE_LOGGER)
    protected Logger logger = Logger.NULL;
 
-   private final ExecutorService userThreads;
+   private final ListeningExecutorService userExecutor;
    private final EventBus eventBus;
    private final SudoAwareInitManager commandRunner;
 
@@ -75,19 +76,19 @@ public class BlockUntilInitScriptStatusIsZeroThenReturnOutput extends AbstractFu
 
    @Inject
    public BlockUntilInitScriptStatusIsZeroThenReturnOutput(
-            @Named(Constants.PROPERTY_USER_THREADS) ExecutorService userThreads, EventBus eventBus,
+            @Named(Constants.PROPERTY_USER_THREADS) ListeningExecutorService userExecutor, EventBus eventBus,
             ComputeServiceConstants.InitStatusProperties properties, @Assisted SudoAwareInitManager commandRunner) {
-      this(userThreads, eventBus, Predicates.<String> alwaysTrue(), commandRunner);
+      this(userExecutor, eventBus, Predicates.<String> alwaysTrue(), commandRunner);
       // this is mutable only until we can determine how to decouple "this" from here
-      notRunningAnymore = new LoopUntilTrueOrThrowCancellationException(new ExitStatusOfCommandGreaterThanZero(
+      notRunningAnymore = loopUntilTrueOrThrowCancellationException(new ExitStatusOfCommandGreaterThanZero(
                commandRunner), properties.initStatusMaxPeriod, properties.initStatusInitialPeriod, this);
    }
 
    @VisibleForTesting
-   public BlockUntilInitScriptStatusIsZeroThenReturnOutput(ExecutorService userThreads, EventBus eventBus,
+   public BlockUntilInitScriptStatusIsZeroThenReturnOutput(ListeningExecutorService userExecutor, EventBus eventBus,
             Predicate<String> notRunningAnymore, SudoAwareInitManager commandRunner) {
       this.commandRunner = checkNotNull(commandRunner, "commandRunner");
-      this.userThreads = checkNotNull(userThreads, "userThreads");
+      this.userExecutor = checkNotNull(userExecutor, "userExecutor");
       this.eventBus = checkNotNull(eventBus, "eventBus");
       this.notRunningAnymore = checkNotNull(notRunningAnymore, "notRunningAnymore");
    }
@@ -107,28 +108,19 @@ public class BlockUntilInitScriptStatusIsZeroThenReturnOutput extends AbstractFu
 
    }
 
-   @VisibleForTesting
-   static class LoopUntilTrueOrThrowCancellationException extends RetryablePredicate<String> {
-
-      private final AbstractFuture<ExecResponse> futureWhichMightBeCancelled;
-
-      public LoopUntilTrueOrThrowCancellationException(Predicate<String> predicate, long period, long maxPeriod,
-               AbstractFuture<ExecResponse> futureWhichMightBeCancelled) {
-         // arbitrarily high value, but Long.MAX_VALUE doesn't work!
-         super(predicate, TimeUnit.DAYS.toMillis(365), period, maxPeriod, TimeUnit.MILLISECONDS);
-         this.futureWhichMightBeCancelled = futureWhichMightBeCancelled;
-      }
-
-      /**
-       * make sure we stop the retry loop if someone cancelled the future, this keeps threads from
-       * being consumed on dead tasks
-       */
-      @Override
-      protected boolean atOrAfter(Date end) {
-         if (futureWhichMightBeCancelled.isCancelled())
-            throw new CancellationException(futureWhichMightBeCancelled + " is cancelled");
-         return super.atOrAfter(end);
-      }
+   /**
+    * make sure we stop the retry loop if someone cancelled the future, this keeps threads from
+    * being consumed on dead tasks
+    */
+   static Predicate<String> loopUntilTrueOrThrowCancellationException(Predicate<String> predicate, long period, long maxPeriod,
+         final AbstractFuture<ExecResponse> futureWhichMightBeCancelled) {
+      return retry(Predicates.<String> and(predicate, new Predicate<String>(){
+         public boolean apply(String in) {
+            if (futureWhichMightBeCancelled.isCancelled())
+               throw new CancellationException(futureWhichMightBeCancelled + " is cancelled");
+            return true;
+         }
+      }), period, maxPeriod, MILLISECONDS);
    }
 
    /**
@@ -136,7 +128,7 @@ public class BlockUntilInitScriptStatusIsZeroThenReturnOutput extends AbstractFu
     * place
     */
    public BlockUntilInitScriptStatusIsZeroThenReturnOutput init() {
-      userThreads.submit(this);
+      userExecutor.submit(this);
       return this;
    }
 

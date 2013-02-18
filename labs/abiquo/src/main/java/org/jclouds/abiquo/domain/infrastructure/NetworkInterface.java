@@ -18,6 +18,8 @@
  */
 package org.jclouds.abiquo.domain.infrastructure;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
@@ -33,12 +35,11 @@ import com.abiquo.server.core.infrastructure.network.NetworkServiceTypeDto;
 import com.google.inject.TypeLiteral;
 
 /**
- * <pre>
- * Network Interface object represents a physical attached NIC.
+ * Represents a physical attached NIC.
  * 
- * You are able to tag its {@link NetworkServiceType}. The idea is to 
- * say to let know Abiquo to which Network Service this network interface is attached to.
- * </pre>
+ * Allows to specify the {@link NetworkServiceType} for the network interface.
+ * This way all network interfaces have the information of the kind of network
+ * they are attached to.
  * 
  * @author Jaume Devesa
  */
@@ -60,6 +61,7 @@ public class NetworkInterface extends DomainWrapper<NetworkInterfaceDto> {
    }
 
    public void setNetworkServiceType(final NetworkServiceType type) {
+      checkNotNull(type, "network service type cannot be null");
       target.setNetworkServiceTypeLink(type.unwrap().getEditLink().getHref());
    }
 

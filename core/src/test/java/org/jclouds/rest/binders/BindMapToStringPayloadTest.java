@@ -18,24 +18,23 @@
  */
 package org.jclouds.rest.binders;
 
+import static org.jclouds.reflect.Reflection2.method;
 import static org.testng.Assert.assertEquals;
 
 import java.io.File;
-import java.lang.reflect.Method;
 
-import javax.ws.rs.HttpMethod;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.core.UriBuilder;
 
 import org.jclouds.http.HttpRequest;
+import org.jclouds.reflect.Invocation;
+import org.jclouds.rest.annotations.Payload;
+import org.jclouds.rest.annotations.PayloadParam;
 import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.inject.util.Providers;
-import com.sun.jersey.api.uri.UriBuilderImpl;
-
+import com.google.common.reflect.Invokable;
 /**
  * Tests behavior of {@code BindMapToStringPayload}
  * 
@@ -48,28 +47,45 @@ public class BindMapToStringPayloadTest {
       void testPayload(@PathParam("foo") String path);
 
       void noPayload(String path);
+      
+      @Payload("%7B\"changePassword\":%7B\"adminPass\":\"{adminPass}\"%7D%7D")
+      void changeAdminPass(@PayloadParam("adminPass") String adminPass);
    }
 
    @Test
    public void testCorrect() throws SecurityException, NoSuchMethodException {
-      Method testPayload = TestPayload.class.getMethod("testPayload", String.class);
+      Invokable<?, Object> testPayload = method(TestPayload.class, "testPayload", String.class);
       GeneratedHttpRequest request = GeneratedHttpRequest.builder()
-            .declaring(TestPayload.class).javaMethod(testPayload).args(ImmutableList.<Object> of("robot"))
-            .method(HttpMethod.POST).endpoint("http://localhost").build();
+            .invocation(Invocation.create(testPayload, ImmutableList.<Object> of("robot")))
+            .method("POST").endpoint("http://localhost").build();
 
-      GeneratedHttpRequest newRequest = binder()
-            .bindToRequest(request, ImmutableMap.<String,Object>of("fooble", "robot"));
+      GeneratedHttpRequest newRequest = binder().bindToRequest(request,
+            ImmutableMap.<String, Object> of("fooble", "robot"));
 
       assertEquals(newRequest.getRequestLine(), request.getRequestLine());
       assertEquals(newRequest.getPayload().getRawContent(), "name robot");
    }
+   
+   @Test
+   public void testDecodes() throws SecurityException, NoSuchMethodException {
+      Invokable<?, Object> testPayload = method(TestPayload.class, "changeAdminPass", String.class);
+      GeneratedHttpRequest request = GeneratedHttpRequest.builder()
+            .invocation(Invocation.create(testPayload, ImmutableList.<Object> of("foo")))
+            .method("POST").endpoint("http://localhost").build();
+
+      GeneratedHttpRequest newRequest = binder()
+            .bindToRequest(request, ImmutableMap.<String,Object>of("adminPass", "foo"));
+
+      assertEquals(newRequest.getRequestLine(), request.getRequestLine());
+      assertEquals(newRequest.getPayload().getRawContent(), "{\"changePassword\":{\"adminPass\":\"foo\"}}");
+   }
 
    @Test(expectedExceptions = IllegalArgumentException.class)
    public void testMustHavePayloadAnnotation() throws SecurityException, NoSuchMethodException {
-      Method noPayload = TestPayload.class.getMethod("noPayload", String.class);
+      Invokable<?, Object> noPayload = method(TestPayload.class, "noPayload", String.class);
       GeneratedHttpRequest request = GeneratedHttpRequest.builder()
-            .declaring(TestPayload.class).javaMethod(noPayload).args(ImmutableList.<Object> of("robot"))
-            .method(HttpMethod.POST).endpoint("http://localhost").build();
+            .invocation(Invocation.create(noPayload, ImmutableList.<Object> of("robot")))
+            .method("POST").endpoint("http://localhost").build();
       binder().bindToRequest(request, ImmutableMap.<String,Object>of("fooble", "robot"));
    }
 
@@ -88,6 +104,6 @@ public class BindMapToStringPayloadTest {
    }
 
    public BindMapToStringPayload binder() {
-      return new BindMapToStringPayload(Providers.<UriBuilder> of(new UriBuilderImpl()));
+      return new BindMapToStringPayload();
    }
 }

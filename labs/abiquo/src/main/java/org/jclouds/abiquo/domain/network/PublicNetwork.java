@@ -42,6 +42,7 @@ import com.abiquo.server.core.infrastructure.DatacenterDto;
 import com.abiquo.server.core.infrastructure.network.PublicIpDto;
 import com.abiquo.server.core.infrastructure.network.PublicIpsDto;
 import com.abiquo.server.core.infrastructure.network.VLANNetworkDto;
+import com.google.common.base.Optional;
 import com.google.inject.TypeLiteral;
 
 /**
@@ -142,18 +143,23 @@ public class PublicNetwork extends Network<PublicIp> {
    public static class Builder extends NetworkBuilder<Builder> {
       private Datacenter datacenter;
 
-      private NetworkServiceType nst;
+      private Optional<NetworkServiceType> networkServiceType = Optional.absent();
 
       public Builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context, final Datacenter datacenter) {
          super(context);
-         checkNotNull(datacenter, ValidationErrors.NULL_RESOURCE + Datacenter.class);
-         checkNotNull(datacenter, ValidationErrors.NULL_RESOURCE + Enterprise.class);
-         this.datacenter = datacenter;
+         this.datacenter = checkNotNull(datacenter,
+               ValidationErrors.NULL_RESOURCE + Datacenter.class.getCanonicalName());
          this.context = context;
       }
 
       public Builder datacenter(final Datacenter datacenter) {
-         this.datacenter = datacenter;
+         this.datacenter = checkNotNull(datacenter,
+               ValidationErrors.NULL_RESOURCE + Datacenter.class.getCanonicalName());
+         return this;
+      }
+
+      public Builder networkServiceType(final NetworkServiceType networkServiceType) {
+         this.networkServiceType = Optional.of(networkServiceType);
          return this;
       }
 
@@ -176,10 +182,8 @@ public class PublicNetwork extends Network<PublicIp> {
          dto.setUnmanaged(false);
          dto.setType(NetworkType.PUBLIC);
 
-         if (nst == null) {
-            nst = datacenter.defaultNetworkServiceType();
-         }
-         dto.getLinks().add(new RESTLink("networkservicetype", nst.unwrap().getEditLink().getHref()));
+         NetworkServiceType nst = networkServiceType.or(datacenter.defaultNetworkServiceType());
+         dto.addLink(new RESTLink("networkservicetype", nst.unwrap().getEditLink().getHref()));
 
          PublicNetwork network = new PublicNetwork(context, dto);
          network.datacenter = datacenter;

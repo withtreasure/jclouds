@@ -18,10 +18,14 @@
  */
 package org.jclouds.s3.filters;
 
+import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.collect.Iterables.get;
+import static com.google.common.io.BaseEncoding.base64;
+import static com.google.common.io.ByteStreams.readBytes;
 import static org.jclouds.aws.reference.AWSConstants.PROPERTY_AUTH_TAG;
 import static org.jclouds.aws.reference.AWSConstants.PROPERTY_HEADER_TAG;
-import static org.jclouds.http.utils.Queries.parseQueryToMap;
+import static org.jclouds.crypto.Macs.asByteProcessor;
+import static org.jclouds.http.utils.Queries.queryParser;
 import static org.jclouds.s3.reference.S3Constants.PROPERTY_S3_SERVICE_PATH;
 import static org.jclouds.s3.reference.S3Constants.PROPERTY_S3_VIRTUAL_HOST_BUCKETS;
 import static org.jclouds.util.Strings2.toInputStream;
@@ -39,29 +43,29 @@ import javax.inject.Singleton;
 import javax.ws.rs.core.HttpHeaders;
 
 import org.jclouds.Constants;
+import org.jclouds.aws.domain.TemporaryCredentials;
 import org.jclouds.crypto.Crypto;
-import org.jclouds.crypto.CryptoStreams;
 import org.jclouds.date.TimeStamp;
+import org.jclouds.domain.Credentials;
 import org.jclouds.http.HttpException;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.http.HttpRequestFilter;
 import org.jclouds.http.HttpUtils;
 import org.jclouds.http.internal.SignatureWire;
-import org.jclouds.io.InputSuppliers;
 import org.jclouds.logging.Logger;
 import org.jclouds.rest.RequestSigner;
-import org.jclouds.rest.annotations.Credential;
-import org.jclouds.rest.annotations.Identity;
 import org.jclouds.s3.util.S3Utils;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.SortedSetMultimap;
 import com.google.common.collect.TreeMultimap;
+import com.google.common.io.ByteProcessor;
 
 /**
  * Signs the S3 request.
@@ -83,8 +87,7 @@ public class RequestAuthorizeSignature implements HttpRequestFilter, RequestSign
             "response-cache-control", "response-content-disposition", "response-content-encoding", "delete");
 
    private final SignatureWire signatureWire;
-   private final String accessKey;
-   private final String secretKey;
+   private final Supplier<Credentials> creds;
    private final Provider<String> timeStampProvider;
    private final Crypto crypto;
    private final HttpUtils utils;
@@ -102,15 +105,14 @@ public class RequestAuthorizeSignature implements HttpRequestFilter, RequestSign
    public RequestAuthorizeSignature(SignatureWire signatureWire, @Named(PROPERTY_AUTH_TAG) String authTag,
             @Named(PROPERTY_S3_VIRTUAL_HOST_BUCKETS) boolean isVhostStyle,
             @Named(PROPERTY_S3_SERVICE_PATH) String servicePath, @Named(PROPERTY_HEADER_TAG) String headerTag,
-            @Identity String accessKey, @Credential String secretKey,
+            @org.jclouds.location.Provider Supplier<Credentials> creds,
             @TimeStamp Provider<String> timeStampProvider, Crypto crypto, HttpUtils utils) {
       this.isVhostStyle = isVhostStyle;
       this.servicePath = servicePath;
       this.headerTag = headerTag;
       this.authTag = authTag;
       this.signatureWire = signatureWire;
-      this.accessKey = accessKey;
-      this.secretKey = secretKey;
+      this.creds = creds;
       this.timeStampProvider = timeStampProvider;
       this.crypto = crypto;
       this.utils = utils;
@@ -118,14 +120,23 @@ public class RequestAuthorizeSignature implements HttpRequestFilter, RequestSign
 
    public HttpRequest filter(HttpRequest request) throws HttpException {
       request = replaceDateHeader(request);
+      Credentials current = creds.get();
+      if (current instanceof TemporaryCredentials) {
+         request = replaceSecurityTokenHeader(request, TemporaryCredentials.class.cast(current));
+      }
       String signature = calculateSignature(createStringToSign(request));
       request = replaceAuthorizationHeader(request, signature);
       utils.logRequest(signatureLog, request, "<<");
       return request;
    }
 
+   HttpRequest replaceSecurityTokenHeader(HttpRequest request, TemporaryCredentials current) {
+      return request.toBuilder().replaceHeader("x-amz-security-token", current.getSessionToken()).build();
+   }
+
    HttpRequest replaceAuthorizationHeader(HttpRequest request, String signature) {
-      request = request.toBuilder().replaceHeader(HttpHeaders.AUTHORIZATION, authTag + " " + accessKey + ":" + signature).build();
+      request = request.toBuilder()
+            .replaceHeader(HttpHeaders.AUTHORIZATION, authTag + " " + creds.get().identity + ":" + signature).build();
       return request;
    }
 
@@ -164,14 +175,12 @@ public class RequestAuthorizeSignature implements HttpRequestFilter, RequestSign
    }
 
    public String sign(String toSign) {
-      String signature;
       try {
-         signature = CryptoStreams.base64(CryptoStreams.mac(InputSuppliers.of(toSign), crypto.hmacSHA1(secretKey
-                  .getBytes())));
+         ByteProcessor<byte[]> hmacSHA1 = asByteProcessor(crypto.hmacSHA1(creds.get().credential.getBytes(UTF_8)));
+         return base64().encode(readBytes(toInputStream(toSign), hmacSHA1));
       } catch (Exception e) {
          throw new HttpException("error signing request", e);
       }
-      return signature;
    }
 
    void appendMethod(HttpRequest request, StringBuilder toSign) {
@@ -238,7 +247,7 @@ public class RequestAuthorizeSignature implements HttpRequestFilter, RequestSign
       // ...however, there are a few exceptions that must be included in the
       // signed URI.
       if (request.getEndpoint().getQuery() != null) {
-         Multimap<String, String> params = parseQueryToMap(request.getEndpoint().getQuery());
+         Multimap<String, String> params = queryParser().apply(request.getEndpoint().getQuery());
          char separator = '?';
          for (String paramName : Ordering.natural().sortedCopy(params.keySet())) {
             // Skip any parameters that aren't part of the canonical signed string

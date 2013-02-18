@@ -18,11 +18,15 @@
  */
 package org.jclouds.atmos.filters;
 
+import static com.google.common.io.BaseEncoding.base64;
+import static com.google.common.io.ByteStreams.readBytes;
 import static org.jclouds.Constants.LOGGER_SIGNATURE;
+import static org.jclouds.crypto.Macs.asByteProcessor;
 import static org.jclouds.util.Patterns.NEWLINE_PATTERN;
-import static org.jclouds.util.Patterns.TWO_SPACE_PATTERN;
+import static org.jclouds.util.Strings2.toInputStream;
 
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.annotation.Resource;
 import javax.inject.Inject;
@@ -33,25 +37,24 @@ import javax.ws.rs.core.HttpHeaders;
 
 import org.jclouds.atmos.reference.AtmosHeaders;
 import org.jclouds.crypto.Crypto;
-import org.jclouds.crypto.CryptoStreams;
 import org.jclouds.date.TimeStamp;
+import org.jclouds.domain.Credentials;
 import org.jclouds.http.HttpException;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.http.HttpRequestFilter;
 import org.jclouds.http.HttpUtils;
 import org.jclouds.http.internal.SignatureWire;
-import org.jclouds.io.InputSuppliers;
 import org.jclouds.logging.Logger;
-import org.jclouds.rest.annotations.Credential;
-import org.jclouds.rest.annotations.Identity;
 import org.jclouds.util.Strings2;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
+import com.google.common.io.ByteProcessor;
 
 /**
  * Signs the EMC Atmos Online Storage request.
@@ -64,8 +67,7 @@ import com.google.common.collect.Sets;
 public class SignRequest implements HttpRequestFilter {
 
    private final SignatureWire signatureWire;
-   private final String uid;
-   private final byte[] key;
+   private final Supplier<Credentials> creds;
    private final Provider<String> timeStampProvider;
    private final Crypto crypto;
    private final HttpUtils utils;
@@ -78,12 +80,10 @@ public class SignRequest implements HttpRequestFilter {
    Logger signatureLog = Logger.NULL;
 
    @Inject
-   public SignRequest(SignatureWire signatureWire, @Identity String uid,
-         @Credential String encodedKey, @TimeStamp Provider<String> timeStampProvider, Crypto crypto,
-         HttpUtils utils) {
+   public SignRequest(SignatureWire signatureWire, @org.jclouds.location.Provider Supplier<Credentials> creds,
+         @TimeStamp Provider<String> timeStampProvider, Crypto crypto, HttpUtils utils) {
       this.signatureWire = signatureWire;
-      this.uid = uid;
-      this.key = CryptoStreams.base64(encodedKey);
+      this.creds = creds;
       this.timeStampProvider = timeStampProvider;
       this.crypto = crypto;
       this.utils = utils;
@@ -92,7 +92,7 @@ public class SignRequest implements HttpRequestFilter {
    @Override
    public HttpRequest filter(HttpRequest request) throws HttpException {
       Builder<String, String> builder = ImmutableMap.builder();
-      builder.put(AtmosHeaders.UID, uid);
+      builder.put(AtmosHeaders.UID, creds.get().identity);
       String date = timeStampProvider.get();
       builder.put(HttpHeaders.DATE, date);
       if (request.getHeaders().containsKey(AtmosHeaders.DATE))
@@ -126,18 +126,19 @@ public class SignRequest implements HttpRequestFilter {
    }
 
    public String signString(String toSign) {
-      String signature;
       try {
-         signature = CryptoStreams.base64(CryptoStreams.mac(InputSuppliers.of(toSign), crypto.hmacSHA1(key)));
+         ByteProcessor<byte[]> hmacSHA1 = asByteProcessor(crypto.hmacSHA1(base64().decode(creds.get().credential)));
+         return base64().encode(readBytes(toInputStream(toSign), hmacSHA1));
       } catch (Exception e) {
          throw new HttpException("error signing request", e);
       }
-      return signature;
    }
 
    private void appendMethod(HttpRequest request, StringBuilder toSign) {
       toSign.append(request.getMethod()).append("\n");
    }
+   
+   private static final Pattern TWO_SPACE_PATTERN = Pattern.compile("  ");
 
    private void appendCanonicalizedHeaders(HttpRequest request, StringBuilder toSign) {
       // TreeSet == Sort the headers alphabetically.

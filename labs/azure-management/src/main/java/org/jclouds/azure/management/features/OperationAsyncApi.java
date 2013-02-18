@@ -18,38 +18,41 @@
  */
 package org.jclouds.azure.management.features;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.azure.management.domain.Operation;
 import org.jclouds.azure.management.xml.OperationHandler;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.Headers;
-import org.jclouds.rest.annotations.SkipEncoding;
 import org.jclouds.rest.annotations.XMLResponseParser;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
 /**
- * The Service Management API includes one operation for tracking the progress of asynchronous requests.
+ * The Service Management API includes one operation for tracking the progress
+ * of asynchronous requests.
  * 
  * @see <a href="http://msdn.microsoft.com/en-us/library/ee460796">docs</a>
  * @see OperationApi
  * @author Gerald Pereira
  */
-@SkipEncoding('/')
 @Headers(keys = "x-ms-version", values = "2012-03-01")
 public interface OperationAsyncApi {
 
+   /**
+    * @see OperationApi#get(String)
+    */
+   @Named("GetOperation")
    @GET
    @Path("/operations/{request-id}")
    @XMLResponseParser(OperationHandler.class)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    @Consumes(MediaType.APPLICATION_XML)
    ListenableFuture<Operation> get(@PathParam("request-id") String requestId);
-
 }

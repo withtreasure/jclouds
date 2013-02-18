@@ -20,10 +20,13 @@
 package org.jclouds.abiquo.domain;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.transform;
+import static org.jclouds.reflect.Reflection2.constructor;
 
-import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.util.Collection;
 import java.util.List;
 
 import org.jclouds.abiquo.AbiquoApi;
@@ -44,7 +47,9 @@ import com.abiquo.model.transport.WrapperDto;
 import com.abiquo.server.core.task.TaskDto;
 import com.abiquo.server.core.task.enums.TaskType;
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.reflect.Invokable;
 
 /**
  * This class is used to decorate transport objects with high level
@@ -104,13 +109,12 @@ public abstract class DomainWrapper<T extends SingleResourceTransportDto> {
       }
 
       try {
-         Constructor<W> cons = wrapperClass.getDeclaredConstructor(RestContext.class, target.getClass());
-         if (!cons.isAccessible()) {
-            cons.setAccessible(true);
-         }
-         return cons.newInstance(context, target);
-      } catch (Exception ex) {
-         throw new WrapperException(wrapperClass, target, ex);
+         Invokable<W, W> cons = constructor(wrapperClass, RestContext.class, target.getClass());
+         return cons.invoke(null, context, target);
+      } catch (InvocationTargetException e) {
+         throw new WrapperException(wrapperClass, target, e.getTargetException());
+      } catch (IllegalAccessException e) {
+         throw new WrapperException(wrapperClass, target, e);
       }
    }
 
@@ -123,7 +127,7 @@ public abstract class DomainWrapper<T extends SingleResourceTransportDto> {
          return null;
       }
 
-      return Lists.newLinkedList(transform(targets, new Function<T, W>() {
+      return ImmutableList.copyOf(transform(targets, new Function<T, W>() {
          @Override
          public W apply(final T input) {
             return wrap(context, wrapperClass, input);
@@ -136,7 +140,7 @@ public abstract class DomainWrapper<T extends SingleResourceTransportDto> {
     */
    public static <T extends SingleResourceTransportDto, W extends DomainWrapper<T>> List<T> unwrap(
          final Iterable<W> targets) {
-      return Lists.newLinkedList(transform(targets, new Function<W, T>() {
+      return ImmutableList.copyOf(transform(targets, new Function<W, T>() {
          @Override
          public T apply(final W input) {
             return input.unwrap();
@@ -169,11 +173,12 @@ public abstract class DomainWrapper<T extends SingleResourceTransportDto> {
     */
    public static <T extends SingleResourceTransportDto> Iterable<T> join(
          final Iterable<? extends WrapperDto<T>> collection) {
-      List<T> dtos = Lists.newLinkedList();
-      for (WrapperDto<T> wrapper : collection) {
-         dtos.addAll(wrapper.getCollection());
-      }
-      return dtos;
+      return concat(transform(collection, new Function<WrapperDto<T>, Collection<T>>() {
+         @Override
+         public Collection<T> apply(WrapperDto<T> input) {
+            return input.getCollection();
+         }
+      }));
    }
 
    /**

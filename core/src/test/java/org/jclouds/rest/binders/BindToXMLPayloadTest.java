@@ -20,10 +20,9 @@ package org.jclouds.rest.binders;
 
 import static org.testng.Assert.assertEquals;
 
-import javax.ws.rs.core.MediaType;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import org.jclouds.http.HttpRequest;
-import org.jclouds.rest.internal.RestAnnotationProcessorTest.TestJAXBDomain;
 import org.jclouds.xml.XMLParser;
 import org.jclouds.xml.internal.JAXBParser;
 import org.testng.annotations.Test;
@@ -50,8 +49,9 @@ public class BindToXMLPayloadTest {
 
       HttpRequest request = HttpRequest.builder().method("GET").endpoint("http://momma").build();
       request = binder.bindToRequest(request, obj);
-      assertEquals(request.getPayload().getRawContent(), XMLParser.DEFAULT_XML_HEADER + "\n<test>\n    <elem>Hello World</elem>\n</test>\n");
-      assertEquals(request.getPayload().getContentMetadata().getContentType(), MediaType.APPLICATION_XML);
+      assertEquals(request.getPayload().getRawContent(), XMLParser.DEFAULT_XML_HEADER
+            + "\n<test>\n    <elem>Hello World</elem>\n</test>\n");
+      assertEquals(request.getPayload().getContentMetadata().getContentType(), "application/xml");
    }
 
    @Test
@@ -65,12 +65,12 @@ public class BindToXMLPayloadTest {
       // Add the unknown content-type header to verify it is changed by the
       // binder
       Multimap<String, String> headers = ImmutableMultimap.<String, String> of("Content-type", "application/unknown");
-      HttpRequest request = HttpRequest.builder().method("GET").endpoint("http://momma").headers(headers)
-            .build();
+      HttpRequest request = HttpRequest.builder().method("GET").endpoint("http://momma").headers(headers).build();
 
       request = binder.bindToRequest(request, obj);
-      assertEquals(request.getPayload().getRawContent(), XMLParser.DEFAULT_XML_HEADER + "\n<test>\n    <elem>Hello World</elem>\n</test>\n");
-      assertEquals(request.getPayload().getContentMetadata().getContentType(), MediaType.APPLICATION_XML);
+      assertEquals(request.getPayload().getRawContent(), XMLParser.DEFAULT_XML_HEADER
+            + "\n<test>\n    <elem>Hello World</elem>\n</test>\n");
+      assertEquals(request.getPayload().getContentMetadata().getContentType(), "application/xml");
    }
 
    @Test(expectedExceptions = NullPointerException.class)
@@ -84,5 +84,19 @@ public class BindToXMLPayloadTest {
       BindToXMLPayload binder = new BindToXMLPayload(xml);
       HttpRequest request = HttpRequest.builder().method("GET").endpoint("http://momma").build();
       request = binder.bindToRequest(request, new Object());
+   }
+
+   @XmlRootElement(name = "test")
+   public static class TestJAXBDomain {
+      private String elem;
+
+      public String getElem() {
+         return elem;
+      }
+
+      public void setElem(String elem) {
+         this.elem = elem;
+      }
+
    }
 }

@@ -18,23 +18,23 @@
  */
 package org.jclouds.openstack.internal;
 
+import static org.jclouds.reflect.Reflection2.method;
+
 import java.io.IOException;
-import java.lang.reflect.Method;
 
 import org.jclouds.apis.ApiMetadata;
+import org.jclouds.fallbacks.MapHttp4xxCodesToExceptions;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.http.IntegrationTestAsyncClient;
 import org.jclouds.http.IntegrationTestClient;
 import org.jclouds.openstack.functions.ParseAuthenticationResponseFromHeaders;
-import org.jclouds.openstack.internal.OpenStackAuthAsyncClient;
 import org.jclouds.rest.AnonymousRestApiMetadata;
-import org.jclouds.rest.functions.MapHttp4xxCodesToExceptions;
 import org.jclouds.rest.internal.BaseAsyncClientTest;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
-import com.google.inject.TypeLiteral;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 /**
  * Tests behavior of {@code OpenStackAuthAsyncClient}
  * 
@@ -45,8 +45,8 @@ import com.google.inject.TypeLiteral;
 public class OpenStackAuthAsyncClientTest extends BaseAsyncClientTest<OpenStackAuthAsyncClient> {
 
    public void testAuthenticate() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = OpenStackAuthAsyncClient.class.getMethod("authenticate", String.class, String.class);
-      HttpRequest httpRequest = processor.createRequest(method, "foo", "bar");
+      Invokable<?, ?> method = method(OpenStackAuthAsyncClient.class, "authenticate", String.class, String.class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of("foo", "bar"));
 
       assertRequestLineEquals(httpRequest, "GET http://localhost:8080/v1.0 HTTP/1.1");
       assertNonPayloadHeadersEqual(httpRequest, "Accept: */*\nHost: localhost:8080\nX-Auth-Key: bar\nX-Auth-User: foo\n");
@@ -54,13 +54,13 @@ public class OpenStackAuthAsyncClientTest extends BaseAsyncClientTest<OpenStackA
 
       assertResponseParserClassEquals(method, httpRequest, ParseAuthenticationResponseFromHeaders.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, MapHttp4xxCodesToExceptions.class);
+      assertFallbackClassEquals(method, MapHttp4xxCodesToExceptions.class);
 
    }
 
    public void testAuthenticateStorage() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = OpenStackAuthAsyncClient.class.getMethod("authenticateStorage", String.class, String.class);
-      HttpRequest httpRequest = processor.createRequest(method, "foo", "bar");
+      Invokable<?, ?> method = method(OpenStackAuthAsyncClient.class, "authenticateStorage", String.class, String.class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of("foo", "bar"));
 
       assertRequestLineEquals(httpRequest, "GET http://localhost:8080/v1.0 HTTP/1.1");
       assertNonPayloadHeadersEqual(httpRequest, "Accept: */*\nHost: localhost:8080\nX-Storage-Pass: bar\nX-Storage-User: foo\n");
@@ -68,7 +68,7 @@ public class OpenStackAuthAsyncClientTest extends BaseAsyncClientTest<OpenStackA
 
       assertResponseParserClassEquals(method, httpRequest, ParseAuthenticationResponseFromHeaders.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, MapHttp4xxCodesToExceptions.class);
+      assertFallbackClassEquals(method, MapHttp4xxCodesToExceptions.class);
 
    }
 
@@ -81,11 +81,4 @@ public class OpenStackAuthAsyncClientTest extends BaseAsyncClientTest<OpenStackA
    @Override
    protected void checkFilters(HttpRequest request) {
    }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<OpenStackAuthAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<OpenStackAuthAsyncClient>>() {
-      };
-   }
-
 }

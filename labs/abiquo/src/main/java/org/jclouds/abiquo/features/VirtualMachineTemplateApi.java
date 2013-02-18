@@ -46,7 +46,6 @@ import com.abiquo.server.core.appslibrary.VirtualMachineTemplatesDto;
  * @author Ignasi Barrera
  * @author Francesc Montserrat
  */
-@Timeout(duration = 60, timeUnit = TimeUnit.SECONDS)
 public interface VirtualMachineTemplateApi {
    /*********************** Virtual Machine Template ***********************/
 
@@ -123,7 +122,6 @@ public interface VirtualMachineTemplateApi {
     *           datacenter and original template.
     * @return Traceable task response.
     */
-   @Timeout(duration = 90, timeUnit = TimeUnit.SECONDS)
    AcceptedRequestDto<String> createPersistentVirtualMachineTemplate(Integer enterpriseId,
          Integer datacenterRepositoryId, VirtualMachineTemplatePersistentDto persistentOptions);
 

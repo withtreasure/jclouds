@@ -18,11 +18,10 @@
  */
 package org.jclouds.http.internal;
 
-import java.lang.reflect.Method;
+import java.net.Proxy;
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -40,8 +39,12 @@ import org.jclouds.http.handlers.DelegatingRetryHandler;
 import org.jclouds.io.ContentMetadataCodec;
 import org.jclouds.rest.internal.GeneratedHttpRequest;
 
+import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Iterables;
+import com.google.common.reflect.Invokable;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import com.google.inject.TypeLiteral;
@@ -73,33 +76,33 @@ public class TrackingJavaUrlHttpCommandExecutorService extends JavaUrlHttpComman
       };
    }
    
-   public static Method getJavaMethodForRequestAtIndex(final Collection<HttpCommand> commandsInvoked, int index) {
-      return getJavaMethodForRequest(Iterables.get(commandsInvoked, index));
+   public static Invokable<?, ?> getInvokerOfRequestAtIndex(final Collection<HttpCommand> commandsInvoked, int index) {
+      return getInvokerOfRequest(Iterables.get(commandsInvoked, index));
    }
 
-   public static Method getJavaMethodForRequest(HttpCommand commandInvoked) {
-      return GeneratedHttpRequest.class.cast(commandInvoked.getCurrentRequest()).getJavaMethod();
+   public static Invokable<?, ?> getInvokerOfRequest(HttpCommand commandInvoked) {
+      return GeneratedHttpRequest.class.cast(commandInvoked.getCurrentRequest()).getInvocation().getInvokable();
    }
 
-   @SuppressWarnings("unchecked")
-   public static List<Object> getJavaArgsForRequestAtIndex(final Collection<HttpCommand> commandsInvoked, int index) {
-      return GeneratedHttpRequest.class.cast(Iterables.get(commandsInvoked, index).getCurrentRequest()).getArgs();
+   public static List<Object> getArgsForRequestAtIndex(final Collection<HttpCommand> commandsInvoked, int index) {
+      return GeneratedHttpRequest.class.cast(Iterables.get(commandsInvoked, index).getCurrentRequest()).getInvocation()
+            .getArgs();
    }
 
    @Inject
    public TrackingJavaUrlHttpCommandExecutorService(HttpUtils utils, ContentMetadataCodec contentMetadataCodec,
-            @Named(Constants.PROPERTY_IO_WORKER_THREADS) ExecutorService ioWorkerExecutor,
+            @Named(Constants.PROPERTY_IO_WORKER_THREADS) ListeningExecutorService ioExecutor,
             DelegatingRetryHandler retryHandler, IOExceptionRetryHandler ioRetryHandler,
             DelegatingErrorHandler errorHandler, HttpWire wire, @Named("untrusted") HostnameVerifier verifier,
-            @Named("untrusted") Supplier<SSLContext> untrustedSSLContextProvider, List<HttpCommand> commandsInvoked)
-            throws SecurityException, NoSuchFieldException {
-      super(utils, contentMetadataCodec, ioWorkerExecutor, retryHandler, ioRetryHandler, errorHandler, wire, verifier,
-               untrustedSSLContextProvider);
+            @Named("untrusted") Supplier<SSLContext> untrustedSSLContextProvider, Function<URI, Proxy> proxyForURI,
+            List<HttpCommand> commandsInvoked) throws SecurityException, NoSuchFieldException {
+      super(utils, contentMetadataCodec, ioExecutor, retryHandler, ioRetryHandler, errorHandler, wire, verifier,
+               untrustedSSLContextProvider, proxyForURI);
       this.commandsInvoked = commandsInvoked;
    }
 
    @Override
-   public Future<HttpResponse> submit(HttpCommand command) {
+   public ListenableFuture<HttpResponse> submit(HttpCommand command) {
       commandsInvoked.add(command);
       return super.submit(command);
    }

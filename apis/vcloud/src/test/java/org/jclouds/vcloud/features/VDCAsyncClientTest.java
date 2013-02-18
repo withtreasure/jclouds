@@ -18,21 +18,22 @@
  */
 package org.jclouds.vcloud.features;
 
+import static org.jclouds.reflect.Reflection2.method;
+
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.NoSuchElementException;
 
-import org.jclouds.http.HttpRequest;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.http.functions.ParseSax;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.jclouds.vcloud.internal.BaseVCloudAsyncClientTest;
 import org.jclouds.vcloud.xml.VDCHandler;
 import org.testng.annotations.Test;
 
-import com.google.inject.TypeLiteral;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.common.reflect.Invokable;
 /**
  * Tests behavior of {@code VDCAsyncClient}
  * 
@@ -43,27 +44,21 @@ import com.google.inject.TypeLiteral;
 @Test(groups = "unit", testName = "VDCAsyncClientTest")
 public class VDCAsyncClientTest extends BaseVCloudAsyncClientTest<VDCAsyncClient> {
 
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<VDCAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<VDCAsyncClient>>() {
-      };
-   }
-
    @Test(expectedExceptions = NoSuchElementException.class)
    public void testFindVDCInOrgNamedBadVDC() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VDCAsyncClient.class.getMethod("findVDCInOrgNamed", String.class, String.class);
-      processor.createRequest(method, "org", "vdc1");
+      Invokable<?, ?> method = method(VDCAsyncClient.class, "findVDCInOrgNamed", String.class, String.class);
+      processor.createRequest(method, ImmutableList.<Object> of("org", "vdc1"));
    }
 
    @Test(expectedExceptions = NoSuchElementException.class)
    public void testFindVDCInOrgNamedBadOrg() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VDCAsyncClient.class.getMethod("findVDCInOrgNamed", String.class, String.class);
-      processor.createRequest(method, "org1", "vdc");
+      Invokable<?, ?> method = method(VDCAsyncClient.class, "findVDCInOrgNamed", String.class, String.class);
+      processor.createRequest(method, ImmutableList.<Object> of("org1", "vdc"));
    }
 
    public void testFindVDCInOrgNamedNullOrg() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VDCAsyncClient.class.getMethod("findVDCInOrgNamed", String.class, String.class);
-      HttpRequest request = processor.createRequest(method, null, "vdc");
+      Invokable<?, ?> method = method(VDCAsyncClient.class, "findVDCInOrgNamed", String.class, String.class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, "vdc"));
 
       assertRequestLineEquals(request, "GET https://vcenterprise.bluelock.com/api/v1.0/vdc/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: application/vnd.vmware.vcloud.vdc+xml\n");
@@ -71,14 +66,14 @@ public class VDCAsyncClientTest extends BaseVCloudAsyncClientTest<VDCAsyncClient
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, VDCHandler.class);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testFindVDCInOrgNamedNullOrgAndVDC() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VDCAsyncClient.class.getMethod("findVDCInOrgNamed", String.class, String.class);
-      HttpRequest request = processor.createRequest(method, null, null);
+      Invokable<?, ?> method = method(VDCAsyncClient.class, "findVDCInOrgNamed", String.class, String.class);
+      GeneratedHttpRequest request = processor.createRequest(method, Lists.<Object> newArrayList(null, null));
 
       assertRequestLineEquals(request, "GET https://vcenterprise.bluelock.com/api/v1.0/vdc/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: application/vnd.vmware.vcloud.vdc+xml\n");
@@ -86,15 +81,15 @@ public class VDCAsyncClientTest extends BaseVCloudAsyncClientTest<VDCAsyncClient
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, VDCHandler.class);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testGetVDC() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VDCAsyncClient.class.getMethod("getVDC", URI.class);
-      HttpRequest request = processor.createRequest(method, URI
-               .create("https://vcenterprise.bluelock.com/api/v1.0/vdc/1"));
+      Invokable<?, ?> method = method(VDCAsyncClient.class, "getVDC", URI.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
+               .create("https://vcenterprise.bluelock.com/api/v1.0/vdc/1")));
 
       assertRequestLineEquals(request, "GET https://vcenterprise.bluelock.com/api/v1.0/vdc/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: application/vnd.vmware.vcloud.vdc+xml\n");
@@ -102,7 +97,7 @@ public class VDCAsyncClientTest extends BaseVCloudAsyncClientTest<VDCAsyncClient
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, VDCHandler.class);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }

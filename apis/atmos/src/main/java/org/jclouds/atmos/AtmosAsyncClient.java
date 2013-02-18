@@ -20,6 +20,7 @@ package org.jclouds.atmos;
 
 import java.net.URI;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -31,36 +32,34 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.FalseOnNotFoundOr404;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
+import org.jclouds.Fallbacks.VoidOnNotFoundOr404;
 import org.jclouds.atmos.binders.BindMetadataToHeaders;
 import org.jclouds.atmos.domain.AtmosObject;
 import org.jclouds.atmos.domain.BoundedSet;
 import org.jclouds.atmos.domain.DirectoryEntry;
 import org.jclouds.atmos.domain.SystemMetadata;
 import org.jclouds.atmos.domain.UserMetadata;
+import org.jclouds.atmos.fallbacks.EndpointIfAlreadyExists;
 import org.jclouds.atmos.filters.SignRequest;
 import org.jclouds.atmos.functions.AtmosObjectName;
 import org.jclouds.atmos.functions.ParseDirectoryListFromContentAndHeaders;
 import org.jclouds.atmos.functions.ParseObjectFromHeadersAndHttpContent;
 import org.jclouds.atmos.functions.ParseSystemMetadataFromHeaders;
 import org.jclouds.atmos.functions.ParseUserMetadataFromHeaders;
-import org.jclouds.atmos.functions.ReturnEndpointIfAlreadyExists;
 import org.jclouds.atmos.functions.ReturnTrueIfGroupACLIsOtherRead;
 import org.jclouds.atmos.options.ListOptions;
 import org.jclouds.atmos.options.PutOptions;
-import org.jclouds.blobstore.functions.ThrowContainerNotFoundOn404;
-import org.jclouds.blobstore.functions.ThrowKeyNotFoundOn404;
+import org.jclouds.blobstore.BlobStoreFallbacks.ThrowContainerNotFoundOn404;
+import org.jclouds.blobstore.BlobStoreFallbacks.ThrowKeyNotFoundOn404;
 import org.jclouds.http.options.GetOptions;
 import org.jclouds.rest.annotations.BinderParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.ParamParser;
 import org.jclouds.rest.annotations.QueryParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.ResponseParser;
-import org.jclouds.rest.annotations.SkipEncoding;
-import org.jclouds.rest.functions.ReturnFalseOnNotFoundOr404;
-
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnVoidOnNotFoundOr404;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.Provides;
@@ -74,7 +73,6 @@ import com.google.inject.Provides;
  * @author Adrian Cole
  */
 @RequestFilters(SignRequest.class)
-@SkipEncoding('/')
 @Path("/rest/namespace")
 public interface AtmosAsyncClient {
    /**
@@ -86,6 +84,7 @@ public interface AtmosAsyncClient {
    /**
     * @see AtmosClient#listDirectories
     */
+   @Named("ListDirectory")
    @GET
    @ResponseParser(ParseDirectoryListFromContentAndHeaders.class)
    @Consumes(MediaType.TEXT_XML)
@@ -94,10 +93,11 @@ public interface AtmosAsyncClient {
    /**
     * @see AtmosClient#listDirectory
     */
+   @Named("ListDirectory")
    @GET
    @Path("/{directoryName}/")
    @ResponseParser(ParseDirectoryListFromContentAndHeaders.class)
-   @ExceptionParser(ThrowContainerNotFoundOn404.class)
+   @Fallback(ThrowContainerNotFoundOn404.class)
    @Consumes(MediaType.TEXT_XML)
    ListenableFuture<BoundedSet<? extends DirectoryEntry>> listDirectory(
             @PathParam("directoryName") String directoryName, ListOptions... options);
@@ -105,9 +105,10 @@ public interface AtmosAsyncClient {
    /**
     * @see AtmosClient#createDirectory
     */
+   @Named("CreateDirectory")
    @POST
    @Path("/{directoryName}/")
-   @ExceptionParser(ReturnEndpointIfAlreadyExists.class)
+   @Fallback(EndpointIfAlreadyExists.class)
    @Produces(MediaType.APPLICATION_OCTET_STREAM)
    @Consumes(MediaType.WILDCARD)
    ListenableFuture<URI> createDirectory(@PathParam("directoryName") String directoryName, PutOptions... options);
@@ -115,6 +116,7 @@ public interface AtmosAsyncClient {
    /**
     * @see AtmosClient#createFile
     */
+   @Named("CreateObject")
    @POST
    @Path("/{parent}/{name}")
    @Consumes(MediaType.WILDCARD)
@@ -126,9 +128,10 @@ public interface AtmosAsyncClient {
    /**
     * @see AtmosClient#updateFile
     */
+   @Named("UpdateObject")
    @PUT
    @Path("/{parent}/{name}")
-   @ExceptionParser(ThrowKeyNotFoundOn404.class)
+   @Fallback(ThrowKeyNotFoundOn404.class)
    @Consumes(MediaType.WILDCARD)
    ListenableFuture<Void> updateFile(
             @PathParam("parent") String parent,
@@ -138,9 +141,10 @@ public interface AtmosAsyncClient {
    /**
     * @see AtmosClient#readFile
     */
+   @Named("ReadObject")
    @GET
    @ResponseParser(ParseObjectFromHeadersAndHttpContent.class)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    @Path("/{path}")
    @Consumes(MediaType.WILDCARD)
    ListenableFuture<AtmosObject> readFile(@PathParam("path") String path, GetOptions... options);
@@ -148,9 +152,10 @@ public interface AtmosAsyncClient {
    /**
     * @see AtmosClient#headFile
     */
+   @Named("GetObjectMetadata")
    @HEAD
    @ResponseParser(ParseObjectFromHeadersAndHttpContent.class)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    @Path("/{path}")
    @Consumes(MediaType.WILDCARD)
    ListenableFuture<AtmosObject> headFile(@PathParam("path") String path);
@@ -158,9 +163,10 @@ public interface AtmosAsyncClient {
    /**
     * @see AtmosClient#getSystemMetadata
     */
+   @Named("GetSystemMetadata")
    @HEAD
    @ResponseParser(ParseSystemMetadataFromHeaders.class)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    // currently throws 403 errors @QueryParams(keys = "metadata/system")
    @Path("/{path}")
    @Consumes(MediaType.WILDCARD)
@@ -169,9 +175,10 @@ public interface AtmosAsyncClient {
    /**
     * @see AtmosClient#getUserMetadata
     */
+   @Named("GetUserMetadata")
    @HEAD
    @ResponseParser(ParseUserMetadataFromHeaders.class)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    @Path("/{path}")
    @QueryParams(keys = "metadata/user")
    @Consumes(MediaType.WILDCARD)
@@ -180,8 +187,9 @@ public interface AtmosAsyncClient {
    /**
     * @see AtmosClient#deletePath
     */
+   @Named("DeleteObject")
    @DELETE
-   @ExceptionParser(ReturnVoidOnNotFoundOr404.class)
+   @Fallback(VoidOnNotFoundOr404.class)
    @Path("/{path}")
    @Consumes(MediaType.WILDCARD)
    ListenableFuture<Void> deletePath(@PathParam("path") String path);
@@ -189,8 +197,9 @@ public interface AtmosAsyncClient {
    /**
     * @see AtmosClient#pathExists
     */
+   @Named("GetObjectMetadata")
    @HEAD
-   @ExceptionParser(ReturnFalseOnNotFoundOr404.class)
+   @Fallback(FalseOnNotFoundOr404.class)
    @Path("/{path}")
    @Consumes(MediaType.WILDCARD)
    ListenableFuture<Boolean> pathExists(@PathParam("path") String path);
@@ -198,11 +207,12 @@ public interface AtmosAsyncClient {
    /**
     * @see AtmosClient#isPublic
     */
+   @Named("GetObjectMetadata")
    @HEAD
    @ResponseParser(ReturnTrueIfGroupACLIsOtherRead.class)
    @Path("/{path}")
    @Consumes(MediaType.WILDCARD)
-   @ExceptionParser(ReturnFalseOnNotFoundOr404.class)
+   @Fallback(FalseOnNotFoundOr404.class)
    ListenableFuture<Boolean> isPublic(@PathParam("path") String path);
 
 }

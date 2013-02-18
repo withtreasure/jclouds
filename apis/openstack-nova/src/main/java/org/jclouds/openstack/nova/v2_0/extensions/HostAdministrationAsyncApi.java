@@ -18,6 +18,7 @@
  */
 package org.jclouds.openstack.nova.v2_0.extensions;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -26,6 +27,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.EmptyFluentIterableOnNotFoundOr404;
 import org.jclouds.openstack.keystone.v2_0.filters.AuthenticateRequest;
 import org.jclouds.openstack.nova.v2_0.domain.Host;
 import org.jclouds.openstack.nova.v2_0.domain.HostResourceUsage;
@@ -38,13 +40,11 @@ import org.jclouds.openstack.nova.v2_0.functions.FieldValueResponseParsers.Statu
 import org.jclouds.openstack.nova.v2_0.functions.FieldValueResponseParsers.StatusEnabledResponseParser;
 import org.jclouds.openstack.v2_0.ServiceType;
 import org.jclouds.openstack.v2_0.services.Extension;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.Payload;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.ResponseParser;
 import org.jclouds.rest.annotations.SelectJson;
-import org.jclouds.rest.annotations.SkipEncoding;
-import org.jclouds.rest.functions.ReturnEmptyFluentIterableOnNotFoundOr404;
 
 import com.google.common.annotations.Beta;
 import com.google.common.collect.FluentIterable;
@@ -62,7 +62,6 @@ import com.google.common.util.concurrent.ListenableFuture;
  */
 @Beta
 @Extension(of = ServiceType.COMPUTE, namespace = ExtensionNamespaces.HOSTS)
-@SkipEncoding({'/', '='})
 @RequestFilters(AuthenticateRequest.class)
 @Path("/os-hosts")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -71,23 +70,26 @@ public interface HostAdministrationAsyncApi {
    /**
     * @see HostAdministrationApi#list()
     */
+   @Named("hostadmin:list")
    @GET
    @SelectJson("hosts")
-   @ExceptionParser(ReturnEmptyFluentIterableOnNotFoundOr404.class)
+   @Fallback(EmptyFluentIterableOnNotFoundOr404.class)
    ListenableFuture<? extends FluentIterable<? extends Host>> list();
 
    /**
     * @see HostAdministrationApi#listResourceUsage(String)
     */
+   @Named("hostadmin:listresource")
    @GET
    @Path("/{id}")
    @SelectJson("host")
-   @ExceptionParser(ReturnEmptyFluentIterableOnNotFoundOr404.class)
+   @Fallback(EmptyFluentIterableOnNotFoundOr404.class)
    ListenableFuture<? extends FluentIterable<? extends HostResourceUsage>> listResourceUsage(@PathParam("id") String hostId);
 
    /**
     * @see HostAdministrationApi#enable(String)
     */
+   @Named("hostadmin:enable")
    @PUT
    @Produces(MediaType.APPLICATION_JSON)
    @Path("/{id}")
@@ -98,6 +100,7 @@ public interface HostAdministrationAsyncApi {
    /**
     * @see HostAdministrationApi#disable(String) 
     */
+   @Named("hostadmin:disable")
    @PUT
    @Produces(MediaType.APPLICATION_JSON)
    @Path("/{id}")
@@ -108,6 +111,7 @@ public interface HostAdministrationAsyncApi {
    /**
     * @see HostAdministrationApi#startMaintenance(String)
     */
+   @Named("hostadmin:startmaintenance")
    @PUT
    @Produces(MediaType.APPLICATION_JSON)
    @Path("/{id}")
@@ -118,6 +122,7 @@ public interface HostAdministrationAsyncApi {
    /**
     * @see HostAdministrationApi#stopMaintenance(String)
     */
+   @Named("hostadmin:stopmaintenance")
    @PUT
    @Produces(MediaType.APPLICATION_JSON)
    @Path("/{id}")
@@ -128,6 +133,7 @@ public interface HostAdministrationAsyncApi {
    /**
     * @see HostAdministrationApi#startup(String)
     */
+   @Named("hostadmin:startup")
    @GET
    @Path("/{id}/startup")
    @ResponseParser(PowerIsStartupResponseParser.class)
@@ -136,6 +142,7 @@ public interface HostAdministrationAsyncApi {
    /**
     * @see HostAdministrationApi#shutdown(String)
     */
+   @Named("hostadmin:shutdown")
    @GET
    @Path("/{id}/shutdown")
    @ResponseParser(PowerIsShutdownResponseParser.class)
@@ -144,6 +151,7 @@ public interface HostAdministrationAsyncApi {
    /**
     * @see HostAdministrationApi#reboot(String)
     */
+   @Named("hostadmin:reboot")
    @GET
    @Path("/{id}/reboot")
    @ResponseParser(PowerIsRebootResponseParser.class)

@@ -30,7 +30,7 @@ import javax.ws.rs.core.Response.Status;
 
 import com.abiquo.model.transport.error.ErrorDto;
 import com.abiquo.model.transport.error.ErrorsDto;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Abiquo API exception.
@@ -72,7 +72,7 @@ public class AbiquoException extends RuntimeException {
     * Find all errors with the given code.
     */
    public List<ErrorDto> findErrors(final String code) {
-      return Lists.newLinkedList(filter(errors.getCollection(), code(code)));
+      return ImmutableList.copyOf(filter(errors.getCollection(), code(code)));
    }
 
    /**

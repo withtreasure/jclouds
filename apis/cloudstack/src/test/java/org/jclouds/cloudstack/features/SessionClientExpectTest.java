@@ -18,13 +18,15 @@
  */
 package org.jclouds.cloudstack.features;
 
-import static org.jclouds.crypto.CryptoStreams.md5Hex;
+import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.hash.Hashing.md5;
+import static com.google.common.io.BaseEncoding.base16;
 import static org.testng.Assert.assertEquals;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URLEncoder;
 
+import org.jclouds.cloudstack.CloudStackApiMetadata;
 import org.jclouds.cloudstack.CloudStackContext;
 import org.jclouds.cloudstack.domain.Account;
 import org.jclouds.cloudstack.domain.LoginResponse;
@@ -43,23 +45,23 @@ import com.google.common.collect.ImmutableMultimap;
 @Test(groups = "live", singleThreaded = true, testName = "SessionClientExpectTest")
 public class SessionClientExpectTest extends BaseCloudStackExpectTest<SessionClient> {
 
-   @SuppressWarnings("deprecation")
+   HttpRequest login = HttpRequest.builder().method("GET")
+                                  .endpoint("http://localhost:8080/client/api")
+                                  .addQueryParam("response", "json")
+                                  .addQueryParam("command", "login")
+                                  .addQueryParam("username", "jcloud")
+                                  .addQueryParam("domain", "Partners/jCloud")
+                                  .addQueryParam("password", "30e14b3727225d833aad2206acea1275")
+                                  .addHeader("Accept", "application/json").build();
+
    public void testLoginWhenResponseIs2xxIncludesJSessionId() throws IOException {
       String domain = "Partners/jCloud";
       String user = "jcloud";
       String password = "jcl0ud";
-      String md5password = md5Hex(password);
-
-      HttpRequest request = HttpRequest.builder()
-         .method("GET")
-         .endpoint(
-            URI.create("http://localhost:8080/client/api?response=json&command=login&" +
-               "username=" + user + "&password=" + md5password + "&domain=" + URLEncoder.encode(domain)))
-         .addHeader("Accept", "application/json")
-         .build();
+      String md5password = base16().lowerCase().encode(md5().hashString(password, UTF_8).asBytes());
 
       String jSessionId = "90DD65D13AEAA590ECCA312D150B9F6D";
-      SessionClient client = requestSendsResponse(request,
+      SessionClient client = requestSendsResponse(login,
          HttpResponse.builder()
             .statusCode(200)
             .headers(
@@ -93,6 +95,6 @@ public class SessionClientExpectTest extends BaseCloudStackExpectTest<SessionCli
 
    @Override
    protected SessionClient clientFrom(CloudStackContext context) {
-      return context.getProviderSpecificContext().getApi().getSessionClient();
+      return context.unwrap(CloudStackApiMetadata.CONTEXT_TOKEN).getApi().getSessionClient();
    }
 }

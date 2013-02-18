@@ -18,6 +18,8 @@
  */
 package org.jclouds.aws.ec2.compute.strategy;
 
+import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.io.BaseEncoding.base64;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
@@ -43,7 +45,6 @@ import org.jclouds.compute.domain.Hardware;
 import org.jclouds.compute.domain.Template;
 import org.jclouds.compute.functions.GroupNamingConvention;
 import org.jclouds.compute.options.TemplateOptions;
-import org.jclouds.crypto.CryptoStreams;
 import org.jclouds.domain.LoginCredentials;
 import org.jclouds.ec2.compute.EC2TemplateBuilderTest;
 import org.jclouds.ec2.compute.domain.EC2HardwareBuilder;
@@ -129,7 +130,6 @@ public class CreateKeyPairPlacementAndSecurityGroupsAsNeededAndReturnRunOptionsT
             customize.buildFormParameters().entries(),
             ImmutableMultimap.<String, String> of("InstanceType", size.getProviderId(), "SecurityGroup.1",
                   generatedGroup, "KeyName", systemGeneratedKeyPairName).entries());
-      assertEquals(customize.buildMatrixParameters(), ImmutableMultimap.<String, String> of());
       assertEquals(customize.buildRequestHeaders(), ImmutableMultimap.<String, String> of());
       assertEquals(customize.buildStringPayload(), null);
 
@@ -195,7 +195,6 @@ public class CreateKeyPairPlacementAndSecurityGroupsAsNeededAndReturnRunOptionsT
             ImmutableMultimap.<String, String> of("InstanceType", size.getProviderId(), "SecurityGroup.1",
                   generatedGroup, "KeyName", systemGeneratedKeyPairName, "Placement.GroupName", generatedGroup)
                   .entries());
-      assertEquals(customize.buildMatrixParameters(), ImmutableMultimap.<String, String> of());
       assertEquals(customize.buildRequestHeaders(), ImmutableMultimap.<String, String> of());
       assertEquals(customize.buildStringPayload(), null);
 
@@ -261,7 +260,6 @@ public class CreateKeyPairPlacementAndSecurityGroupsAsNeededAndReturnRunOptionsT
             ImmutableMultimap.<String, String> of("InstanceType", size.getProviderId(), "SecurityGroup.1",
                   generatedGroup, "KeyName", systemGeneratedKeyPairName, "Placement.GroupName", generatedGroup)
                   .entries());
-      assertEquals(customize.buildMatrixParameters(), ImmutableMultimap.<String, String> of());
       assertEquals(customize.buildRequestHeaders(), ImmutableMultimap.<String, String> of());
       assertEquals(customize.buildStringPayload(), null);
 
@@ -321,7 +319,6 @@ public class CreateKeyPairPlacementAndSecurityGroupsAsNeededAndReturnRunOptionsT
             customize.buildFormParameters().entries(),
             ImmutableMultimap.<String, String> of("InstanceType", size.getProviderId(), "SubnetId", "1", "KeyName",
                   systemGeneratedKeyPairName).entries());
-      assertEquals(customize.buildMatrixParameters(), ImmutableMultimap.<String, String> of());
       assertEquals(customize.buildRequestHeaders(), ImmutableMultimap.<String, String> of());
       assertEquals(customize.buildStringPayload(), null);
 
@@ -383,8 +380,7 @@ public class CreateKeyPairPlacementAndSecurityGroupsAsNeededAndReturnRunOptionsT
       assertEquals(
             customize.buildFormParameters().entries(),
             ImmutableMultimap.<String, String> of("InstanceType", size.getProviderId(), "SecurityGroup.1", "group",
-                  "KeyName", systemGeneratedKeyPairName, "UserData", CryptoStreams.base64("hello".getBytes())).entries());
-      assertEquals(customize.buildMatrixParameters(), ImmutableMultimap.<String, String> of());
+                  "KeyName", systemGeneratedKeyPairName, "UserData", base64().encode("hello".getBytes(UTF_8))).entries());
       assertEquals(customize.buildRequestHeaders(), ImmutableMultimap.<String, String> of());
       assertEquals(customize.buildStringPayload(), null);
 

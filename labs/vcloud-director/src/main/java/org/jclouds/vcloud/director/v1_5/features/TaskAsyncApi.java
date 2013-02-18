@@ -25,15 +25,15 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.rest.annotations.EndpointParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.JAXBResponseParser;
 import org.jclouds.rest.annotations.RequestFilters;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 import org.jclouds.vcloud.director.v1_5.domain.Task;
 import org.jclouds.vcloud.director.v1_5.domain.TasksList;
 import org.jclouds.vcloud.director.v1_5.filters.AddVCloudAuthorizationAndCookieToRequest;
-import org.jclouds.vcloud.director.v1_5.functions.href.TaskURNToHref;
+import org.jclouds.vcloud.director.v1_5.functions.URNToHref;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -50,7 +50,7 @@ public interface TaskAsyncApi {
    @GET
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<TasksList> getTasksList(@EndpointParam URI tasksListHref);
 
    /**
@@ -59,8 +59,8 @@ public interface TaskAsyncApi {
    @GET
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
-   ListenableFuture<Task> get(@EndpointParam(parser = TaskURNToHref.class) String taskUrn);
+   @Fallback(NullOnNotFoundOr404.class)
+   ListenableFuture<Task> get(@EndpointParam(parser = URNToHref.class) String taskUrn);
    
    /**
     * @see TaskApi#get(URI)
@@ -68,7 +68,7 @@ public interface TaskAsyncApi {
    @GET
    @Consumes
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<Task> get(@EndpointParam URI taskURI);
    
    /**
@@ -78,7 +78,7 @@ public interface TaskAsyncApi {
    @Path("/action/cancel")
    @Consumes
    @JAXBResponseParser
-   ListenableFuture<Void> cancel(@EndpointParam(parser = TaskURNToHref.class) String taskUrn);
+   ListenableFuture<Void> cancel(@EndpointParam(parser = URNToHref.class) String taskUrn);
    
    /**
     * @see TaskApi#cancel(URI)

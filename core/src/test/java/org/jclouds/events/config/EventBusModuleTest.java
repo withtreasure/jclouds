@@ -25,7 +25,7 @@ import static org.testng.Assert.assertTrue;
 import org.jclouds.Constants;
 import org.jclouds.concurrent.config.ExecutorServiceModule;
 import org.jclouds.events.config.annotations.AsyncBus;
-import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.google.common.eventbus.AsyncEventBus;
@@ -44,9 +44,9 @@ import com.google.inject.name.Names;
 public class EventBusModuleTest {
     private Injector injector;
     
-    @BeforeMethod
+    @BeforeClass
     public void setup() {
-        ExecutorServiceModule executorServiceModule = new ExecutorServiceModule() {
+        ExecutorServiceModule userExecutorModule = new ExecutorServiceModule() {
             @Override
             protected void configure() {
                bindConstant().annotatedWith(Names.named(Constants.PROPERTY_IO_WORKER_THREADS)).to(1);
@@ -55,7 +55,7 @@ public class EventBusModuleTest {
             }
          };
          EventBusModule eventBusModule = new EventBusModule();
-         injector = Guice.createInjector(executorServiceModule, eventBusModule);
+         injector = Guice.createInjector(userExecutorModule, eventBusModule);
     }
     
     public void testAsyncExecutorIsProvided() {

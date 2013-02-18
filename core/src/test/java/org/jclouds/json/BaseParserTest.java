@@ -18,6 +18,7 @@
  */
 package org.jclouds.json;
 
+import static org.jclouds.reflect.Reflection2.method;
 import static org.testng.Assert.assertEquals;
 
 import java.lang.annotation.ElementType;
@@ -28,14 +29,17 @@ import java.lang.annotation.Target;
 import javax.inject.Qualifier;
 
 import org.jclouds.http.HttpResponse;
+import org.jclouds.http.functions.config.SaxParserModule;
 import org.jclouds.io.Payload;
 import org.jclouds.io.Payloads;
 import org.jclouds.json.config.GsonModule;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.reflect.Invocation;
+import org.jclouds.rest.internal.TransformerForRequest;
 import org.testng.annotations.Test;
 
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -55,8 +59,10 @@ public abstract class BaseParserTest<T, G> {
    @SuppressWarnings("unchecked")
    protected Function<HttpResponse, T> parser(Injector i) {
       try {
-         return (Function<HttpResponse, T>) RestAnnotationProcessor.getTransformerForMethod(getClass()
-                  .getMethod("expected"), i);
+         return (Function<HttpResponse, T>) i
+               .createChildInjector(new SaxParserModule())
+               .getInstance(TransformerForRequest.class)
+               .getTransformerForMethod(Invocation.create(method(getClass(), "expected"), ImmutableList.of()), i);
       } catch (Exception e) {
          throw Throwables.propagate(e);
       }
@@ -80,13 +86,10 @@ public abstract class BaseParserTest<T, G> {
 
    protected Injector injector() {
       return Guice.createInjector(new GsonModule() {
-
-         @Override
          protected void configure() {
             bind(DateAdapter.class).to(Iso8601DateAdapter.class);
             super.configure();
          }
-
       });
 
    }

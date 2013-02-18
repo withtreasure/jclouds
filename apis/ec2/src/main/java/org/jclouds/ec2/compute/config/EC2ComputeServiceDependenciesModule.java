@@ -17,12 +17,12 @@
  * under the License.
  */
 package org.jclouds.ec2.compute.config;
-
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.jclouds.ec2.reference.EC2Constants.PROPERTY_EC2_TIMEOUT_SECURITYGROUP_PRESENT;
+import static org.jclouds.util.Predicates2.retry;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -51,19 +51,17 @@ import org.jclouds.ec2.compute.loaders.CreateSecurityGroupIfNeeded;
 import org.jclouds.ec2.compute.loaders.LoadPublicIpForInstanceOrNull;
 import org.jclouds.ec2.compute.loaders.RegionAndIdToImage;
 import org.jclouds.ec2.compute.options.EC2TemplateOptions;
-import org.jclouds.ec2.compute.predicates.GetImageWhenStatusAvailablePredicateWithResult;
 import org.jclouds.ec2.compute.predicates.SecurityGroupPresent;
 import org.jclouds.ec2.domain.Image.ImageState;
 import org.jclouds.ec2.domain.InstanceState;
 import org.jclouds.ec2.domain.KeyPair;
 import org.jclouds.ec2.domain.RunningInstance;
 import org.jclouds.ec2.reference.EC2Constants;
-import org.jclouds.predicates.PredicateWithResult;
-import org.jclouds.predicates.RetryablePredicate;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -117,7 +115,7 @@ public class EC2ComputeServiceDependenciesModule extends AbstractModule {
       bind(TemplateBuilder.class).to(EC2TemplateBuilderImpl.class);
       bind(TemplateOptions.class).to(EC2TemplateOptions.class);
       bind(ComputeService.class).to(EC2ComputeService.class);
-      bind(new TypeLiteral<CacheLoader<RunningInstance, LoginCredentials>>() {
+      bind(new TypeLiteral<CacheLoader<RunningInstance, Optional<LoginCredentials>>>() {
       }).to(CredentialsForInstance.class);
       bind(new TypeLiteral<Function<RegionAndName, KeyPair>>() {
       }).to(CreateUniqueKeyPair.class);
@@ -135,8 +133,6 @@ public class EC2ComputeServiceDependenciesModule extends AbstractModule {
       }).to(EC2ImageParser.class);
       bind(new TypeLiteral<ImageExtension>() {
       }).to(EC2ImageExtension.class);
-      bind(new TypeLiteral<PredicateWithResult<String, Image>>() {
-      }).to(GetImageWhenStatusAvailablePredicateWithResult.class);
    }
 
    /**
@@ -154,7 +150,7 @@ public class EC2ComputeServiceDependenciesModule extends AbstractModule {
 
    @Provides
    @Singleton
-   protected LoadingCache<RunningInstance, LoginCredentials> credentialsMap(CacheLoader<RunningInstance, LoginCredentials> in) {
+   protected LoadingCache<RunningInstance, Optional<LoginCredentials>> credentialsMap(CacheLoader<RunningInstance, Optional<LoginCredentials>> in) {
       return CacheBuilder.newBuilder().build(in);
    }
 
@@ -184,8 +180,8 @@ public class EC2ComputeServiceDependenciesModule extends AbstractModule {
    @Singleton
    @Named("SECURITY")
    protected Predicate<RegionAndName> securityGroupEventualConsistencyDelay(SecurityGroupPresent in,
-            @Named(PROPERTY_EC2_TIMEOUT_SECURITYGROUP_PRESENT) long msDelay) {
-      return new RetryablePredicate<RegionAndName>(in, msDelay, 100l, TimeUnit.MILLISECONDS);
+         @Named(PROPERTY_EC2_TIMEOUT_SECURITYGROUP_PRESENT) long msDelay) {
+      return retry(in, msDelay, 100l, MILLISECONDS);
    }
 
 }

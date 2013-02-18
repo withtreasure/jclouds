@@ -33,13 +33,13 @@ import org.jclouds.virtualbox.domain.NetworkInterfaceCard;
 import org.jclouds.virtualbox.domain.NetworkSpec;
 import org.jclouds.virtualbox.domain.StorageController;
 import org.jclouds.virtualbox.domain.VmSpec;
-import org.testng.annotations.AfterMethod;
+import org.testng.annotations.AfterGroups;
 import org.testng.annotations.Test;
-import org.virtualbox_4_1.CleanupMode;
-import org.virtualbox_4_1.IMachine;
-import org.virtualbox_4_1.NetworkAttachmentType;
-import org.virtualbox_4_1.StorageBus;
-import org.virtualbox_4_1.VBoxException;
+import org.virtualbox_4_2.CleanupMode;
+import org.virtualbox_4_2.IMachine;
+import org.virtualbox_4_2.NetworkAttachmentType;
+import org.virtualbox_4_2.StorageBus;
+import org.virtualbox_4_2.VBoxException;
 
 import com.google.inject.Injector;
 
@@ -83,11 +83,11 @@ public class CreateAndRegisterMachineFromIsoIfNotAlreadyExistsLiveTest extends B
       MasterSpec machineSpec = MasterSpec.builder()
                .iso(IsoSpec.builder().sourcePath(operatingSystemIso).installationScript("").build()).vm(vmSpec)
                .network(networkSpec).build();
-      // undoVm(vmSpec);
       IMachine debianNode = view.utils().injector()
                .getInstance(CreateAndRegisterMachineFromIsoIfNotAlreadyExists.class).apply(machineSpec);
       IMachine machine = manager.get().getVBox().findMachine(vmName);
       assertEquals(debianNode.getName(), machine.getName());
+      undoVm(vmName);
 
    }
 
@@ -116,13 +116,13 @@ public class CreateAndRegisterMachineFromIsoIfNotAlreadyExistsLiveTest extends B
          // if osTypeId is not found.
          assertEquals(errorCode, ErrorCode.VBOX_E_OBJECT_NOT_FOUND);
       }
+      undoVm(vmName);
    }
    
+   @AfterGroups(groups = "live")
    @Override
-   @AfterMethod(groups = "live")
-   protected void tearDown() throws Exception {
-      undoVm(vmName);
-      super.tearDown();
+   protected void tearDownContext() {
+      super.tearDownContext();
    }
 
 }

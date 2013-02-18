@@ -19,6 +19,7 @@
 
 package org.jclouds.abiquo.features;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -28,6 +29,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.abiquo.binders.AppendToPath;
 import org.jclouds.abiquo.binders.BindToPath;
 import org.jclouds.abiquo.binders.BindToXMLPayloadAndPath;
@@ -38,12 +40,11 @@ import org.jclouds.abiquo.http.filters.AbiquoAuthentication;
 import org.jclouds.abiquo.http.filters.AppendApiVersionToMediaType;
 import org.jclouds.abiquo.rest.annotations.EndpointLink;
 import org.jclouds.rest.annotations.BinderParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.JAXBResponseParser;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.ResponseParser;
 import org.jclouds.rest.binders.BindToXMLPayload;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.abiquo.model.enumerator.DiskFormatType;
 import com.abiquo.model.transport.AcceptedRequestDto;
@@ -74,6 +75,7 @@ public interface VirtualMachineTemplateAsyncApi {
     * @see VirtualMachineTemplateApi#listVirtualMachineTemplates(Integer,
     *      Integer)
     */
+   @Named("template:list")
    @GET
    @Path("/{enterprise}/datacenterrepositories/{datacenterrepository}/virtualmachinetemplates")
    @Consumes(VirtualMachineTemplatesDto.BASE_MEDIA_TYPE)
@@ -86,6 +88,7 @@ public interface VirtualMachineTemplateAsyncApi {
     * @see VirtualMachineTemplateApi#listVirtualMachineTemplates(Integer,
     *      Integer, VirtualMachineTemplateOptions)
     */
+   @Named("template:list")
    @GET
    @Path("/{enterprise}/datacenterrepositories/{datacenterrepository}/virtualmachinetemplates")
    @Consumes(VirtualMachineTemplatesDto.BASE_MEDIA_TYPE)
@@ -98,11 +101,12 @@ public interface VirtualMachineTemplateAsyncApi {
     * @see VirtualMachineTemplateApi#getVirtualMachineTemplate(Integer, Integer,
     *      Integer)
     */
+   @Named("template:get")
    @GET
    @Path("/{enterprise}/datacenterrepositories/{datacenterrepository}/virtualmachinetemplates/{virtualmachinetemplate}")
    @Consumes(VirtualMachineTemplateDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<VirtualMachineTemplateDto> getVirtualMachineTemplate(@PathParam("enterprise") Integer enterpriseId,
          @PathParam("datacenterrepository") Integer datacenterRepositoryId,
          @PathParam("virtualmachinetemplate") Integer virtualMachineTemplateId);
@@ -110,6 +114,7 @@ public interface VirtualMachineTemplateAsyncApi {
    /**
     * @see VirtualMachineTemplateApi#updateVirtualMachineTemplate(VirtualMachineTemplateDto)
     */
+   @Named("template:update")
    @PUT
    @Produces(VirtualMachineTemplateDto.BASE_MEDIA_TYPE)
    @Consumes(VirtualMachineTemplateDto.BASE_MEDIA_TYPE)
@@ -120,6 +125,7 @@ public interface VirtualMachineTemplateAsyncApi {
    /**
     * @see VirtualMachineTemplateApi#deleteVirtualMachineTemplate(VirtualMachineTemplateDto)
     */
+   @Named("template:delete")
    @DELETE
    ListenableFuture<Void> deleteVirtualMachineTemplate(
          @EndpointLink("edit") @BinderParam(BindToPath.class) VirtualMachineTemplateDto template);
@@ -128,6 +134,7 @@ public interface VirtualMachineTemplateAsyncApi {
     * @see VirtualMachineTemplateApi#createPersistentVirtualMachineTemplate(DatacenterRepositoryDto,
     *      VirtualMachineTemplatePersistentDto)
     */
+   @Named("template:createpersistent")
    @POST
    @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)
    @Produces(VirtualMachineTemplatePersistentDto.BASE_MEDIA_TYPE)
@@ -157,6 +164,7 @@ public interface VirtualMachineTemplateAsyncApi {
    /**
     * @see VirtualMachineTemplateApi#listConversions(VirtualMachineTemplateDto)
     */
+   @Named("conversion:list")
    @GET
    @Consumes(ConversionsDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
@@ -167,6 +175,7 @@ public interface VirtualMachineTemplateAsyncApi {
     * @see VirtualMachineTemplateApi#listConversions(VirtualMachineTemplateDto,
     *      ConversionOptions)
     */
+   @Named("conversion:list")
    @GET
    @Consumes(ConversionsDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
@@ -178,10 +187,11 @@ public interface VirtualMachineTemplateAsyncApi {
     * @see VirtualMachineTemplateApi#getConversion(VirtualMachineTemplateDto,
     *      DiskFormatType)
     */
+   @Named("conversion:get")
    @GET
    @Consumes(ConversionDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<ConversionDto> getConversion(
          @EndpointLink("conversions") @BinderParam(BindToPath.class) final VirtualMachineTemplateDto template,
          @BinderParam(AppendToPath.class) DiskFormatType targetFormat);
@@ -189,6 +199,7 @@ public interface VirtualMachineTemplateAsyncApi {
    /**
     * @see VirtualMachineTemplateApi#updateConversion(ConversionDto)
     */
+   @Named("conversion:request")
    @PUT
    @ResponseParser(ReturnTaskReferenceOrNull.class)
    @Consumes(AcceptedRequestDto.BASE_MEDIA_TYPE)

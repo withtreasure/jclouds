@@ -19,6 +19,8 @@
 package org.jclouds.blobstore;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.io.BaseEncoding.base16;
+import static org.jclouds.http.Uris.uriBuilder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -26,22 +28,14 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import javax.inject.Provider;
+
 import javax.inject.Inject;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.UriBuilder;
-
-import com.google.common.base.Supplier;
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multimaps;
 
 import org.jclouds.blobstore.domain.Blob;
 import org.jclouds.blobstore.domain.Blob.Factory;
 import org.jclouds.blobstore.options.ListContainerOptions;
 import org.jclouds.blobstore.util.BlobStoreUtils;
-import org.jclouds.crypto.Crypto;
-import org.jclouds.crypto.CryptoStreams;
 import org.jclouds.date.DateService;
 import org.jclouds.domain.Location;
 import org.jclouds.http.HttpUtils;
@@ -52,27 +46,26 @@ import org.jclouds.io.Payloads;
 import org.jclouds.io.payloads.ByteArrayPayload;
 import org.jclouds.io.payloads.DelegatingPayload;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimaps;
+
 public class TransientStorageStrategy implements LocalStorageStrategy {
    private final ConcurrentMap<String, ConcurrentMap<String, Blob>> containerToBlobs = new ConcurrentHashMap<String, ConcurrentMap<String, Blob>>();
    private final ConcurrentMap<String, Location> containerToLocation = new ConcurrentHashMap<String, Location>();
    private final Supplier<Location> defaultLocation;
    private final DateService dateService;
    private final Factory blobFactory;
-   private final Crypto crypto;
    private final ContentMetadataCodec contentMetadataCodec;
-   private final Provider<UriBuilder> uriBuilders;
 
    @Inject
-   TransientStorageStrategy(final Supplier<Location> defaultLocation,
-         DateService dateService, Factory blobFactory, Crypto crypto,
-         ContentMetadataCodec contentMetadataCodec,
-         Provider<UriBuilder> uriBuilders) {
+   TransientStorageStrategy(Supplier<Location> defaultLocation, DateService dateService, Factory blobFactory,
+         ContentMetadataCodec contentMetadataCodec) {
       this.defaultLocation = defaultLocation;
       this.dateService = dateService;
       this.blobFactory = blobFactory;
-      this.crypto = crypto;
       this.contentMetadataCodec = contentMetadataCodec;
-      this.uriBuilders = uriBuilders;
    }
 
    @Override
@@ -134,9 +127,8 @@ public class TransientStorageStrategy implements LocalStorageStrategy {
       Blob newBlob = createUpdatedCopyOfBlobInContainer(containerName, blob);
       Map<String, Blob> map = containerToBlobs.get(containerName);
       map.put(newBlob.getMetadata().getName(), newBlob);
-      Payloads.calculateMD5(newBlob, crypto.md5());
-      String eTag = CryptoStreams.hex(newBlob.getPayload().getContentMetadata().getContentMD5());
-      return eTag;
+      Payloads.calculateMD5(newBlob);
+      return base16().lowerCase().encode(newBlob.getPayload().getContentMetadata().getContentMD5());
    }
 
    @Override
@@ -174,7 +166,7 @@ public class TransientStorageStrategy implements LocalStorageStrategy {
             HttpUtils.copy(oldMd, payload.getContentMetadata());
          } else {
             if (payload.getContentMetadata().getContentMD5() == null)
-               Payloads.calculateMD5(in, crypto.md5());
+               Payloads.calculateMD5(in);
          }
       } catch (IOException e) {
          Throwables.propagate(e);
@@ -183,9 +175,9 @@ public class TransientStorageStrategy implements LocalStorageStrategy {
       blob.setPayload(payload);
       blob.getMetadata().setContainer(containerName);
       blob.getMetadata().setUri(
-               uriBuilders.get().scheme("mem").host(containerName).path(in.getMetadata().getName()).build());
+            uriBuilder(new StringBuilder("mem://").append(containerName)).path(in.getMetadata().getName()).build());
       blob.getMetadata().setLastModified(new Date());
-      String eTag = CryptoStreams.hex(payload.getContentMetadata().getContentMD5());
+      String eTag = base16().lowerCase().encode(payload.getContentMetadata().getContentMD5());
       blob.getMetadata().setETag(eTag);
       // Set HTTP headers to match metadata
       blob.getAllHeaders().replaceValues(HttpHeaders.LAST_MODIFIED,

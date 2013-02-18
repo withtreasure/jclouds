@@ -55,7 +55,7 @@ public class ArchiveApiExpectTest extends BaseGleSYSApiExpectTest {
       Set<Archive> expected = ImmutableSet.of(
             Archive.builder().username("xxxxx_test1").freeSize("20 GB").totalSize("30 GB").locked(false).build());
 
-      assertEquals(api.list().toImmutableSet(), expected);
+      assertEquals(api.list().toSet(), expected);
    }
 
    public void testListArchivesWhenResponseIs4xxReturnsEmpty() {
@@ -102,8 +102,8 @@ public class ArchiveApiExpectTest extends BaseGleSYSApiExpectTest {
                        .addHeader("Authorization", "Basic aWRlbnRpdHk6Y3JlZGVudGlhbA==")
                        .addFormParams(ImmutableMultimap.<String, String>builder()
                              .put("username", "xxxxxx_test1")
-                             .put("size", "5")
-                             .put("password", "somepass").build()).build(),
+                             .put("password", "somepass")
+                             .put("size", "5").build()).build(),
             HttpResponse.builder().statusCode(200).payload(payloadFromResource("/archive_details.json")).build()).getArchiveApi();
       assertEquals(api.createWithCredentialsAndSize("xxxxxx_test1", "somepass", 5), detailsInArchiveDetails());
    }

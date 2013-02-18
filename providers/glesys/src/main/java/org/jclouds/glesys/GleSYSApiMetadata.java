@@ -18,6 +18,8 @@
  */
 package org.jclouds.glesys;
 
+import static org.jclouds.reflect.Reflection2.typeToken;
+
 import java.net.URI;
 import java.util.Properties;
 
@@ -40,6 +42,7 @@ import com.google.inject.Module;
 public class GleSYSApiMetadata extends BaseRestApiMetadata {
 
    public static final TypeToken<RestContext<GleSYSApi, GleSYSAsyncApi>> CONTEXT_TOKEN = new TypeToken<RestContext<GleSYSApi, GleSYSAsyncApi>>() {
+      private static final long serialVersionUID = 1L;
    };
    
    @Override
@@ -62,9 +65,7 @@ public class GleSYSApiMetadata extends BaseRestApiMetadata {
       return properties;
    }
 
-   public static class Builder
-         extends
-         BaseRestApiMetadata.Builder {
+   public static class Builder extends BaseRestApiMetadata.Builder<Builder> {
 
       protected Builder() {
          super(GleSYSApi.class, GleSYSAsyncApi.class);
@@ -77,7 +78,7 @@ public class GleSYSApiMetadata extends BaseRestApiMetadata {
          .buildVersion("3.5.0")
          .defaultEndpoint("https://api.glesys.com")
          .defaultProperties(GleSYSApiMetadata.defaultProperties())
-         .view(TypeToken.of(ComputeServiceContext.class))
+         .view(typeToken(ComputeServiceContext.class))
          .defaultModules(ImmutableSet.<Class<? extends Module>>of(GleSYSComputeServiceContextModule.class, GleSYSRestClientModule.class));
       }
 
@@ -87,11 +88,8 @@ public class GleSYSApiMetadata extends BaseRestApiMetadata {
       }
 
       @Override
-      public Builder fromApiMetadata(ApiMetadata in) {
-         super.fromApiMetadata(in);
+      protected Builder self() {
          return this;
       }
-
    }
-
 }

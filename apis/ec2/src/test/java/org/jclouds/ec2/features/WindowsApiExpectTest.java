@@ -21,8 +21,6 @@ package org.jclouds.ec2.features;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
 
-import java.util.TimeZone;
-
 import org.jclouds.ec2.EC2Api;
 import org.jclouds.ec2.internal.BaseEC2ApiExpectTest;
 import org.jclouds.ec2.parse.GetPasswordDataResponseTest;
@@ -36,10 +34,6 @@ import org.testng.annotations.Test;
 @Test(groups = "unit", testName = "WindowsApiExpectTest")
 public class WindowsApiExpectTest extends BaseEC2ApiExpectTest<EC2Api> {
 
-   public WindowsApiExpectTest() {
-      TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
-   }
-
    HttpRequest get = HttpRequest.builder()
                                 .method("POST")
                                 .endpoint("https://ec2.us-east-1.amazonaws.com/")
@@ -48,7 +42,7 @@ public class WindowsApiExpectTest extends BaseEC2ApiExpectTest<EC2Api> {
                                    payloadFromStringWithContentType(
                                          "Action=GetPasswordData" +
                                                "&InstanceId=i-2574e22a" +
-                                               "&Signature=vX1Tskc4VuBUWPqsJ%2BzcjEj6%2F2iMCKzqjWnKFXRkDdA%3D" +
+                                               "&Signature=vX1Tskc4VuBUWPqsJ%2BzcjEj6/2iMCKzqjWnKFXRkDdA%3D" +
                                                "&SignatureMethod=HmacSHA256" +
                                                "&SignatureVersion=2" +
                                                "&Timestamp=2012-04-16T15%3A54%3A08.897Z" +

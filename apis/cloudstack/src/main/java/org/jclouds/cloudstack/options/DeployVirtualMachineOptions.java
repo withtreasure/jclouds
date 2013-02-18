@@ -20,10 +20,9 @@ package org.jclouds.cloudstack.options;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.io.BaseEncoding.base64;
 
 import java.util.Map;
-
-import org.jclouds.crypto.CryptoStreams;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -128,10 +127,10 @@ public class DeployVirtualMachineOptions extends AccountInDomainOptions {
     */
    public DeployVirtualMachineOptions ipsToNetworks(Map<String, String> ipsToNetworks) {
       int count = 0;
-      for (String ip : ipsToNetworks.keySet()) {
-         this.queryParameters.replaceValues(String.format("iptonetworklist[%d].ip", count), ImmutableSet.of(ip));
+      for (Map.Entry<String, String> entry : ipsToNetworks.entrySet()) {
+         this.queryParameters.replaceValues(String.format("iptonetworklist[%d].ip", count), ImmutableSet.of(entry.getKey()));
          this.queryParameters.replaceValues(String.format("iptonetworklist[%d].networkid", count),
-               ImmutableSet.of("" + ipsToNetworks.get(ip)));
+               ImmutableSet.of(entry.getValue()));
          count += 1;
       }
       return this;
@@ -215,7 +214,7 @@ public class DeployVirtualMachineOptions extends AccountInDomainOptions {
       int length = checkNotNull(unencodedData, "unencodedData").length;
       checkArgument(length > 0, "userData cannot be empty");
       checkArgument(length <= 2 * 1024, "userData cannot be larger than 2kb");
-      this.queryParameters.replaceValues("userdata", ImmutableSet.of(CryptoStreams.base64(unencodedData)));
+      this.queryParameters.replaceValues("userdata", ImmutableSet.of(base64().encode(unencodedData)));
       return this;
    }
 

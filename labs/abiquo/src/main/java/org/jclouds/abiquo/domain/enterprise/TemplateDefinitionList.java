@@ -23,7 +23,6 @@ import static com.google.common.collect.Iterables.filter;
 
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.jclouds.abiquo.AbiquoApi;
 import org.jclouds.abiquo.AbiquoAsyncApi;
 import org.jclouds.abiquo.domain.DomainWrapper;
@@ -36,7 +35,7 @@ import com.abiquo.server.core.appslibrary.TemplateDefinitionDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListDto;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Adds high level functionality to {@link TemplateDefinitionListDto}. A
@@ -177,7 +176,7 @@ public class TemplateDefinitionList extends DomainWrapper<TemplateDefinitionList
     *      Retrievealistofthestatusofalltemplatestatuslist</a>
     */
    public List<TemplateState> listStatus(final Predicate<TemplateState> filter, final Datacenter datacenter) {
-      return Lists.newLinkedList(filter(listStatus(datacenter), filter));
+      return ImmutableList.copyOf(filter(listStatus(datacenter), filter));
    }
 
    // Builder

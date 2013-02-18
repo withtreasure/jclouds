@@ -18,22 +18,22 @@
  */
 package org.jclouds.vcloud.features;
 
+import static org.jclouds.reflect.Reflection2.method;
+
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URI;
 
-import org.jclouds.http.HttpRequest;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.http.functions.ParseSax;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.jclouds.vcloud.internal.BaseVCloudAsyncClientTest;
 import org.jclouds.vcloud.options.CatalogItemOptions;
 import org.jclouds.vcloud.xml.CatalogHandler;
 import org.jclouds.vcloud.xml.CatalogItemHandler;
 import org.testng.annotations.Test;
 
-import com.google.inject.TypeLiteral;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 /**
  * Tests behavior of {@code CatalogAsyncClient}
  * 
@@ -44,16 +44,10 @@ import com.google.inject.TypeLiteral;
 @Test(groups = "unit", testName = "CatalogAsyncClientTest")
 public class CatalogAsyncClientTest extends BaseVCloudAsyncClientTest<CatalogAsyncClient> {
 
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<CatalogAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<CatalogAsyncClient>>() {
-      };
-   }
-
    public void testCatalog() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CatalogAsyncClient.class.getMethod("getCatalog", URI.class);
-      HttpRequest request = processor.createRequest(method, URI
-               .create("https://vcenterprise.bluelock.com/api/v1.0/catalog/1"));
+      Invokable<?, ?> method = method(CatalogAsyncClient.class, "getCatalog", URI.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
+               .create("https://vcenterprise.bluelock.com/api/v1.0/catalog/1")));
 
       assertRequestLineEquals(request, "GET https://vcenterprise.bluelock.com/api/v1.0/catalog/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: application/vnd.vmware.vcloud.catalog+xml\n");
@@ -61,14 +55,14 @@ public class CatalogAsyncClientTest extends BaseVCloudAsyncClientTest<CatalogAsy
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, CatalogHandler.class);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testCatalogInOrg() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CatalogAsyncClient.class.getMethod("findCatalogInOrgNamed", String.class, String.class);
-      HttpRequest request = processor.createRequest(method, "org", "catalog");
+      Invokable<?, ?> method = method(CatalogAsyncClient.class, "findCatalogInOrgNamed", String.class, String.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of("org", "catalog"));
 
       assertRequestLineEquals(request, "GET https://vcenterprise.bluelock.com/api/v1.0/catalog/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: application/vnd.vmware.vcloud.catalog+xml\n");
@@ -76,15 +70,15 @@ public class CatalogAsyncClientTest extends BaseVCloudAsyncClientTest<CatalogAsy
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, CatalogHandler.class);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testCatalogItemURI() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CatalogAsyncClient.class.getMethod("getCatalogItem", URI.class);
-      HttpRequest request = processor.createRequest(method, URI
-               .create("https://vcenterprise.bluelock.com/api/v1.0/catalogItem/2"));
+      Invokable<?, ?> method = method(CatalogAsyncClient.class, "getCatalogItem", URI.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
+               .create("https://vcenterprise.bluelock.com/api/v1.0/catalogItem/2")));
 
       assertRequestLineEquals(request, "GET https://vcenterprise.bluelock.com/api/v1.0/catalogItem/2 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: application/vnd.vmware.vcloud.catalogItem+xml\n");
@@ -92,15 +86,15 @@ public class CatalogAsyncClientTest extends BaseVCloudAsyncClientTest<CatalogAsy
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, CatalogItemHandler.class);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testFindCatalogItemInOrgCatalogNamed() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = CatalogAsyncClient.class.getMethod("findCatalogItemInOrgCatalogNamed", String.class,
+      Invokable<?, ?> method = method(CatalogAsyncClient.class, "findCatalogItemInOrgCatalogNamed", String.class,
                String.class, String.class);
-      HttpRequest request = processor.createRequest(method, "org", "catalog", "item");
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of("org", "catalog", "item"));
 
       assertRequestLineEquals(request, "GET https://vcenterprise.bluelock.com/api/v1.0/catalogItem/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: application/vnd.vmware.vcloud.catalogItem+xml\n");
@@ -108,18 +102,18 @@ public class CatalogAsyncClientTest extends BaseVCloudAsyncClientTest<CatalogAsy
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, CatalogItemHandler.class);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testAddVAppTemplateOrMediaImageToCatalogAndNameItem() throws SecurityException, NoSuchMethodException,
             IOException {
-      Method method = CatalogAsyncClient.class.getMethod("addVAppTemplateOrMediaImageToCatalogAndNameItem", URI.class,
+      Invokable<?, ?> method = method(CatalogAsyncClient.class, "addVAppTemplateOrMediaImageToCatalogAndNameItem", URI.class,
                URI.class, String.class, CatalogItemOptions[].class);
-      HttpRequest request = processor.createRequest(method, URI.create("http://fooentity"), URI
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI.create("http://fooentity"), URI
                .create("https://vcenterprise.bluelock.com/api/v1.0/catalog/1"), "myname", CatalogItemOptions.Builder
-               .description("mydescription"));
+               .description("mydescription")));
 
       assertRequestLineEquals(request,
                "POST https://vcenterprise.bluelock.com/api/v1.0/catalog/1/catalogItems HTTP/1.1");
@@ -131,7 +125,7 @@ public class CatalogAsyncClientTest extends BaseVCloudAsyncClientTest<CatalogAsy
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, CatalogItemHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }

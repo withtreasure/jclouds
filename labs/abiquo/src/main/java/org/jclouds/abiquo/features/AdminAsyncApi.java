@@ -19,6 +19,7 @@
 
 package org.jclouds.abiquo.features;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -29,19 +30,20 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.abiquo.binders.BindToPath;
 import org.jclouds.abiquo.binders.BindToXMLPayloadAndPath;
+import org.jclouds.abiquo.domain.enterprise.Enterprise;
 import org.jclouds.abiquo.functions.enterprise.ParseEnterpriseId;
 import org.jclouds.abiquo.http.filters.AbiquoAuthentication;
 import org.jclouds.abiquo.http.filters.AppendApiVersionToMediaType;
 import org.jclouds.abiquo.rest.annotations.EndpointLink;
 import org.jclouds.rest.annotations.BinderParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.JAXBResponseParser;
 import org.jclouds.rest.annotations.ParamParser;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.binders.BindToXMLPayload;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.abiquo.server.core.enterprise.EnterpriseDto;
 import com.abiquo.server.core.enterprise.PrivilegesDto;
@@ -66,6 +68,7 @@ public interface AdminAsyncApi {
    /**
     * @see AdminApi#getCurrentUser()
     */
+   @Named("user:get")
    @GET
    @Path("/login")
    @Consumes(UserDto.BASE_MEDIA_TYPE)
@@ -77,6 +80,7 @@ public interface AdminAsyncApi {
    /**
     * @see AdminApi#listRoles()
     */
+   @Named("role:list")
    @GET
    @Path("/admin/roles")
    @Consumes(RolesDto.BASE_MEDIA_TYPE)
@@ -86,6 +90,7 @@ public interface AdminAsyncApi {
    /**
     * @see AdminApi#listRoles(Enterprise enterprise)
     */
+   @Named("role:list")
    @GET
    @Path("/admin/roles")
    @Consumes(RolesDto.BASE_MEDIA_TYPE)
@@ -96,31 +101,35 @@ public interface AdminAsyncApi {
    /**
     * @see AdminApi#getRole(UserDto)
     */
+   @Named("role:get")
    @GET
    @Consumes(RoleDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<RoleDto> getRole(@EndpointLink("role") @BinderParam(BindToPath.class) UserDto user);
 
    /**
     * @see AdminApi#getRole(Integer)
     */
+   @Named("role:get")
    @GET
    @Path("/admin/roles/{role}")
    @Consumes(RoleDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<RoleDto> getRole(@PathParam("role") Integer roleId);
 
    /**
     * @see AdminApi#deleteRole(RoleDto)
     */
+   @Named("role:delete")
    @DELETE
    ListenableFuture<Void> deleteRole(@EndpointLink("edit") @BinderParam(BindToPath.class) RoleDto role);
 
    /**
     * @see AdminApi#updateRole(RoleDto)
     */
+   @Named("role:update")
    @PUT
    @Produces(RoleDto.BASE_MEDIA_TYPE)
    @Consumes(RoleDto.BASE_MEDIA_TYPE)
@@ -130,6 +139,7 @@ public interface AdminAsyncApi {
    /**
     * @see AdminApi#createRole(RoleDto)
     */
+   @Named("role:create")
    @POST
    @Path("/admin/roles")
    @Produces(RoleDto.BASE_MEDIA_TYPE)
@@ -140,6 +150,7 @@ public interface AdminAsyncApi {
    /**
     * @see AdminApi#listPrivileges(RoleDto)
     */
+   @Named("privilege:list")
    @GET
    @Consumes(PrivilegesDto.BASE_MEDIA_TYPE)
    @JAXBResponseParser

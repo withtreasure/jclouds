@@ -18,20 +18,20 @@
  */
 package org.jclouds.savvis.vpdc.features;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
+import static org.jclouds.reflect.Reflection2.method;
 
-import org.jclouds.http.HttpRequest;
+import java.io.IOException;
+
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.http.functions.ParseSax;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.jclouds.savvis.vpdc.domain.FirewallRule;
 import org.jclouds.savvis.vpdc.xml.TaskHandler;
 import org.jclouds.util.Strings2;
 import org.testng.annotations.Test;
 
-import com.google.inject.TypeLiteral;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 /**
  * Tests annotation parsing of {@code FirewallAsyncApi}
  * 
@@ -41,11 +41,11 @@ import com.google.inject.TypeLiteral;
 public class FirewallAsyncApiTest extends BaseVPDCAsyncApiTest<FirewallAsyncApi> {
 
    public void testAddFirewallRule() throws NoSuchMethodException, IOException {
-      Method method = FirewallAsyncApi.class.getMethod("addFirewallRule", String.class, String.class,
+      Invokable<?, ?> method = method(FirewallAsyncApi.class, "addFirewallRule", String.class, String.class,
                FirewallRule.class);
-      HttpRequest request = processor.createRequest(method, "11", "22", FirewallRule.builder().firewallType(
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of("11", "22", FirewallRule.builder().firewallType(
                "SERVER_TIER_FIREWALL").isEnabled(true).source("internet").destination("VM Tier01").port("22").protocol(
-               "Tcp").policy("allow").description("Server Tier Firewall Rule").isLogged(false).build());
+               "Tcp").policy("allow").description("Server Tier Firewall Rule").isLogged(false).build()));
 
       assertRequestLineEquals(request,
                "PUT https://api.savvis.net/vpdc/v1.0/org/11/vdc/22/FirewallService HTTP/1.1");
@@ -60,11 +60,11 @@ public class FirewallAsyncApiTest extends BaseVPDCAsyncApiTest<FirewallAsyncApi>
    }
 
    public void testDeleteFirewallRule() throws NoSuchMethodException, IOException {
-      Method method = FirewallAsyncApi.class.getMethod("deleteFirewallRule", String.class, String.class,
+      Invokable<?, ?> method = method(FirewallAsyncApi.class, "deleteFirewallRule", String.class, String.class,
                FirewallRule.class);
-      HttpRequest request = processor.createRequest(method, "11", "22", FirewallRule.builder().firewallType(
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of("11", "22", FirewallRule.builder().firewallType(
                "SERVER_TIER_FIREWALL").isEnabled(true).source("internet").destination("VM Tier01").port("22").protocol(
-               "Tcp").policy("allow").description("Server Tier Firewall Rule").isLogged(false).build());
+               "Tcp").policy("allow").description("Server Tier Firewall Rule").isLogged(false).build()));
 
       assertRequestLineEquals(request,
                "DELETE https://api.savvis.net/vpdc/v1.0/org/11/vdc/22/FirewallService HTTP/1.1");
@@ -74,15 +74,8 @@ public class FirewallAsyncApiTest extends BaseVPDCAsyncApiTest<FirewallAsyncApi>
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, TaskHandler.class);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<FirewallAsyncApi>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<FirewallAsyncApi>>() {
-      };
-   }
-
 }

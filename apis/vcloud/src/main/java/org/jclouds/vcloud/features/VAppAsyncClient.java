@@ -32,25 +32,25 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
+import org.jclouds.Fallbacks.VoidOnNotFoundOr404;
 import org.jclouds.javax.annotation.Nullable;
 import org.jclouds.predicates.validators.DnsNameValidator;
 import org.jclouds.rest.annotations.EndpointParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.MapBinder;
 import org.jclouds.rest.annotations.ParamValidators;
 import org.jclouds.rest.annotations.PayloadParam;
 import org.jclouds.rest.annotations.PayloadParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.XMLResponseParser;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnVoidOnNotFoundOr404;
 import org.jclouds.vcloud.binders.BindCloneVAppParamsToXmlPayload;
 import org.jclouds.vcloud.binders.BindDeployVAppParamsToXmlPayload;
 import org.jclouds.vcloud.binders.BindUndeployVAppParamsToXmlPayload;
+import org.jclouds.vcloud.binders.OrgNameVDCNameResourceEntityNameToEndpoint;
 import org.jclouds.vcloud.domain.Task;
 import org.jclouds.vcloud.domain.VApp;
 import org.jclouds.vcloud.filters.AddVCloudAuthorizationAndCookieToRequest;
-import org.jclouds.vcloud.functions.OrgNameVDCNameResourceEntityNameToEndpoint;
 import org.jclouds.vcloud.options.CloneVAppOptions;
 import org.jclouds.vcloud.xml.TaskHandler;
 import org.jclouds.vcloud.xml.VAppHandler;
@@ -99,11 +99,10 @@ public interface VAppAsyncClient {
    @GET
    @Consumes(VAPP_XML)
    @XMLResponseParser(VAppHandler.class)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
-   ListenableFuture<VApp> findVAppInOrgVDCNamed(
-            @Nullable @EndpointParam(parser = OrgNameVDCNameResourceEntityNameToEndpoint.class) String orgName,
-            @Nullable @EndpointParam(parser = OrgNameVDCNameResourceEntityNameToEndpoint.class) String catalogName,
-            @EndpointParam(parser = OrgNameVDCNameResourceEntityNameToEndpoint.class) String vAppName);
+   @Fallback(NullOnNotFoundOr404.class)
+   @MapBinder(OrgNameVDCNameResourceEntityNameToEndpoint.class)
+   ListenableFuture<VApp> findVAppInOrgVDCNamed(@Nullable @PayloadParam("orgName") String orgName,
+         @Nullable @PayloadParam("vdcName") String vdcName, @PayloadParam("resourceName") String vAppName);
 
    /**
     * @see VAppClient#getVApp
@@ -111,7 +110,7 @@ public interface VAppAsyncClient {
    @GET
    @Consumes(VAPP_XML)
    @XMLResponseParser(VAppHandler.class)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<VApp> getVApp(@EndpointParam URI href);
 
    /**
@@ -215,7 +214,7 @@ public interface VAppAsyncClient {
     */
    @DELETE
    @Consumes(TASK_XML)
-   @ExceptionParser(ReturnVoidOnNotFoundOr404.class)
+   @Fallback(VoidOnNotFoundOr404.class)
    @XMLResponseParser(TaskHandler.class)
    ListenableFuture<Task> deleteVApp(@EndpointParam URI href);
 

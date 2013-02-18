@@ -20,140 +20,85 @@ package org.jclouds.rest.internal;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 import org.jclouds.http.HttpRequest;
 import org.jclouds.http.HttpRequestFilter;
-import org.jclouds.internal.ClassMethodArgs;
 import org.jclouds.io.Payload;
 import org.jclouds.javax.annotation.Nullable;
+import org.jclouds.reflect.Invocation;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 /**
- * Represents a request generated from annotations
  * 
  * @author Adrian Cole
  */
-public class GeneratedHttpRequest extends HttpRequest {
-   public static Builder<?> builder() { 
-      return new ConcreteBuilder();
-   }
-   
-   public Builder<?> toBuilder() { 
-      return new ConcreteBuilder().fromGeneratedHttpRequest(this);
+public final class GeneratedHttpRequest extends HttpRequest {
+
+   public static Builder builder() {
+      return new Builder();
    }
 
-   public abstract static class Builder<T extends Builder<T>> extends HttpRequest.Builder<T>  {
-      protected Class<?> declaring;
-      protected Method javaMethod;
-      // args can be null, so cannot use immutable list
-      protected List<Object> args = Lists.newArrayList();
-      protected Optional<ClassMethodArgs> caller = Optional.absent();
-      
-      /** 
-       * @see GeneratedHttpRequest#getDeclaring()
+   public Builder toBuilder() {
+      return new Builder().fromGeneratedHttpRequest(this);
+   }
+
+   public final static class Builder extends HttpRequest.Builder<Builder> {
+      private Invocation invocation;
+      private Optional<Invocation> caller = Optional.absent();
+
+      /**
+       * @see GeneratedHttpRequest#getInvocation()
        */
-      public T declaring(Class<?> declaring) {
-         this.declaring = checkNotNull(declaring, "declaring");
-         return self();
+      public Builder invocation(Invocation invocation) {
+         this.invocation = checkNotNull(invocation, "invocation");
+         return this;
       }
 
-      /** 
-       * @see GeneratedHttpRequest#getJavaMethod()
-       */
-      public T javaMethod(Method javaMethod) {
-         this.javaMethod = checkNotNull(javaMethod, "javaMethod");
-         return self();
-      }
-      
-      /** 
-       * @see GeneratedHttpRequest#getArgs()
-       */
-      public T args(Iterable<Object> args) {
-         this.args = Lists.newArrayList(checkNotNull(args, "args"));
-         return self();
-      }
-      
-      /** 
-       * @see GeneratedHttpRequest#getArgs()
-       */
-      public T args(@Nullable Object[] args) {
-         return args(Arrays.asList(args != null ? args : new Object[] {}));
-      }
-
-      /** 
-       * @see GeneratedHttpRequest#getArgs()
-       */
-      public T arg(@Nullable Object arg) {
-         this.args.add(arg);
-         return self();
-      }
-      
-      /** 
+      /**
        * @see GeneratedHttpRequest#getCaller()
        */
-      public T caller(@Nullable ClassMethodArgs caller) {
+      public Builder caller(@Nullable Invocation caller) {
          this.caller = Optional.fromNullable(caller);
-         return self();
-      }
-      
-      public GeneratedHttpRequest build() {
-         return new GeneratedHttpRequest(method, endpoint, headers.build(), payload, declaring, javaMethod,
-                  args, skips.build(), filters.build(), caller);
+         return this;
       }
 
-      public T fromGeneratedHttpRequest(GeneratedHttpRequest in) {
-         return super.fromHttpRequest(in)
-                     .declaring(in.getDeclaring())
-                     .javaMethod(in.getJavaMethod())
-                     .args(in.getArgs())
-                     .caller(in.getCaller().orNull());
+      public GeneratedHttpRequest build() {
+         return new GeneratedHttpRequest(method, endpoint, headers.build(), payload, filters.build(), invocation,
+               caller);
       }
-   }
-   
-   private static class ConcreteBuilder extends Builder<ConcreteBuilder> {
+
+      public Builder fromGeneratedHttpRequest(GeneratedHttpRequest in) {
+         return super.fromHttpRequest(in).invocation(in.invocation).caller(in.getCaller().orNull());
+      }
+
       @Override
-      protected ConcreteBuilder self() {
+      protected Builder self() {
          return this;
       }
    }
-   
-   private final Class<?> declaring;
-   private final Method javaMethod;
-   private final List<Object> args;
-   private final Optional<ClassMethodArgs> caller;
 
-   protected GeneratedHttpRequest(String method, URI endpoint, Multimap<String, String> headers, @Nullable Payload payload,
-            Class<?> declaring, Method javaMethod, Iterable<Object> args, Iterable<Character> skips,
-            Iterable<HttpRequestFilter> filters, Optional<ClassMethodArgs> caller) {
-      super(method, endpoint, headers, payload, skips, filters);
-      this.declaring = checkNotNull(declaring, "declaring");
-      this.javaMethod = checkNotNull(javaMethod, "javaMethod");
-      // TODO make immutable. ImmutableList.of() doesn't accept nulls
-      this.args = Lists.newArrayList(checkNotNull(args, "args"));
+   private final Invocation invocation;
+   private final Optional<Invocation> caller;
+
+   protected GeneratedHttpRequest(String method, URI endpoint, Multimap<String, String> headers,
+         @Nullable Payload payload, Iterable<HttpRequestFilter> filters, Invocation invocation,
+         Optional<Invocation> caller) {
+      super(method, endpoint, headers, payload, filters);
+      this.invocation = checkNotNull(invocation, "invocation");
       this.caller = checkNotNull(caller, "caller");
    }
 
-   public Class<?> getDeclaring() {
-      return declaring;
+   /**
+    * what was interpreted to create this request
+    */
+   public Invocation getInvocation() {
+      return invocation;
    }
 
-   public Method getJavaMethod() {
-      return javaMethod;
-   }
-
-   public List<Object> getArgs() {
-      return Collections.unmodifiableList(args);
-   }
-
-   public Optional<ClassMethodArgs> getCaller() {
+   public Optional<Invocation> getCaller() {
       return caller;
    }
 }

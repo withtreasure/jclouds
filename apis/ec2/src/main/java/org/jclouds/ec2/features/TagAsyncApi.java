@@ -22,9 +22,11 @@ import static org.jclouds.aws.reference.FormParameters.ACTION;
 
 import java.util.Map;
 
+import javax.inject.Named;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
+import org.jclouds.Fallbacks.EmptyFluentIterableOnNotFoundOr404;
 import org.jclouds.aws.filters.FormSigner;
 import org.jclouds.ec2.binders.BindFiltersToIndexedFormParams;
 import org.jclouds.ec2.binders.BindResourceIdsToIndexedFormParams;
@@ -33,13 +35,12 @@ import org.jclouds.ec2.binders.BindTagsToIndexedFormParams;
 import org.jclouds.ec2.domain.Tag;
 import org.jclouds.ec2.xml.DescribeTagsResponseHandler;
 import org.jclouds.rest.annotations.BinderParam;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.FormParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.SinceApiVersion;
 import org.jclouds.rest.annotations.VirtualHost;
 import org.jclouds.rest.annotations.XMLResponseParser;
-import org.jclouds.rest.functions.ReturnEmptyFluentIterableOnNotFoundOr404;
 
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Multimap;
@@ -64,6 +65,7 @@ public interface TagAsyncApi {
     * @see <a
     *      href="http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CreateTags.html">docs</a>
     */
+   @Named("CreateTags")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "CreateTags")
@@ -75,6 +77,7 @@ public interface TagAsyncApi {
     * @see <a
     *      href="http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-CreateTags.html">docs</a>
     */
+   @Named("CreateTags")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "CreateTags")
@@ -86,11 +89,12 @@ public interface TagAsyncApi {
     * @see <a
     *      href="http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeTags.html">docs</a>
     */
+   @Named("DescribeTags")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "DescribeTags")
    @XMLResponseParser(DescribeTagsResponseHandler.class)
-   @ExceptionParser(ReturnEmptyFluentIterableOnNotFoundOr404.class)
+   @Fallback(EmptyFluentIterableOnNotFoundOr404.class)
    ListenableFuture<FluentIterable<Tag>> list();
 
    /**
@@ -98,11 +102,12 @@ public interface TagAsyncApi {
     * @see <a
     *      href="http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeTags.html">docs</a>
     */
+   @Named("DescribeTags")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "DescribeTags")
    @XMLResponseParser(DescribeTagsResponseHandler.class)
-   @ExceptionParser(ReturnEmptyFluentIterableOnNotFoundOr404.class)
+   @Fallback(EmptyFluentIterableOnNotFoundOr404.class)
    ListenableFuture<FluentIterable<Tag>> filter(
          @BinderParam(BindFiltersToIndexedFormParams.class) Multimap<String, String> filter);
 
@@ -111,6 +116,7 @@ public interface TagAsyncApi {
     * @see <a
     *      href="http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DeleteTags.html">docs</a>
     */
+   @Named("DeleteTags")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "DeleteTags")
@@ -123,6 +129,7 @@ public interface TagAsyncApi {
     * @see <a
     *      href="http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DeleteTags.html">docs</a>
     */
+   @Named("DeleteTags")
    @POST
    @Path("/")
    @FormParams(keys = ACTION, values = "DeleteTags")

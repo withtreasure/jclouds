@@ -18,21 +18,22 @@
  */
 package org.jclouds.cloudstack.features;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
+import org.jclouds.Fallbacks.VoidOnNotFoundOr404;
 import org.jclouds.cloudstack.domain.Domain;
 import org.jclouds.cloudstack.filters.AuthenticationFilter;
 import org.jclouds.cloudstack.options.CreateDomainOptions;
 import org.jclouds.cloudstack.options.UpdateDomainOptions;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.QueryParams;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.SelectJson;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnVoidOnNotFoundOr404;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -52,37 +53,41 @@ public interface GlobalDomainAsyncClient extends DomainDomainAsyncClient {
    /**
     * @see GlobalDomainClient#createDomain
     */
+   @Named("createDomain")
    @GET
    @QueryParams(keys = "command", values = "createDomain")
    @SelectJson("domain")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<Domain> createDomain(@QueryParam("name") String name, CreateDomainOptions... options);
 
    /**
     * @see GlobalDomainClient#updateDomain
     */
+   @Named("updateDomain")
    @GET
    @QueryParams(keys = "command", values = "updateDomain")
    @SelectJson("domain")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<Domain> updateDomain(@QueryParam("id") String domainId, UpdateDomainOptions... options);
 
    /**
     * @see GlobalDomainClient#deleteOnlyDomain
     */
+   @Named("deleteDomain")
    @GET
    @QueryParams(keys = {"command", "cleanup"}, values = {"deleteDomain", "false"})
-   @ExceptionParser(ReturnVoidOnNotFoundOr404.class)
+   @Fallback(VoidOnNotFoundOr404.class)
    ListenableFuture<Void> deleteOnlyDomain(@QueryParam("id") String id);
 
    /**
     * @see GlobalDomainClient#deleteDomainAndAttachedResources
     */
+   @Named("deleteDomain")
    @GET
    @QueryParams(keys = {"command", "cleanup"}, values = {"deleteDomain", "true"})
-   @ExceptionParser(ReturnVoidOnNotFoundOr404.class)
+   @Fallback(VoidOnNotFoundOr404.class)
    ListenableFuture<Void> deleteDomainAndAttachedResources(@QueryParam("id") String id);
 }
 

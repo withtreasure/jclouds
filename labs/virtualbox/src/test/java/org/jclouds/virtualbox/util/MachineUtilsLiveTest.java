@@ -21,9 +21,7 @@ package org.jclouds.virtualbox.util;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.jclouds.virtualbox.config.VirtualBoxConstants.VIRTUALBOX_IMAGE_PREFIX;
-import static org.jclouds.virtualbox.config.VirtualBoxConstants.VIRTUALBOX_INSTALLATION_KEY_SEQUENCE;
 import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertTrue;
 
 import org.jclouds.config.ValueOfConfigurationKeyOrNull;
 import org.jclouds.virtualbox.BaseVirtualBoxClientLiveTest;
@@ -40,12 +38,12 @@ import org.jclouds.virtualbox.functions.CloneAndRegisterMachineFromIMachineIfNot
 import org.jclouds.virtualbox.functions.CreateAndInstallVm;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.virtualbox_4_1.CleanupMode;
-import org.virtualbox_4_1.IMachine;
-import org.virtualbox_4_1.ISession;
-import org.virtualbox_4_1.NetworkAttachmentType;
-import org.virtualbox_4_1.SessionState;
-import org.virtualbox_4_1.StorageBus;
+import org.virtualbox_4_2.CleanupMode;
+import org.virtualbox_4_2.IMachine;
+import org.virtualbox_4_2.ISession;
+import org.virtualbox_4_2.NetworkAttachmentType;
+import org.virtualbox_4_2.SessionState;
+import org.virtualbox_4_2.StorageBus;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Function;
@@ -76,14 +74,10 @@ public class MachineUtilsLiveTest extends BaseVirtualBoxClientLiveTest {
       VmSpec instanceVmSpec = VmSpec.builder().id(instanceName).name(instanceName).osTypeId("").memoryMB(512)
             .cleanUpMode(CleanupMode.Full).controller(ideController).forceOverwrite(true).build();
 
-      Injector injector = view.utils().injector();
-      Function<String, String> configProperties = injector.getInstance(ValueOfConfigurationKeyOrNull.class);
       IsoSpec isoSpec = IsoSpec
             .builder()
             .sourcePath(operatingSystemIso)
-            .installationScript(
-                  configProperties.apply(VIRTUALBOX_INSTALLATION_KEY_SEQUENCE).replace("HOSTNAME",
-                        instanceVmSpec.getVmName())).build();
+            .installationScript(keystrokeSequence).build();
 
       NetworkAdapter networkAdapter = NetworkAdapter.builder().networkAttachmentType(NetworkAttachmentType.NAT)
             .tcpRedirectRule("127.0.0.1", 2222, "", 22).build();
@@ -109,7 +103,7 @@ public class MachineUtilsLiveTest extends BaseVirtualBoxClientLiveTest {
       undoVm(clone.getName());
    }
 
-   @Test(dependsOnMethods="writeLockSessionOnMachine", description = "shared lock is acquired and released correctly")
+   @Test(dependsOnMethods = "writeLockSessionOnMachine", description = "shared lock is acquired and released correctly")
    public void sharedLockSessionOnMachine() {
       final IMachine clone = cloneFromMaster();
       ISession session = machineUtils.sharedLockMachineAndApplyToSession(clone.getName(),
@@ -124,7 +118,7 @@ public class MachineUtilsLiveTest extends BaseVirtualBoxClientLiveTest {
       undoVm(clone.getName());
    }
 
-   @Test(dependsOnMethods="sharedLockSessionOnMachine", description = "shared lock can be acquired after a write lock")
+   @Test(dependsOnMethods = "sharedLockSessionOnMachine", description = "shared lock can be acquired after a write lock")
    public void sharedLockCanBeAcquiredAfterWriteLockSessionOnMachine() {
       final IMachine clone = cloneFromMaster();
       try {
@@ -133,7 +127,6 @@ public class MachineUtilsLiveTest extends BaseVirtualBoxClientLiveTest {
                   @Override
                   public ISession apply(ISession writeSession) {
                      checkState(writeSession.getState().equals(SessionState.Locked));
-                     //ISession sharedSession = sharedSession(clone);
                      return writeSession;
                   }
                });
@@ -143,20 +136,7 @@ public class MachineUtilsLiveTest extends BaseVirtualBoxClientLiveTest {
       }
    }
 
-   private ISession sharedSession(final IMachine clone) {
-      ISession sharedSession = machineUtils.sharedLockMachineAndApplyToSession(clone.getName(),
-            new Function<ISession, ISession>() {
-               @Override
-               public ISession apply(ISession sharedSession) {
-                  checkState(sharedSession.getState().equals(SessionState.Locked));
-                  assertEquals(sharedSession.getMachine().getName(), clone.getName());
-                  return sharedSession;
-               }
-            });
-      return sharedSession;
-   }
-
-   @Test(dependsOnMethods="sharedLockCanBeAcquiredAfterWriteLockSessionOnMachine", description = "write lock cannot be acquired after a shared lock")
+   @Test(dependsOnMethods = "sharedLockCanBeAcquiredAfterWriteLockSessionOnMachine", description = "write lock cannot be acquired after a shared lock")
    public void writeLockCannotBeAcquiredAfterSharedLockSessionOnMachine() {
       final IMachine clone = cloneFromMaster();
       try {

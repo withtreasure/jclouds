@@ -18,20 +18,21 @@
  */
 package org.jclouds.oauth.v2;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.reflect.TypeToken;
-import com.google.inject.Module;
+import static org.jclouds.Constants.PROPERTY_SESSION_INTERVAL;
+import static org.jclouds.oauth.v2.config.OAuthProperties.SIGNATURE_OR_MAC_ALGORITHM;
+
+import java.net.URI;
+import java.util.Properties;
+
 import org.jclouds.apis.ApiMetadata;
 import org.jclouds.oauth.v2.config.OAuthModule;
 import org.jclouds.oauth.v2.config.OAuthRestClientModule;
 import org.jclouds.rest.RestContext;
 import org.jclouds.rest.internal.BaseRestApiMetadata;
 
-import java.net.URI;
-import java.util.Properties;
-
-import static org.jclouds.Constants.PROPERTY_SESSION_INTERVAL;
-import static org.jclouds.oauth.v2.config.OAuthProperties.SIGNATURE_OR_MAC_ALGORITHM;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.reflect.TypeToken;
+import com.google.inject.Module;
 
 /**
  * Implementation of {@link ApiMetadata} for OAuth 2 API
@@ -40,8 +41,9 @@ import static org.jclouds.oauth.v2.config.OAuthProperties.SIGNATURE_OR_MAC_ALGOR
  */
 public class OAuthApiMetadata extends BaseRestApiMetadata {
 
-   public static final TypeToken<RestContext<OAuthApi, OAuthAsyncApi>> CONTEXT_TOKEN = new
-           TypeToken<RestContext<OAuthApi, OAuthAsyncApi>>() {};
+   public static final TypeToken<RestContext<OAuthApi, OAuthAsyncApi>> CONTEXT_TOKEN = new TypeToken<RestContext<OAuthApi, OAuthAsyncApi>>() {
+      private static final long serialVersionUID = 1L;
+   };
 
    @Override
    public Builder toBuilder() {
@@ -63,7 +65,7 @@ public class OAuthApiMetadata extends BaseRestApiMetadata {
       return properties;
    }
 
-   public static class Builder extends BaseRestApiMetadata.Builder {
+   public static class Builder extends BaseRestApiMetadata.Builder<Builder> {
 
       protected Builder() {
          super(OAuthApi.class, OAuthAsyncApi.class);
@@ -83,11 +85,8 @@ public class OAuthApiMetadata extends BaseRestApiMetadata {
       }
 
       @Override
-      public Builder fromApiMetadata(ApiMetadata in) {
-         super.fromApiMetadata(in);
+      protected Builder self() {
          return this;
       }
-
    }
-
 }

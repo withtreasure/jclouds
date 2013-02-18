@@ -18,20 +18,21 @@
  */
 package org.jclouds.cloudstack.features;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
+import static org.jclouds.reflect.Reflection2.method;
 
+import java.io.IOException;
+
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.cloudstack.functions.ParseAsyncJobFromHttpResponse;
 import org.jclouds.cloudstack.functions.ParseAsyncJobsFromHttpResponse;
 import org.jclouds.cloudstack.internal.BaseCloudStackAsyncClientTest;
 import org.jclouds.cloudstack.options.ListAsyncJobsOptions;
-import org.jclouds.http.HttpRequest;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
-import com.google.inject.TypeLiteral;
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 
 /**
  * Tests behavior of {@code AsyncJobAsyncClient}
@@ -44,8 +45,8 @@ import com.google.inject.TypeLiteral;
 public class AsyncJobAsyncClientTest extends BaseCloudStackAsyncClientTest<AsyncJobAsyncClient> {
 
    public void testGetAsyncJob() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AsyncJobAsyncClient.class.getMethod("getAsyncJob", String.class);
-      HttpRequest httpRequest = processor.createRequest(method, 11l);
+      Invokable<?, ?> method = method(AsyncJobAsyncClient.class, "getAsyncJob", String.class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(11l));
 
       assertRequestLineEquals(httpRequest,
             "GET http://localhost:8080/client/api?response=json&command=queryAsyncJobResult&jobid=11 HTTP/1.1");
@@ -54,15 +55,15 @@ public class AsyncJobAsyncClientTest extends BaseCloudStackAsyncClientTest<Async
 
       assertResponseParserClassEquals(method, httpRequest, ParseAsyncJobFromHttpResponse.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
    }
 
    public void testListAsyncJobs() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AsyncJobAsyncClient.class.getMethod("listAsyncJobs", ListAsyncJobsOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method);
+      Invokable<?, ?> method = method(AsyncJobAsyncClient.class, "listAsyncJobs", ListAsyncJobsOptions[].class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.of());
 
       assertRequestLineEquals(httpRequest,
             "GET http://localhost:8080/client/api?response=json&command=listAsyncJobs&listAll=true HTTP/1.1");
@@ -71,16 +72,16 @@ public class AsyncJobAsyncClientTest extends BaseCloudStackAsyncClientTest<Async
 
       assertResponseParserClassEquals(method, httpRequest, ParseAsyncJobsFromHttpResponse.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
    }
 
    public void testListAsyncJobsOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AsyncJobAsyncClient.class.getMethod("listAsyncJobs", ListAsyncJobsOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method,
-            ListAsyncJobsOptions.Builder.accountInDomain("adrian", "5"));
+      Invokable<?, ?> method = method(AsyncJobAsyncClient.class, "listAsyncJobs", ListAsyncJobsOptions[].class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(
+            ListAsyncJobsOptions.Builder.accountInDomain("adrian", "5")));
 
       assertRequestLineEquals(httpRequest,
             "GET http://localhost:8080/client/api?response=json&command=listAsyncJobs&listAll=true&account=adrian&domainid=5 HTTP/1.1");
@@ -89,15 +90,9 @@ public class AsyncJobAsyncClientTest extends BaseCloudStackAsyncClientTest<Async
 
       assertResponseParserClassEquals(method, httpRequest, ParseAsyncJobsFromHttpResponse.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
-   }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<AsyncJobAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<AsyncJobAsyncClient>>() {
-      };
    }
 }

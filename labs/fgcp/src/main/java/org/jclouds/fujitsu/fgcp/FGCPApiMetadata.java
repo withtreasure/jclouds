@@ -18,6 +18,8 @@
  */
 package org.jclouds.fujitsu.fgcp;
 
+import static org.jclouds.reflect.Reflection2.typeToken;
+
 import java.net.URI;
 import java.util.Properties;
 
@@ -29,12 +31,10 @@ import org.jclouds.fujitsu.fgcp.compute.config.FGCPComputeServiceContextModule;
 import org.jclouds.rest.internal.BaseRestApiMetadata;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.reflect.TypeToken;
 import com.google.inject.Module;
 
 /**
- * Implementation of {@link ApiMetadata} for Fujitsu's Global Cloud Platform
- * (FGCP, FGCP/S5) provider in Australia.
+ * Implementation of {@link ApiMetadata} for Fujitsu's Global Cloud Platform (FGCP)
  * 
  * @author Dies Koper
  */
@@ -63,7 +63,7 @@ public class FGCPApiMetadata extends BaseRestApiMetadata {
       return properties;
    }
 
-   public static class Builder extends BaseRestApiMetadata.Builder {
+   public static class Builder extends BaseRestApiMetadata.Builder<Builder> {
 
       protected Builder() {
          super(FGCPApi.class, FGCPAsyncApi.class);
@@ -77,7 +77,7 @@ public class FGCPApiMetadata extends BaseRestApiMetadata {
                .defaultEndpoint(
                      "https://api.globalcloud.fujitsu.com.au/ovissapi/endpoint")
                .defaultProperties(FGCPApiMetadata.defaultProperties())
-               .view(TypeToken.of(ComputeServiceContext.class))
+               .view(typeToken(ComputeServiceContext.class))
                .defaultModules(
                      ImmutableSet.<Class<? extends Module>> of(
                            FGCPComputeServiceContextModule.class,
@@ -90,10 +90,8 @@ public class FGCPApiMetadata extends BaseRestApiMetadata {
       }
 
       @Override
-      public Builder fromApiMetadata(ApiMetadata in) {
-         super.fromApiMetadata(in);
+      protected Builder self() {
          return this;
       }
-
    }
 }

@@ -18,24 +18,25 @@
  */
 package org.jclouds.glesys.features;
 
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 
+import org.jclouds.Fallbacks.EmptyFluentIterableOnNotFoundOr404;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
+import org.jclouds.Fallbacks.TrueOnNotFoundOr404;
 import org.jclouds.glesys.domain.EmailAccount;
 import org.jclouds.glesys.domain.EmailAlias;
 import org.jclouds.glesys.domain.EmailOverview;
 import org.jclouds.glesys.options.CreateAccountOptions;
 import org.jclouds.glesys.options.UpdateAccountOptions;
 import org.jclouds.http.filters.BasicAuthentication;
-import org.jclouds.http.functions.ReturnTrueOn404;
-import org.jclouds.rest.annotations.ExceptionParser;
+import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.SelectJson;
-import org.jclouds.rest.functions.ReturnEmptyFluentIterableOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
 
 import com.google.common.collect.FluentIterable;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -46,7 +47,7 @@ import com.google.common.util.concurrent.ListenableFuture;
  *
  * @author Adam Lowe
  * @see org.jclouds.glesys.features.EmailAccountApi
- * @see <a href="https://customer.glesys.com/api.php" />
+ * @see <a href="https://github.com/GleSYS/API/wiki/API-Documentation" />
  */
 @RequestFilters(BasicAuthentication.class)
 public interface EmailAccountAsyncApi {
@@ -54,36 +55,40 @@ public interface EmailAccountAsyncApi {
    /**
     * @see org.jclouds.glesys.features.EmailAccountApi#getOverview
     */
+   @Named("email:overview")
    @POST
    @Path("/email/overview/format/json")
    @SelectJson("overview")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnNullOnNotFoundOr404.class)
+   @Fallback(NullOnNotFoundOr404.class)
    ListenableFuture<EmailOverview> getOverview();
 
    /**
     * @see org.jclouds.glesys.features.EmailAccountApi#listDomain
     */
+   @Named("email:list:accounts")
    @POST
    @Path("/email/list/format/json")
    @SelectJson("emailaccounts")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnEmptyFluentIterableOnNotFoundOr404.class)
+   @Fallback(EmptyFluentIterableOnNotFoundOr404.class)
    ListenableFuture<FluentIterable<EmailAccount>> listDomain(@FormParam("domainname") String domain);
 
    /**
     * @see org.jclouds.glesys.features.EmailAccountApi#listAliasesInDomain
     */
+   @Named("email:list:aliases")
    @POST
    @Path("/email/list/format/json")
    @SelectJson("emailaliases")
    @Consumes(MediaType.APPLICATION_JSON)
-   @ExceptionParser(ReturnEmptyFluentIterableOnNotFoundOr404.class)
+   @Fallback(EmptyFluentIterableOnNotFoundOr404.class)
    ListenableFuture<FluentIterable<EmailAlias>> listAliasesInDomain(@FormParam("domainname") String domain);
 
    /**
     * @see org.jclouds.glesys.features.EmailAccountApi#createWithPassword
     */
+   @Named("email:createaccount")
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
    @SelectJson("emailaccount")
@@ -93,6 +98,7 @@ public interface EmailAccountAsyncApi {
    /**
     * @see org.jclouds.glesys.features.EmailAccountApi#createAlias
     */
+   @Named("email:createalias")
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
    @SelectJson("alias")
@@ -102,6 +108,7 @@ public interface EmailAccountAsyncApi {
    /**
     * @see org.jclouds.glesys.features.EmailAccountApi#update
     */
+   @Named("email:editaccount")
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
    @SelectJson("emailaccount")
@@ -111,6 +118,7 @@ public interface EmailAccountAsyncApi {
    /**
     * @see org.jclouds.glesys.features.EmailAccountApi#updateAlias
     */
+   @Named("email:editalias")
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
    @SelectJson("alias")
@@ -120,9 +128,10 @@ public interface EmailAccountAsyncApi {
    /**
     * @see org.jclouds.glesys.features.EmailAccountApi#delete
     */
+   @Named("email:delete")
    @POST
    @Path("/email/delete/format/json")
-   @ExceptionParser(ReturnTrueOn404.class)
+   @Fallback(TrueOnNotFoundOr404.class)
    ListenableFuture<Boolean> delete(@FormParam("email") String accountAddress);
 
 }

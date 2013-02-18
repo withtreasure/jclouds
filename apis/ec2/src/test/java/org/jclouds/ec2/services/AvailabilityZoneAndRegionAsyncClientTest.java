@@ -20,24 +20,22 @@ package org.jclouds.ec2.services;
 
 import static org.jclouds.ec2.options.DescribeAvailabilityZonesOptions.Builder.availabilityZones;
 import static org.jclouds.ec2.options.DescribeRegionsOptions.Builder.regions;
+import static org.jclouds.reflect.Reflection2.method;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
 
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
 import org.jclouds.aws.domain.Region;
 import org.jclouds.ec2.options.DescribeAvailabilityZonesOptions;
 import org.jclouds.ec2.options.DescribeRegionsOptions;
 import org.jclouds.ec2.xml.DescribeAvailabilityZonesResponseHandler;
 import org.jclouds.ec2.xml.DescribeRegionsResponseHandler;
-import org.jclouds.http.HttpRequest;
 import org.jclouds.http.functions.ParseSax;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
-import com.google.inject.TypeLiteral;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 /**
  * Tests behavior of {@code AvailabilityZoneAndRegionAsyncClient}
  * 
@@ -49,9 +47,9 @@ public class AvailabilityZoneAndRegionAsyncClientTest extends
       BaseEC2AsyncClientTest<AvailabilityZoneAndRegionAsyncClient> {
 
    public void testDescribeAvailabilityZones() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AvailabilityZoneAndRegionAsyncClient.class.getMethod("describeAvailabilityZonesInRegion",
-            String.class, Array.newInstance(DescribeAvailabilityZonesOptions.class, 0).getClass());
-      HttpRequest request = processor.createRequest(method, Region.US_WEST_1);
+      Invokable<?, ?> method = method(AvailabilityZoneAndRegionAsyncClient.class, "describeAvailabilityZonesInRegion",
+            String.class, DescribeAvailabilityZonesOptions[].class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(Region.US_WEST_1));
 
       assertRequestLineEquals(request, "POST https://ec2.us-west-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-west-1.amazonaws.com\n");
@@ -60,15 +58,15 @@ public class AvailabilityZoneAndRegionAsyncClientTest extends
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, DescribeAvailabilityZonesResponseHandler.class);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testDescribeAvailabilityZonesOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AvailabilityZoneAndRegionAsyncClient.class.getMethod("describeAvailabilityZonesInRegion",
-            String.class, Array.newInstance(DescribeAvailabilityZonesOptions.class, 0).getClass());
-      HttpRequest request = processor.createRequest(method, "us-east-1", availabilityZones("us-east-1a", "us-east-1b"));
+      Invokable<?, ?> method = method(AvailabilityZoneAndRegionAsyncClient.class, "describeAvailabilityZonesInRegion",
+            String.class, DescribeAvailabilityZonesOptions[].class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of("us-east-1", availabilityZones("us-east-1a", "us-east-1b")));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -78,15 +76,15 @@ public class AvailabilityZoneAndRegionAsyncClientTest extends
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, DescribeAvailabilityZonesResponseHandler.class);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testDescribeRegions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AvailabilityZoneAndRegionAsyncClient.class.getMethod("describeRegions",
-            Array.newInstance(DescribeRegionsOptions.class, 0).getClass());
-      HttpRequest request = processor.createRequest(method);
+      Invokable<?, ?> method = method(AvailabilityZoneAndRegionAsyncClient.class, "describeRegions",
+            DescribeRegionsOptions[].class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.of());
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -95,15 +93,15 @@ public class AvailabilityZoneAndRegionAsyncClientTest extends
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, DescribeRegionsResponseHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDescribeRegionsOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = AvailabilityZoneAndRegionAsyncClient.class.getMethod("describeRegions",
-            Array.newInstance(DescribeRegionsOptions.class, 0).getClass());
-      HttpRequest request = processor.createRequest(method, regions(Region.US_EAST_1, Region.US_WEST_1));
+      Invokable<?, ?> method = method(AvailabilityZoneAndRegionAsyncClient.class, "describeRegions",
+            DescribeRegionsOptions[].class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(regions(Region.US_EAST_1, Region.US_WEST_1)));
 
       assertRequestLineEquals(request, "POST https://ec2.us-east-1.amazonaws.com/ HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Host: ec2.us-east-1.amazonaws.com\n");
@@ -113,15 +111,8 @@ public class AvailabilityZoneAndRegionAsyncClientTest extends
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, DescribeRegionsResponseHandler.class);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<AvailabilityZoneAndRegionAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<AvailabilityZoneAndRegionAsyncClient>>() {
-      };
-   }
-
 }

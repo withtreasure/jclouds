@@ -18,21 +18,21 @@
  */
 package org.jclouds.softlayer.features;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
+import static org.jclouds.reflect.Reflection2.method;
 
-import org.jclouds.http.HttpRequest;
+import java.io.IOException;
+
+import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
+import org.jclouds.Fallbacks.VoidOnNotFoundOr404;
 import org.jclouds.http.functions.ParseJson;
 import org.jclouds.http.functions.ReleasePayloadAndReturn;
-import org.jclouds.rest.functions.ReturnEmptySetOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
-import org.jclouds.rest.functions.ReturnVoidOnNotFoundOr404;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.inject.TypeLiteral;
-
+import com.google.common.reflect.Invokable;
 /**
  * Tests annotation parsing of {@code VirtualGuestAsyncClient}
  * 
@@ -42,8 +42,8 @@ import com.google.inject.TypeLiteral;
 public class VirtualGuestAsyncClientTest extends BaseSoftLayerAsyncClientTest<VirtualGuestAsyncClient> {
 
    public void testListVirtualGuests() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VirtualGuestAsyncClient.class.getMethod("listVirtualGuests");
-      HttpRequest httpRequest = processor.createRequest(method);
+      Invokable<?, ?> method = method(VirtualGuestAsyncClient.class, "listVirtualGuests");
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.of());
 
       assertRequestLineEquals(
             httpRequest,
@@ -52,8 +52,8 @@ public class VirtualGuestAsyncClientTest extends BaseSoftLayerAsyncClientTest<Vi
       assertPayloadEquals(httpRequest, null, null, false);
 
       // now make sure request filters apply by replaying
-      httpRequest = Iterables.getOnlyElement(httpRequest.getFilters()).filter(httpRequest);
-      httpRequest = Iterables.getOnlyElement(httpRequest.getFilters()).filter(httpRequest);
+      httpRequest = (GeneratedHttpRequest) Iterables.getOnlyElement(httpRequest.getFilters()).filter(httpRequest);
+      httpRequest = (GeneratedHttpRequest) Iterables.getOnlyElement(httpRequest.getFilters()).filter(httpRequest);
 
       assertRequestLineEquals(
             httpRequest,
@@ -66,15 +66,15 @@ public class VirtualGuestAsyncClientTest extends BaseSoftLayerAsyncClientTest<Vi
 
       assertResponseParserClassEquals(method, httpRequest, ParseJson.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnEmptySetOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, EmptySetOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
    }
 
    public void testGetVirtualGuest() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VirtualGuestAsyncClient.class.getMethod("getVirtualGuest", long.class);
-      HttpRequest httpRequest = processor.createRequest(method, 1234);
+      Invokable<?, ?> method = method(VirtualGuestAsyncClient.class, "getVirtualGuest", long.class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(1234));
 
       assertRequestLineEquals(
             httpRequest,
@@ -84,15 +84,15 @@ public class VirtualGuestAsyncClientTest extends BaseSoftLayerAsyncClientTest<Vi
 
       assertResponseParserClassEquals(method, httpRequest, ParseJson.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
    }
 
    public void testRebootHardVirtualGuest() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VirtualGuestAsyncClient.class.getMethod("rebootHardVirtualGuest", long.class);
-      HttpRequest httpRequest = processor.createRequest(method, 1234);
+      Invokable<?, ?> method = method(VirtualGuestAsyncClient.class, "rebootHardVirtualGuest", long.class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(1234));
 
       assertRequestLineEquals(httpRequest,
             "GET https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest/1234/rebootHard.json HTTP/1.1");
@@ -101,15 +101,15 @@ public class VirtualGuestAsyncClientTest extends BaseSoftLayerAsyncClientTest<Vi
 
       assertResponseParserClassEquals(method, httpRequest, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnVoidOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, VoidOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
    }
 
    public void testPowerOffVirtualGuest() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VirtualGuestAsyncClient.class.getMethod("powerOffVirtualGuest", long.class);
-      HttpRequest httpRequest = processor.createRequest(method, 1234);
+      Invokable<?, ?> method = method(VirtualGuestAsyncClient.class, "powerOffVirtualGuest", long.class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(1234));
 
       assertRequestLineEquals(httpRequest,
             "GET https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest/1234/powerOff.json HTTP/1.1");
@@ -118,15 +118,15 @@ public class VirtualGuestAsyncClientTest extends BaseSoftLayerAsyncClientTest<Vi
 
       assertResponseParserClassEquals(method, httpRequest, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnVoidOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, VoidOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
    }
 
    public void testPowerOnVirtualGuest() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VirtualGuestAsyncClient.class.getMethod("powerOnVirtualGuest", long.class);
-      HttpRequest httpRequest = processor.createRequest(method, 1234);
+      Invokable<?, ?> method = method(VirtualGuestAsyncClient.class, "powerOnVirtualGuest", long.class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(1234));
 
       assertRequestLineEquals(httpRequest,
             "GET https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest/1234/powerOn.json HTTP/1.1");
@@ -135,15 +135,15 @@ public class VirtualGuestAsyncClientTest extends BaseSoftLayerAsyncClientTest<Vi
 
       assertResponseParserClassEquals(method, httpRequest, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnVoidOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, VoidOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
    }
 
    public void testPauseVirtualGuest() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VirtualGuestAsyncClient.class.getMethod("pauseVirtualGuest", long.class);
-      HttpRequest httpRequest = processor.createRequest(method, 1234);
+      Invokable<?, ?> method = method(VirtualGuestAsyncClient.class, "pauseVirtualGuest", long.class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(1234));
 
       assertRequestLineEquals(httpRequest,
             "GET https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest/1234/pause.json HTTP/1.1");
@@ -152,15 +152,15 @@ public class VirtualGuestAsyncClientTest extends BaseSoftLayerAsyncClientTest<Vi
 
       assertResponseParserClassEquals(method, httpRequest, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnVoidOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, VoidOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
    }
 
    public void testResumeVirtualGuest() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VirtualGuestAsyncClient.class.getMethod("resumeVirtualGuest", long.class);
-      HttpRequest httpRequest = processor.createRequest(method, 1234);
+      Invokable<?, ?> method = method(VirtualGuestAsyncClient.class, "resumeVirtualGuest", long.class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(1234));
 
       assertRequestLineEquals(httpRequest,
             "GET https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest/1234/resume.json HTTP/1.1");
@@ -169,15 +169,9 @@ public class VirtualGuestAsyncClientTest extends BaseSoftLayerAsyncClientTest<Vi
 
       assertResponseParserClassEquals(method, httpRequest, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnVoidOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, VoidOnNotFoundOr404.class);
 
       checkFilters(httpRequest);
 
-   }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<VirtualGuestAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<VirtualGuestAsyncClient>>() {
-      };
    }
 }

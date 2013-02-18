@@ -18,12 +18,12 @@
  */
 package org.jclouds.cloudfiles.blobstore.functions;
 
+import static org.jclouds.http.Uris.uriBuilder;
+
 import java.net.URI;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 import javax.inject.Singleton;
-import javax.ws.rs.core.UriBuilder;
 
 import org.jclouds.openstack.swift.domain.ObjectInfo;
 
@@ -38,24 +38,34 @@ import com.google.common.cache.LoadingCache;
 public class PublicUriForObjectInfo implements Function<ObjectInfo, URI> {
    
    private final LoadingCache<String, URI> cdnContainer;
-   private final Provider<UriBuilder> uriBuilders;
 
    @Inject
-   public PublicUriForObjectInfo(LoadingCache<String, URI> cdnContainer, Provider<UriBuilder> uriBuilders) {
+   public PublicUriForObjectInfo(LoadingCache<String, URI> cdnContainer) {
       this.cdnContainer = cdnContainer;
-      this.uriBuilders = uriBuilders;
    }
+
+   private static final URI NEGATIVE_ENTRY = URI.create("http://127.0.0.1");
 
    public URI apply(ObjectInfo from) {
       if (from == null)
          return null;
-      try {
-         return uriBuilders.get().uri(cdnContainer.getUnchecked(from.getContainer())).path(from.getName()).replaceQuery("")
-                  .build();
-      } catch (NullPointerException e) {
-         // nulls not permitted from cache loader
+      String containerName = from.getContainer();
+      if (containerName == null)
          return null;
+      try {
+         URI uri = cdnContainer.getUnchecked(containerName);
+         if (uri == NEGATIVE_ENTRY) {  // intentionally use reference equality
+            // TODO: GetCDNMetadata.load returns null on failure cases.  We use
+            // a negative entry to avoid repeatedly issuing failed CDN queries.
+            // The LoadingCache removes this value after its normal expiry.
+            return null;
+         }
+         return uriBuilder(uri).clearQuery().appendPath(from.getName()).build();
       } catch (CacheLoader.InvalidCacheLoadException e) {
+         // nulls not permitted from cache loader
+         cdnContainer.put(containerName, NEGATIVE_ENTRY);
+         return null;
+      } catch (NullPointerException e) {
          // nulls not permitted from cache loader
          return null;
       }

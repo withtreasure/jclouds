@@ -30,7 +30,13 @@ function ensure_netutils_yum() {
 # most network services require that the hostname is in
 # the /etc/hosts file, or they won't operate
 function ensure_hostname_in_hosts() {
-  egrep -q `hostname` /etc/hosts || awk -v hostname=`hostname` 'END { print $1" "hostname }' /proc/net/arp >> /etc/hosts
+  [ -n "$SSH_CONNECTION" ] && {
+    local ipaddr=`echo $SSH_CONNECTION | awk '{print $3}'`
+  } || {
+    local ipaddr=`hostname -i`
+  }
+  # NOTE: we blindly trust existing hostname settings in /etc/hosts
+  egrep -q `hostname` /etc/hosts || echo "$ipaddr `hostname`" >> /etc/hosts
 }
 
 # download locations for many services are at public dns

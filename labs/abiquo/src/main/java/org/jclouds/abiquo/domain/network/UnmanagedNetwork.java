@@ -43,6 +43,7 @@ import com.abiquo.server.core.infrastructure.DatacenterDto;
 import com.abiquo.server.core.infrastructure.network.UnmanagedIpDto;
 import com.abiquo.server.core.infrastructure.network.UnmanagedIpsDto;
 import com.abiquo.server.core.infrastructure.network.VLANNetworkDto;
+import com.google.common.base.Optional;
 import com.google.inject.TypeLiteral;
 
 /**
@@ -154,7 +155,8 @@ public class UnmanagedNetwork extends Network<UnmanagedIp> {
 
    private void addEnterpriseLink() {
       checkNotNull(enterprise, ValidationErrors.NULL_RESOURCE + Enterprise.class);
-      checkNotNull(enterprise.getId(), ValidationErrors.MISSING_REQUIRED_FIELD + " id in " + Enterprise.class);
+      checkNotNull(enterprise.getId(),
+            ValidationErrors.MISSING_REQUIRED_FIELD + " id in " + Enterprise.class.getCanonicalName());
 
       RESTLink link = enterprise.unwrap().searchLink("edit");
 
@@ -175,25 +177,32 @@ public class UnmanagedNetwork extends Network<UnmanagedIp> {
 
       private Enterprise enterprise;
 
-      private NetworkServiceType nst;
+      private Optional<NetworkServiceType> networkServiceType = Optional.absent();
 
       public Builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context, final Datacenter datacenter,
             final Enterprise enterprise) {
          super(context);
-         checkNotNull(datacenter, ValidationErrors.NULL_RESOURCE + Datacenter.class);
-         checkNotNull(datacenter, ValidationErrors.NULL_RESOURCE + Enterprise.class);
-         this.datacenter = datacenter;
-         this.enterprise = enterprise;
+         this.datacenter = checkNotNull(datacenter,
+               ValidationErrors.NULL_RESOURCE + Datacenter.class.getCanonicalName());
+         this.enterprise = checkNotNull(enterprise,
+               ValidationErrors.NULL_RESOURCE + Enterprise.class.getCanonicalName());
          this.context = context;
       }
 
       public Builder datacenter(final Datacenter datacenter) {
-         this.datacenter = datacenter;
+         this.datacenter = checkNotNull(datacenter,
+               ValidationErrors.NULL_RESOURCE + Datacenter.class.getCanonicalName());
          return this;
       }
 
       public Builder enterprise(final Enterprise enterprise) {
-         this.enterprise = enterprise;
+         this.enterprise = checkNotNull(enterprise,
+               ValidationErrors.NULL_RESOURCE + Enterprise.class.getCanonicalName());
+         return this;
+      }
+
+      public Builder networkServiceType(final NetworkServiceType networkServiceType) {
+         this.networkServiceType = Optional.of(networkServiceType);
          return this;
       }
 
@@ -216,9 +225,7 @@ public class UnmanagedNetwork extends Network<UnmanagedIp> {
          dto.setUnmanaged(true);
          dto.setType(NetworkType.UNMANAGED);
 
-         if (nst == null) {
-            nst = datacenter.defaultNetworkServiceType();
-         }
+         NetworkServiceType nst = networkServiceType.or(datacenter.defaultNetworkServiceType());
          dto.getLinks().add(new RESTLink("networkservicetype", nst.unwrap().getEditLink().getHref()));
 
          UnmanagedNetwork network = new UnmanagedNetwork(context, dto);

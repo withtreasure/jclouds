@@ -78,7 +78,7 @@ public class HostAggregateApiLiveTest extends BaseNovaApiLiveTest {
    public void testListAndGetAggregate() {
       if (apiOption.isPresent()) {
          HostAggregateApi api = apiOption.get();
-         Set<? extends HostAggregate> aggregates = api.list().toImmutableSet();
+         Set<? extends HostAggregate> aggregates = api.list().toSet();
          for (HostAggregate aggregate : aggregates) {
             assertNotNull(aggregate.getId());
             assertNotNull(aggregate.getName());
@@ -105,14 +105,14 @@ public class HostAggregateApiLiveTest extends BaseNovaApiLiveTest {
             HostAggregate details = api.setMetadata(testAggregate.getId(), theMetaData);
             
             //  bug in openstack - metadata values are never removed, so we just checking what we've set
-            for (String key : theMetaData.keySet()) {
-               assertEquals(details.getMetadata().get(key), theMetaData.get(key));
+            for (Map.Entry<String, String> entry : theMetaData.entrySet()) {
+               assertEquals(details.getMetadata().get(entry.getKey()), entry.getValue());
             }
 
             // Re-fetch to double-check
             details = api.get(testAggregate.getId());
-            for (String key : theMetaData.keySet()) {
-               assertEquals(details.getMetadata().get(key), theMetaData.get(key));
+            for (Map.Entry<String, String> entry : theMetaData.entrySet()) {
+               assertEquals(details.getMetadata().get(entry.getKey()), entry.getValue());
             }
          }
       }

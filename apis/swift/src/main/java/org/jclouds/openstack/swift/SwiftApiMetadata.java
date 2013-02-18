@@ -20,6 +20,7 @@ package org.jclouds.openstack.swift;
 
 import static org.jclouds.blobstore.reference.BlobStoreConstants.PROPERTY_USER_METADATA_PREFIX;
 import static org.jclouds.location.reference.LocationConstants.PROPERTY_REGIONS;
+import static org.jclouds.reflect.Reflection2.typeToken;
 
 import java.net.URI;
 import java.util.Properties;
@@ -44,19 +45,20 @@ import com.google.inject.Module;
  */
 public class SwiftApiMetadata extends BaseRestApiMetadata {
 
-   public static final TypeToken<RestContext<SwiftClient, SwiftAsyncClient>> CONTEXT_TOKEN = new TypeToken<RestContext<SwiftClient, SwiftAsyncClient>>() {
+   public static final TypeToken<RestContext<? extends SwiftClient, ? extends SwiftAsyncClient>> CONTEXT_TOKEN = new TypeToken<RestContext<? extends SwiftClient, ? extends SwiftAsyncClient>>() {
+      private static final long serialVersionUID = 1L;
    };
 
    @Override
-   public Builder toBuilder() {
-      return (Builder) new Builder(getApi(), getAsyncApi()).fromApiMetadata(this);
+   public Builder<?> toBuilder() {
+      return new ConcreteBuilder().fromApiMetadata(this);
    }
 
    public SwiftApiMetadata() {
-      this(new Builder(SwiftClient.class, SwiftAsyncClient.class));
+      this(new ConcreteBuilder());
    }
 
-   protected SwiftApiMetadata(Builder builder) {
+   protected SwiftApiMetadata(Builder<?> builder) {
       super(builder);
    }
 
@@ -67,7 +69,11 @@ public class SwiftApiMetadata extends BaseRestApiMetadata {
       return properties;
    }
 
-   public static class Builder extends BaseRestApiMetadata.Builder {
+   public static abstract class Builder<T extends Builder<T>> extends BaseRestApiMetadata.Builder<T> {
+      protected Builder() {
+         this(SwiftClient.class, SwiftAsyncClient.class);
+      }
+      
       protected Builder(Class<?> syncClient, Class<?> asyncClient){
          super(syncClient, asyncClient);
          id("swift")
@@ -77,7 +83,7 @@ public class SwiftApiMetadata extends BaseRestApiMetadata {
          .documentation(URI.create("http://api.openstack.org/"))
          .version("1.0")
          .defaultProperties(SwiftApiMetadata.defaultProperties())
-         .view(TypeToken.of(BlobStoreContext.class))
+         .view(typeToken(BlobStoreContext.class))
          .context(CONTEXT_TOKEN)
          .defaultModules(ImmutableSet.<Class<? extends Module>>builder()
                                      .add(StorageEndpointModule.class)
@@ -90,10 +96,11 @@ public class SwiftApiMetadata extends BaseRestApiMetadata {
       public SwiftApiMetadata build() {
          return new SwiftApiMetadata(this);
       }
-
+   }
+   
+   private static class ConcreteBuilder extends Builder<ConcreteBuilder> {
       @Override
-      public Builder fromApiMetadata(ApiMetadata in) {
-         super.fromApiMetadata(in);
+      protected ConcreteBuilder self() {
          return this;
       }
    }

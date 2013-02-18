@@ -19,12 +19,9 @@
 package org.jclouds.vcloud.director.v1_5.features.admin;
 
 import java.net.URI;
-import java.util.concurrent.TimeUnit;
 
-import org.jclouds.concurrent.Timeout;
-import org.jclouds.rest.annotations.Delegate;
-import org.jclouds.rest.annotations.EndpointParam;
 import org.jclouds.vcloud.director.v1_5.domain.org.AdminOrg;
+import org.jclouds.vcloud.director.v1_5.domain.org.Org;
 import org.jclouds.vcloud.director.v1_5.domain.org.OrgEmailSettings;
 import org.jclouds.vcloud.director.v1_5.domain.org.OrgGeneralSettings;
 import org.jclouds.vcloud.director.v1_5.domain.org.OrgLdapSettings;
@@ -32,9 +29,7 @@ import org.jclouds.vcloud.director.v1_5.domain.org.OrgLeaseSettings;
 import org.jclouds.vcloud.director.v1_5.domain.org.OrgPasswordPolicySettings;
 import org.jclouds.vcloud.director.v1_5.domain.org.OrgSettings;
 import org.jclouds.vcloud.director.v1_5.domain.org.OrgVAppTemplateLeaseSettings;
-import org.jclouds.vcloud.director.v1_5.features.MetadataApi;
 import org.jclouds.vcloud.director.v1_5.features.OrgApi;
-import org.jclouds.vcloud.director.v1_5.functions.href.OrgURNToAdminHref;
 
 /**
  * Provides synchronous access to {@link Org} objects.
@@ -42,7 +37,6 @@ import org.jclouds.vcloud.director.v1_5.functions.href.OrgURNToAdminHref;
  * @see AdminOrgAsyncApi
  * @author danikov, Adrian Cole
  */
-@Timeout(duration = 180, timeUnit = TimeUnit.SECONDS)
 public interface AdminOrgApi extends OrgApi {
 
    /**
@@ -269,16 +263,4 @@ public interface AdminOrgApi extends OrgApi {
    OrgVAppTemplateLeaseSettings editVAppTemplateLeaseSettings(String orgUrn, OrgVAppTemplateLeaseSettings newSettings);
 
    OrgVAppTemplateLeaseSettings editVAppTemplateLeaseSettings(URI orgAdminHref, OrgVAppTemplateLeaseSettings newSettings);
-
-   /**
-    * @return synchronous access to admin {@link MetadataApi.Writeable} features
-    */
-   @Override
-   @Delegate
-   MetadataApi.Writeable getMetadataApi(@EndpointParam(parser = OrgURNToAdminHref.class) String orgUrn);
-
-   @Override
-   @Delegate
-   MetadataApi.Writeable getMetadataApi(@EndpointParam URI orgAdminHref);
-
 }

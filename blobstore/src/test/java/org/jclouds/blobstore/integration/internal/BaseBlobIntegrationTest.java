@@ -18,19 +18,22 @@
  */
 package org.jclouds.blobstore.integration.internal;
 
+import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.hash.Hashing.md5;
 import static org.jclouds.blobstore.options.GetOptions.Builder.ifETagDoesntMatch;
 import static org.jclouds.blobstore.options.GetOptions.Builder.ifETagMatches;
 import static org.jclouds.blobstore.options.GetOptions.Builder.ifModifiedSince;
 import static org.jclouds.blobstore.options.GetOptions.Builder.ifUnmodifiedSince;
 import static org.jclouds.blobstore.options.GetOptions.Builder.range;
-import static org.jclouds.blobstore.util.BlobStoreUtils.getContentAsStringOrNullAndClose;
 import static org.jclouds.concurrent.FutureIterables.awaitCompletion;
+import static org.jclouds.io.ByteSources.asByteSource;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -39,9 +42,9 @@ import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
@@ -56,9 +59,7 @@ import org.jclouds.blobstore.domain.BlobMetadata;
 import org.jclouds.blobstore.domain.PageSet;
 import org.jclouds.blobstore.domain.StorageMetadata;
 import org.jclouds.blobstore.domain.StorageType;
-import org.jclouds.concurrent.Futures;
 import org.jclouds.crypto.Crypto;
-import org.jclouds.crypto.CryptoStreams;
 import org.jclouds.encryption.internal.JCECrypto;
 import org.jclouds.http.BaseJettyTest;
 import org.jclouds.http.HttpResponseException;
@@ -83,6 +84,8 @@ import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.google.common.io.InputSupplier;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 
 /**
  * @author Adrian Cole
@@ -97,7 +100,11 @@ public class BaseBlobIntegrationTest extends BaseBlobStoreIntegrationTest {
    public void setUpResourcesOnThisThread(ITestContext testContext) throws Exception {
       super.setUpResourcesOnThisThread(testContext);
       oneHundredOneConstitutions = getTestDataSupplier();
-      oneHundredOneConstitutionsMD5 = CryptoStreams.md5(oneHundredOneConstitutions);
+      oneHundredOneConstitutionsMD5 = md5Supplier(oneHundredOneConstitutions);
+   }
+
+   protected static byte[] md5Supplier(InputSupplier<InputStream> supplier) throws IOException {
+      return asByteSource(supplier.getInput()).hash(md5()).asBytes();
    }
 
    @SuppressWarnings("unchecked")
@@ -123,18 +130,17 @@ public class BaseBlobIntegrationTest extends BaseBlobStoreIntegrationTest {
    public void testPutFileParallel() throws InterruptedException, IOException, TimeoutException {
 
       File payloadFile = File.createTempFile("testPutFileParallel", "png");
-      Files.copy(InputSuppliers.of(getClass().getResource("/testimg.png").openStream()), payloadFile);
+      Files.copy(InputSuppliers.of(createTestInput()), payloadFile);
       payloadFile.deleteOnExit();
       
-      
       final Payload testPayload = Payloads.newFilePayload(payloadFile);
-      final byte[] md5 = CryptoStreams.md5(testPayload);
+      final byte[] md5 = md5Supplier(testPayload);
       testPayload.getContentMetadata().setContentType("image/png");
       
       final AtomicInteger blobCount = new AtomicInteger();
       final String container = getContainerName();
       try {
-         Map<Integer, Future<?>> responses = Maps.newHashMap();
+         Map<Integer, ListenableFuture<?>> responses = Maps.newHashMap();
          for (int i = 0; i < 10; i++) {
 
             responses.put(i, this.exec.submit(new Callable<Void>() {
@@ -147,7 +153,7 @@ public class BaseBlobIntegrationTest extends BaseBlobStoreIntegrationTest {
                   assertConsistencyAwareBlobExists(container, name);
                   blob = view.getBlobStore().getBlob(container, name);
 
-                  assert Arrays.equals(CryptoStreams.md5(blob.getPayload()), md5) : String.format(
+                  assert Arrays.equals(md5Supplier(blob.getPayload()), md5) : String.format(
                            "md5 didn't match on %s/%s", container, name);
 
                   view.getBlobStore().removeBlob(container, name);
@@ -174,17 +180,17 @@ public class BaseBlobIntegrationTest extends BaseBlobStoreIntegrationTest {
          final String name = "constitution.txt";
 
          uploadConstitution(container, name, expectedContentDisposition);
-         Map<Integer, Future<?>> responses = Maps.newHashMap();
+         Map<Integer, ListenableFuture<?>> responses = Maps.newHashMap();
          for (int i = 0; i < 10; i++) {
 
-            responses.put(i, Futures.compose(view.getAsyncBlobStore().getBlob(container, name),
+            responses.put(i, Futures.transform(view.getAsyncBlobStore().getBlob(container, name),
                      new Function<Blob, Void>() {
 
                         @Override
                         public Void apply(Blob from) {
                            try {
                               validateMetadata(from.getMetadata(), container, name);
-                              assertEquals(CryptoStreams.md5(from.getPayload()), oneHundredOneConstitutionsMD5);
+                              assertEquals(md5Supplier(from.getPayload()), oneHundredOneConstitutionsMD5);
                               checkContentDisposition(from, expectedContentDisposition);
                            } catch (IOException e) {
                               Throwables.propagate(e);
@@ -362,51 +368,6 @@ public class BaseBlobIntegrationTest extends BaseBlobStoreIntegrationTest {
          returnContainer(container);
       }
    }
-
-   // @Test(groups = { "integration", "live" })
-   // public void testGetTail() throws InterruptedException, ExecutionException,
-   // TimeoutException,
-   // IOException {
-   // String container = getContainerName();
-   // try {
-   //
-   // String name = "apples";
-   //
-   // addObjectAndValidateContent(container, name);
-   // Blob blob = context.getBlobStore().getBlob(container, name,
-   // tail(5)).get(30,
-   // TimeUnit.SECONDS);
-   // assertEquals(BlobStoreUtils.getContentAsStringAndClose(blob), TEST_STRING
-   // .substring(TEST_STRING.length() - 5));
-   // assertEquals(blob.getContentLength(), 5);
-   // assertEquals(blob.getMetadata().getSize(), TEST_STRING.length());
-   // } finally {
-   // returnContainer(container);
-   // }
-   // }
-
-   // @Test(groups = { "integration", "live" })
-   // public void testGetStartAt() throws InterruptedException,
-   // ExecutionException,
-   // TimeoutException,
-   // IOException {
-   // String container = getContainerName();
-   // try {
-   // String name = "apples";
-   //
-   // addObjectAndValidateContent(container, name);
-   // Blob blob = context.getBlobStore().getBlob(container, name,
-   // startAt(5)).get(30,
-   // TimeUnit.SECONDS);
-   // assertEquals(BlobStoreUtils.getContentAsStringAndClose(blob),
-   // TEST_STRING.substring(5,
-   // TEST_STRING.length()));
-   // assertEquals(blob.getContentLength(), TEST_STRING.length() - 5);
-   // assertEquals(blob.getMetadata().getSize(), TEST_STRING.length());
-   // } finally {
-   // returnContainer(container);
-   // }
-   // }
 
    private String addObjectAndValidateContent(String sourcecontainer, String sourceKey) throws InterruptedException {
       String eTag = addBlobToContainer(sourcecontainer, sourceKey);
@@ -643,7 +604,16 @@ public class BaseBlobIntegrationTest extends BaseBlobStoreIntegrationTest {
    }
 
    protected void checkMD5(BlobMetadata metadata) throws IOException {
-      assertEquals(metadata.getContentMetadata().getContentMD5(), CryptoStreams.md5(InputSuppliers.of(TEST_STRING)));
+      assertEquals(metadata.getContentMetadata().getContentMD5(), md5().hashString(TEST_STRING, UTF_8).asBytes());
    }
 
+   private InputStream createTestInput() throws IOException {
+      File file = File.createTempFile("testimg", "png");
+      file.deleteOnExit();
+      Random random = new Random();
+      byte[] buffer = new byte[random.nextInt(2 * 1024 * 1024)];
+      random.nextBytes(buffer);
+      Files.copy(ByteStreams.newInputStreamSupplier(buffer), file);
+      return new FileInputStream(file);
+   }
 }

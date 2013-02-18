@@ -18,23 +18,23 @@
  */
 package org.jclouds.gogrid.services;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
+import static org.jclouds.reflect.Reflection2.method;
 
+import java.io.IOException;
+
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.gogrid.domain.ServerImageState;
 import org.jclouds.gogrid.domain.ServerImageType;
 import org.jclouds.gogrid.functions.ParseImageFromJsonResponse;
 import org.jclouds.gogrid.functions.ParseImageListFromJsonResponse;
 import org.jclouds.gogrid.options.GetImageListOptions;
 import org.jclouds.gogrid.options.SaveImageOptions;
-import org.jclouds.http.HttpRequest;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.testng.annotations.Test;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.inject.TypeLiteral;
-
+import com.google.common.reflect.Invokable;
 /**
  * Tests behavior of {@code GridImageAsyncClient}
  * 
@@ -47,11 +47,11 @@ public class GridImageAsyncClientTest extends BaseGoGridAsyncClientTest<GridImag
 
    @Test
    public void testGetImageListWithOptions() throws NoSuchMethodException, IOException {
-      Method method = GridImageAsyncClient.class.getMethod("getImageList", GetImageListOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(
-            method,
+      Invokable<?, ?> method = method(GridImageAsyncClient.class, "getImageList", GetImageListOptions[].class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(
+            method, ImmutableList.<Object> of(
             new GetImageListOptions().onlyPublic().setState(ServerImageState.AVAILABLE)
-                  .setType(ServerImageType.WEB_APPLICATION_SERVER));
+                  .setType(ServerImageType.WEB_APPLICATION_SERVER)));
 
       assertRequestLineEquals(httpRequest, "GET https://api.gogrid.com/api/grid/image/list?v=1.5&"
             + "isPublic=true&image.state=Available&" + "image.type=Web%20Server HTTP/1.1");
@@ -60,10 +60,10 @@ public class GridImageAsyncClientTest extends BaseGoGridAsyncClientTest<GridImag
 
       assertResponseParserClassEquals(method, httpRequest, ParseImageListFromJsonResponse.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(httpRequest);
-      httpRequest = Iterables.getOnlyElement(httpRequest.getFilters()).filter(httpRequest);
+      httpRequest = (GeneratedHttpRequest) Iterables.getOnlyElement(httpRequest.getFilters()).filter(httpRequest);
 
       assertRequestLineEquals(httpRequest, "GET https://api.gogrid.com/api/grid/image/list?"
             + "v=1.5&isPublic=true&image.state=Available&" + "image.type=Web%20Server&"
@@ -74,8 +74,8 @@ public class GridImageAsyncClientTest extends BaseGoGridAsyncClientTest<GridImag
 
    @Test
    public void testGetImagesByName() throws NoSuchMethodException, IOException {
-      Method method = GridImageAsyncClient.class.getMethod("getImagesByName", String[].class);
-      HttpRequest httpRequest = processor.createRequest(method, "name1", "name2");
+      Invokable<?, ?> method = method(GridImageAsyncClient.class, "getImagesByName", String[].class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of("name1", "name2"));
 
       assertRequestLineEquals(httpRequest, "GET https://api.gogrid.com/api/grid/image/get?v=1.5&"
             + "name=name1&name=name2 HTTP/1.1");
@@ -84,10 +84,10 @@ public class GridImageAsyncClientTest extends BaseGoGridAsyncClientTest<GridImag
 
       assertResponseParserClassEquals(method, httpRequest, ParseImageListFromJsonResponse.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(httpRequest);
-      httpRequest = Iterables.getOnlyElement(httpRequest.getFilters()).filter(httpRequest);
+      httpRequest = (GeneratedHttpRequest) Iterables.getOnlyElement(httpRequest.getFilters()).filter(httpRequest);
 
       assertRequestLineEquals(httpRequest, "GET https://api.gogrid.com/api/grid/image/get?v=1.5&"
             + "name=name1&name=name2&" + "sig=e9aafd0a5d4c69bb24536be4bce8a528&api_key=identity " + "HTTP/1.1");
@@ -97,8 +97,8 @@ public class GridImageAsyncClientTest extends BaseGoGridAsyncClientTest<GridImag
 
    @Test
    public void testEditImageDescription() throws NoSuchMethodException, IOException {
-      Method method = GridImageAsyncClient.class.getMethod("editImageDescription", String.class, String.class);
-      HttpRequest httpRequest = processor.createRequest(method, "imageName", "newDesc");
+      Invokable<?, ?> method = method(GridImageAsyncClient.class, "editImageDescription", String.class, String.class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of("imageName", "newDesc"));
 
       assertRequestLineEquals(httpRequest, "GET https://api.gogrid.com/api/grid/image/edit?v=1.5&"
             + "image=imageName&description=newDesc HTTP/1.1");
@@ -107,10 +107,10 @@ public class GridImageAsyncClientTest extends BaseGoGridAsyncClientTest<GridImag
 
       assertResponseParserClassEquals(method, httpRequest, ParseImageFromJsonResponse.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(httpRequest);
-      httpRequest = Iterables.getOnlyElement(httpRequest.getFilters()).filter(httpRequest);
+      httpRequest = (GeneratedHttpRequest) Iterables.getOnlyElement(httpRequest.getFilters()).filter(httpRequest);
 
       assertRequestLineEquals(httpRequest, "GET https://api.gogrid.com/api/grid/image/edit?v=1.5&"
             + "image=imageName&description=newDesc&" + "sig=e9aafd0a5d4c69bb24536be4bce8a528&api_key=identity " + "HTTP/1.1");
@@ -120,8 +120,8 @@ public class GridImageAsyncClientTest extends BaseGoGridAsyncClientTest<GridImag
 
    @Test
    public void testEditImageFriendlyName() throws NoSuchMethodException, IOException {
-      Method method = GridImageAsyncClient.class.getMethod("editImageFriendlyName", String.class, String.class);
-      HttpRequest httpRequest = processor.createRequest(method, "imageName", "newFriendlyName");
+      Invokable<?, ?> method = method(GridImageAsyncClient.class, "editImageFriendlyName", String.class, String.class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of("imageName", "newFriendlyName"));
 
       assertRequestLineEquals(httpRequest, "GET https://api.gogrid.com/api/grid/image/edit?v=1.5&"
             + "image=imageName&friendlyName=newFriendlyName HTTP/1.1");
@@ -130,10 +130,10 @@ public class GridImageAsyncClientTest extends BaseGoGridAsyncClientTest<GridImag
 
       assertResponseParserClassEquals(method, httpRequest, ParseImageFromJsonResponse.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(httpRequest);
-      httpRequest = Iterables.getOnlyElement(httpRequest.getFilters()).filter(httpRequest);
+      httpRequest = (GeneratedHttpRequest) Iterables.getOnlyElement(httpRequest.getFilters()).filter(httpRequest);
 
       assertRequestLineEquals(httpRequest, "GET https://api.gogrid.com/api/grid/image/edit?v=1.5&"
             + "image=imageName&friendlyName=newFriendlyName&" + "sig=e9aafd0a5d4c69bb24536be4bce8a528&api_key=identity "
@@ -144,8 +144,8 @@ public class GridImageAsyncClientTest extends BaseGoGridAsyncClientTest<GridImag
 
    @Test
    public void testDeleteById() throws NoSuchMethodException, IOException {
-      Method method = GridImageAsyncClient.class.getMethod("deleteById", long.class);
-      HttpRequest httpRequest = processor.createRequest(method, 11l);
+      Invokable<?, ?> method = method(GridImageAsyncClient.class, "deleteById", long.class);
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of(11l));
 
       assertRequestLineEquals(httpRequest, "GET https://api.gogrid.com/api/grid/image/delete?v=1.5&id=11 HTTP/1.1");
       assertNonPayloadHeadersEqual(httpRequest, "");
@@ -153,14 +153,14 @@ public class GridImageAsyncClientTest extends BaseGoGridAsyncClientTest<GridImag
 
       assertResponseParserClassEquals(method, httpRequest, ParseImageFromJsonResponse.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
    }
 
    @Test
    public void testSaveImageFromServerNoOptions() throws NoSuchMethodException, IOException {
-      Method method = GridImageAsyncClient.class.getMethod("saveImageFromServer", String.class, String.class,
+      Invokable<?, ?> method = method(GridImageAsyncClient.class, "saveImageFromServer", String.class, String.class,
             SaveImageOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method, "friendly", "serverName");
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of("friendly", "serverName"));
 
       assertRequestLineEquals(httpRequest,
             "GET https://api.gogrid.com/api/grid/image/save?v=1.5&friendlyName=friendly&server=serverName HTTP/1.1");
@@ -169,16 +169,16 @@ public class GridImageAsyncClientTest extends BaseGoGridAsyncClientTest<GridImag
 
       assertResponseParserClassEquals(method, httpRequest, ParseImageFromJsonResponse.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
    }
 
    @Test
    public void testSaveImageOptions() throws NoSuchMethodException, IOException {
-      Method method = GridImageAsyncClient.class.getMethod("saveImageFromServer", String.class, String.class,
+      Invokable<?, ?> method = method(GridImageAsyncClient.class, "saveImageFromServer", String.class, String.class,
             SaveImageOptions[].class);
-      HttpRequest httpRequest = processor.createRequest(method, "friendly", "serverName",
-            new SaveImageOptions().withDescription("fooy"));
+      GeneratedHttpRequest httpRequest = processor.createRequest(method, ImmutableList.<Object> of("friendly", "serverName",
+            new SaveImageOptions().withDescription("fooy")));
 
       assertRequestLineEquals(
             httpRequest,
@@ -188,14 +188,7 @@ public class GridImageAsyncClientTest extends BaseGoGridAsyncClientTest<GridImag
 
       assertResponseParserClassEquals(method, httpRequest, ParseImageFromJsonResponse.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
    }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<GridImageAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<GridImageAsyncClient>>() {
-      };
-   }
-
 }

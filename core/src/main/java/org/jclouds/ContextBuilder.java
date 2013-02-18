@@ -18,6 +18,7 @@
  */
 package org.jclouds;
 
+import static com.google.common.base.Objects.toStringHelper;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.containsPattern;
 import static com.google.common.base.Predicates.instanceOf;
@@ -30,6 +31,9 @@ import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.find;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.newArrayListWithCapacity;
+import static com.google.common.collect.Maps.filterKeys;
+import static com.google.common.util.concurrent.MoreExecutors.sameThreadExecutor;
 import static org.jclouds.Constants.PROPERTY_API;
 import static org.jclouds.Constants.PROPERTY_API_VERSION;
 import static org.jclouds.Constants.PROPERTY_BUILD_VERSION;
@@ -38,6 +42,7 @@ import static org.jclouds.Constants.PROPERTY_ENDPOINT;
 import static org.jclouds.Constants.PROPERTY_IDENTITY;
 import static org.jclouds.Constants.PROPERTY_ISO3166_CODES;
 import static org.jclouds.Constants.PROPERTY_PROVIDER;
+import static org.jclouds.reflect.Reflection2.typeToken;
 import static org.jclouds.util.Throwables2.propagateAuthorizationOrOriginalException;
 
 import java.util.List;
@@ -48,7 +53,6 @@ import java.util.Set;
 
 import org.jclouds.apis.ApiMetadata;
 import org.jclouds.apis.Apis;
-import org.jclouds.concurrent.MoreExecutors;
 import org.jclouds.concurrent.SingleThreaded;
 import org.jclouds.concurrent.config.ConfiguresExecutorService;
 import org.jclouds.concurrent.config.ExecutorServiceModule;
@@ -61,6 +65,7 @@ import org.jclouds.events.config.EventBusModule;
 import org.jclouds.http.config.ConfiguresHttpCommandExecutorService;
 import org.jclouds.http.config.JavaUrlHttpCommandExecutorServiceModule;
 import org.jclouds.javax.annotation.Nullable;
+import org.jclouds.lifecycle.Closer;
 import org.jclouds.lifecycle.config.LifeCycleModule;
 import org.jclouds.logging.config.LoggingModule;
 import org.jclouds.logging.jdk.config.JDKLoggingModule;
@@ -71,6 +76,7 @@ import org.jclouds.providers.internal.UpdateProviderMetadataFromProperties;
 import org.jclouds.rest.ConfiguresCredentialStore;
 import org.jclouds.rest.ConfiguresRestClient;
 import org.jclouds.rest.RestApiMetadata;
+import org.jclouds.rest.RestContext;
 import org.jclouds.rest.config.CredentialStoreModule;
 import org.jclouds.rest.config.RestClientModule;
 import org.jclouds.rest.config.RestModule;
@@ -82,12 +88,12 @@ import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.ImmutableMultimap.Builder;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.TypeToken;
 import com.google.common.util.concurrent.ExecutionList;
 import com.google.inject.Guice;
@@ -187,18 +193,18 @@ public class ContextBuilder {
    protected final String providerId;
    protected Optional<String> endpoint = Optional.absent();
    protected Optional<String> identity = Optional.absent();
+   protected Optional<Supplier<Credentials>> credentialsSupplierOption = Optional.absent();
    @Nullable
    protected String credential;
    protected ApiMetadata apiMetadata;
    protected String apiVersion;
    protected String buildVersion;
    protected Optional<Properties> overrides = Optional.absent();
-   protected List<Module> modules = Lists.newArrayListWithCapacity(3);
+   protected List<Module> modules = newArrayListWithCapacity(3);
 
    @Override
    public String toString() {
-      return Objects.toStringHelper("").add("providerMetadata", providerMetadata).add("apiMetadata", apiMetadata)
-               .toString();
+      return toStringHelper("").add("providerMetadata", providerMetadata).add("apiMetadata", apiMetadata).toString();
    }
 
    protected ContextBuilder(ProviderMetadata providerMetadata) {
@@ -230,6 +236,20 @@ public class ContextBuilder {
      return this;
    }
 
+   /**
+    * returns the current login credentials. jclouds will not cache this value. Use this when you need to change
+    * credentials at runtime.
+    */
+   public ContextBuilder credentialsSupplier(Supplier<Credentials> credentialsSupplier) {
+      this.credentialsSupplierOption = Optional.of(checkNotNull(credentialsSupplier, "credentialsSupplier"));
+      return this;
+   }
+   
+   /**
+    * constant value of the cloud identity and credential.
+    * 
+    * @param credential (optional depending on {@link ApiMetadata#getCredentialName()}
+    */
    public ContextBuilder credentials(String identity, @Nullable String credential) {
       this.identity = Optional.of(checkNotNull(identity, "identity"));
       this.credential = credential;
@@ -277,24 +297,45 @@ public class ContextBuilder {
 
       Properties unexpanded = currentStateToUnexpandedProperties();
 
-      ImmutableSet<String> keysToResolve = ImmutableSet.of(PROPERTY_ENDPOINT, PROPERTY_IDENTITY, PROPERTY_CREDENTIAL,
-               PROPERTY_API, PROPERTY_API_VERSION, PROPERTY_BUILD_VERSION);
+      Set<String> keysToResolve = ImmutableSet.of(PROPERTY_IDENTITY, PROPERTY_CREDENTIAL, PROPERTY_ENDPOINT,
+            PROPERTY_API, PROPERTY_API_VERSION, PROPERTY_BUILD_VERSION);
 
-      ImmutableSet<String> optionalKeys = apiMetadata.getCredentialName().isPresent() ? ImmutableSet.<String> of()
-               : ImmutableSet.of(PROPERTY_CREDENTIAL);
+      Set<String> optionalKeys;
+      if (credentialsSupplierOption.isPresent()) {
+         optionalKeys = ImmutableSet.of(PROPERTY_IDENTITY, PROPERTY_CREDENTIAL);
+      } else if (!apiMetadata.getCredentialName().isPresent()) {
+         optionalKeys = ImmutableSet.of(PROPERTY_CREDENTIAL);
+      } else {
+         optionalKeys = ImmutableSet.of();
+      }
 
       Properties resolved = resolveProperties(unexpanded, providerId, keysToResolve, optionalKeys);
 
       Properties expanded = expandProperties(resolved);
 
-      Credentials creds = new Credentials(getAndRemove(expanded, PROPERTY_IDENTITY), getAndRemove(expanded,
-               PROPERTY_CREDENTIAL));
+      Supplier<Credentials> credentialsSupplier = buildCredentialsSupplier(expanded);
 
-      ProviderMetadata providerMetadata = new UpdateProviderMetadataFromProperties(apiMetadata, this.providerMetadata).apply(expanded);
+      ProviderMetadata providerMetadata = new UpdateProviderMetadataFromProperties(apiMetadata, this.providerMetadata)
+            .apply(expanded);
 
-      //We use either the specified name (optional) or a hash of provider/api, endpoint, api version & identity. Hash is used to be something readable.
+      // We use either the specified name (optional) or a hash of provider/api, endpoint, api version & identity. Hash
+      // is used to be something readable.
       return buildInjector(name.or(String.valueOf(Objects.hashCode(providerMetadata.getId(),
-               providerMetadata.getEndpoint(), providerMetadata.getApiMetadata().getVersion(), creds.identity))), providerMetadata, creds, modules);
+            providerMetadata.getEndpoint(), providerMetadata.getApiMetadata().getVersion(), credentialsSupplier))),
+            providerMetadata, credentialsSupplier, modules);
+   }
+
+   protected Supplier<Credentials> buildCredentialsSupplier(Properties expanded) {
+      Credentials creds = new Credentials(getAndRemove(expanded, PROPERTY_IDENTITY), getAndRemove(expanded,
+            PROPERTY_CREDENTIAL));
+
+      Supplier<Credentials> credentialsSupplier;
+      if (credentialsSupplierOption.isPresent()) {
+         credentialsSupplier = credentialsSupplierOption.get();
+      } else {
+         credentialsSupplier = Suppliers.ofInstance(creds);
+      }
+      return credentialsSupplier;
    }
 
    private static String getAndRemove(Properties expanded, String key) {
@@ -338,7 +379,7 @@ public class ContextBuilder {
       return Guice.createInjector(new BindPropertiesToExpandedValues(resolved)).getInstance(Properties.class);
    }
 
-   public static Injector buildInjector(String name, ProviderMetadata providerMetadata, Credentials creds, List<Module> inputModules) {
+   public static Injector buildInjector(String name, ProviderMetadata providerMetadata, Supplier<Credentials> creds, List<Module> inputModules) {
       List<Module> modules = newArrayList();
       modules.addAll(inputModules);
       boolean restModuleSpecifiedByUser = restClientModulePresent(inputModules);
@@ -366,8 +407,8 @@ public class ContextBuilder {
             String scopedProperty = ImmutableList.copyOf(Splitter.on('.').split(key)).get(1);
             mutable.setProperty(key, searchPropertiesForProviderScopedProperty(mutable, providerId,scopedProperty));
          } catch (NoSuchElementException e){
-    if (!optionalKeys.contains(key))
-       throw e;
+            if (!optionalKeys.contains(key))
+               throw e;
          }
       }
       return mutable;
@@ -409,8 +450,7 @@ public class ContextBuilder {
    @SuppressWarnings( { "unchecked" })
    static Map<String, Object> propertiesPrefixedWithJcloudsApiOrProviderId(Properties properties, String apiId,
             String providerId) {
-      return Maps.filterKeys(Map.class.cast(properties), containsPattern("^(jclouds|" + providerId + "|" + apiId
-               + ").*"));
+      return filterKeys(Map.class.cast(properties), containsPattern("^(jclouds|" + providerId + "|" + apiId + ").*"));
    }
 
    @VisibleForTesting
@@ -452,12 +492,12 @@ public class ContextBuilder {
       return any(modules, configuresRest);
    }
 
-   @SuppressWarnings("unchecked")
+   @SuppressWarnings({ "unchecked", "rawtypes" })
    static void addClientModule(ApiMetadata apiMetadata, List<Module> modules) {
       // TODO: move this up
       if (apiMetadata instanceof RestApiMetadata) {
          RestApiMetadata rest = RestApiMetadata.class.cast(apiMetadata);
-         modules.add(new RestClientModule(TypeToken.of(rest.getApi()), TypeToken.of(rest.getAsyncApi())));
+         modules.add(new RestClientModule(typeToken(rest.getApi()), typeToken(rest.getAsyncApi())));
       } else {
          modules.add(new RestModule());
       }
@@ -490,8 +530,7 @@ public class ContextBuilder {
                return input.getClass().isAnnotationPresent(SingleThreaded.class);
             }
          })) {
-            modules.add(new ExecutorServiceModule(MoreExecutors.sameThreadExecutor(), MoreExecutors
-                     .sameThreadExecutor()));
+            modules.add(new ExecutorServiceModule(sameThreadExecutor(), sameThreadExecutor()));
          } else {
             modules.add(new ExecutorServiceModule());
          }
@@ -535,7 +574,7 @@ public class ContextBuilder {
     * @see #buildView(TypeToken)
     */
    public <V extends View> V buildView(Class<V> viewType) {
-     return buildView(TypeToken.of(checkNotNull(viewType, "viewType")));
+     return buildView(typeToken(viewType));
    }
    
    /**

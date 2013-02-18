@@ -18,22 +18,22 @@
  */
 package org.jclouds.vcloud.features;
 
+import static org.jclouds.reflect.Reflection2.method;
+
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URI;
 
-import org.jclouds.http.HttpRequest;
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.http.functions.ParseSax;
 import org.jclouds.http.functions.ReleasePayloadAndReturn;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
+import org.jclouds.rest.internal.GeneratedHttpRequest;
 import org.jclouds.vcloud.internal.BaseVCloudAsyncClientTest;
 import org.jclouds.vcloud.xml.TaskHandler;
 import org.jclouds.vcloud.xml.TasksListHandler;
 import org.testng.annotations.Test;
 
-import com.google.inject.TypeLiteral;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 /**
  * Tests behavior of {@code TaskAsyncClient}
  * 
@@ -44,16 +44,10 @@ import com.google.inject.TypeLiteral;
 @Test(groups = "unit", testName = "TaskAsyncClientTest")
 public class TaskAsyncClientTest extends BaseVCloudAsyncClientTest<TaskAsyncClient> {
 
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<TaskAsyncClient>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<TaskAsyncClient>>() {
-      };
-   }
-
    public void testGetTasksList() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = TaskAsyncClient.class.getMethod("getTasksList", URI.class);
-      HttpRequest request = processor.createRequest(method, URI
-               .create("https://vcenterprise.bluelock.com/api/v1.0/tasksList/1"));
+      Invokable<?, ?> method = method(TaskAsyncClient.class, "getTasksList", URI.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
+               .create("https://vcenterprise.bluelock.com/api/v1.0/tasksList/1")));
 
       assertRequestLineEquals(request, "GET https://vcenterprise.bluelock.com/api/v1.0/tasksList/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: application/vnd.vmware.vcloud.tasksList+xml\n");
@@ -61,14 +55,14 @@ public class TaskAsyncClientTest extends BaseVCloudAsyncClientTest<TaskAsyncClie
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, TasksListHandler.class);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testFindTasksListInOrgNamed() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = TaskAsyncClient.class.getMethod("findTasksListInOrgNamed", String.class);
-      HttpRequest request = processor.createRequest(method, "org");
+      Invokable<?, ?> method = method(TaskAsyncClient.class, "findTasksListInOrgNamed", String.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of("org"));
 
       assertRequestLineEquals(request, "GET https://vcenterprise.bluelock.com/api/v1.0/tasksList/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: application/vnd.vmware.vcloud.tasksList+xml\n");
@@ -76,15 +70,15 @@ public class TaskAsyncClientTest extends BaseVCloudAsyncClientTest<TaskAsyncClie
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, TasksListHandler.class);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testGetTask() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = TaskAsyncClient.class.getMethod("getTask", URI.class);
-      HttpRequest request = processor.createRequest(method, URI
-               .create("https://vcenterprise.bluelock.com/api/v1.0/task/1"));
+      Invokable<?, ?> method = method(TaskAsyncClient.class, "getTask", URI.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
+               .create("https://vcenterprise.bluelock.com/api/v1.0/task/1")));
 
       assertRequestLineEquals(request, "GET https://vcenterprise.bluelock.com/api/v1.0/task/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: application/vnd.vmware.vcloud.task+xml\n");
@@ -92,15 +86,15 @@ public class TaskAsyncClientTest extends BaseVCloudAsyncClientTest<TaskAsyncClie
 
       assertResponseParserClassEquals(method, request, ParseSax.class);
       assertSaxResponseParserClassEquals(method, TaskHandler.class);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testCancelTask() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = TaskAsyncClient.class.getMethod("cancelTask", URI.class);
-      HttpRequest request = processor.createRequest(method, URI
-               .create("https://vcenterprise.bluelock.com/api/v1.0/task/1"));
+      Invokable<?, ?> method = method(TaskAsyncClient.class, "cancelTask", URI.class);
+      GeneratedHttpRequest request = processor.createRequest(method, ImmutableList.<Object> of(URI
+               .create("https://vcenterprise.bluelock.com/api/v1.0/task/1")));
 
       assertRequestLineEquals(request, "POST https://vcenterprise.bluelock.com/api/v1.0/task/1/action/cancel HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
@@ -108,7 +102,7 @@ public class TaskAsyncClientTest extends BaseVCloudAsyncClientTest<TaskAsyncClie
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }

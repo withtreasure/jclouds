@@ -39,6 +39,7 @@ import com.google.common.reflect.TypeToken;
 public class IAMApiMetadata extends BaseRestApiMetadata {
 
    public static final TypeToken<RestContext<? extends IAMApi, ? extends IAMAsyncApi>> CONTEXT_TOKEN = new TypeToken<RestContext<? extends IAMApi, ? extends IAMAsyncApi>>() {
+      private static final long serialVersionUID = 1L;
    };
 
    @Override
@@ -61,7 +62,7 @@ public class IAMApiMetadata extends BaseRestApiMetadata {
       return properties;
    }
 
-   public static class Builder extends BaseRestApiMetadata.Builder {
+   public static class Builder extends BaseRestApiMetadata.Builder<Builder> {
 
       protected Builder(Class<?> api, Class<?> asyncApi) {
          super(api, asyncApi);
@@ -80,12 +81,10 @@ public class IAMApiMetadata extends BaseRestApiMetadata {
       public IAMApiMetadata build() {
          return new IAMApiMetadata(this);
       }
-      
+
       @Override
-      public Builder fromApiMetadata(ApiMetadata in) {
-         super.fromApiMetadata(in);
+      protected Builder self() {
          return this;
       }
    }
-
 }

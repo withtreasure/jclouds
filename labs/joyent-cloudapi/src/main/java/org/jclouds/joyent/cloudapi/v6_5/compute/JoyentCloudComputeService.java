@@ -23,9 +23,9 @@ import static org.jclouds.compute.config.ComputeServiceProperties.TIMEOUT_NODE_R
 import static org.jclouds.compute.config.ComputeServiceProperties.TIMEOUT_NODE_SUSPENDED;
 import static org.jclouds.compute.config.ComputeServiceProperties.TIMEOUT_NODE_TERMINATED;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
@@ -75,6 +75,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
+import com.google.common.util.concurrent.ListeningExecutorService;
 
 /**
  * @author Adrian Cole
@@ -101,7 +102,7 @@ public class JoyentCloudComputeService extends BaseComputeService {
          InitializeRunScriptOnNodeOrPlaceInBadMap.Factory initScriptRunnerFactory,
          RunScriptOnNode.Factory runScriptOnNodeFactory, InitAdminAccess initAdminAccess,
          PersistNodeCredentials persistNodeCredentials, Timeouts timeouts,
-         @Named(Constants.PROPERTY_USER_THREADS) ExecutorService executor, JoyentCloudApi novaApi,
+         @Named(Constants.PROPERTY_USER_THREADS) ListeningExecutorService userExecutor, JoyentCloudApi novaApi,
          LoadingCache<DatacenterAndName, KeyAndPrivateKey> keyCache,
          Function<Set<? extends NodeMetadata>, Multimap<String, String>> orphanedGroupsByDatacenterId,
          GroupNamingConvention.Factory namingConvention, Optional<ImageExtension> imageExtension) {
@@ -109,7 +110,7 @@ public class JoyentCloudComputeService extends BaseComputeService {
             getNodeMetadataStrategy, runNodesAndAddToSetStrategy, rebootNodeStrategy, destroyNodeStrategy,
             startNodeStrategy, stopNodeStrategy, templateBuilderProvider, templateOptionsProvider, nodeRunning,
             nodeTerminated, nodeSuspended, initScriptRunnerFactory, initAdminAccess, runScriptOnNodeFactory,
-            persistNodeCredentials, timeouts, executor, imageExtension);
+            persistNodeCredentials, timeouts, userExecutor, imageExtension);
       this.novaApi = checkNotNull(novaApi, "novaApi");
       this.keyCache = checkNotNull(keyCache, "keyCache");
       this.orphanedGroupsByDatacenterId = checkNotNull(orphanedGroupsByDatacenterId, "orphanedGroupsByDatacenterId");
@@ -119,8 +120,8 @@ public class JoyentCloudComputeService extends BaseComputeService {
    @Override
    protected void cleanUpIncidentalResourcesOfDeadNodes(Set<? extends NodeMetadata> deadNodes) {
       Multimap<String, String> zoneToZoneAndGroupNames = orphanedGroupsByDatacenterId.apply(deadNodes);
-      for (String datacenterId : zoneToZoneAndGroupNames.keySet()) {
-         cleanupOrphanedKeysInZone(ImmutableSet.copyOf(zoneToZoneAndGroupNames.get(datacenterId)), datacenterId);
+      for (Map.Entry<String, Collection<String>> entry : zoneToZoneAndGroupNames.asMap().entrySet()) {
+         cleanupOrphanedKeysInZone(ImmutableSet.copyOf(entry.getValue()), entry.getKey());
       }
    }
 

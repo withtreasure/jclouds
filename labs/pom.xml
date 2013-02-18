@@ -45,6 +45,7 @@
        <module>cdmi</module>
        <module>joyent-cloudapi</module>
        <module>joyentcloud</module>
+       <module>google-compute</module>
        <module>greenqloud-compute</module>
        <module>greenqloud-storage</module>
        <module>iam</module>
@@ -62,5 +63,7 @@
        <module>oauth</module>
        <module>openstack-quantum</module>
        <module>openstack-glance</module>
+       <module>dynect</module>
+       <module>ultradns-ws</module>
   </modules>
 </project>

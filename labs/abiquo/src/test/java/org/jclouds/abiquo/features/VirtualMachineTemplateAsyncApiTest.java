@@ -20,19 +20,19 @@
 package org.jclouds.abiquo.features;
 
 import static org.jclouds.abiquo.domain.DomainUtils.withHeader;
+import static org.jclouds.reflect.Reflection2.method;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 
+import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.abiquo.domain.TemplateResources;
 import org.jclouds.abiquo.domain.cloud.options.ConversionOptions;
 import org.jclouds.abiquo.domain.cloud.options.VirtualMachineTemplateOptions;
 import org.jclouds.abiquo.functions.ReturnTaskReferenceOrNull;
 import org.jclouds.http.functions.ParseXMLWithJAXB;
 import org.jclouds.http.functions.ReleasePayloadAndReturn;
-import org.jclouds.rest.functions.ReturnNullOnNotFoundOr404;
+import org.jclouds.reflect.Invocation;
 import org.jclouds.rest.internal.GeneratedHttpRequest;
-import org.jclouds.rest.internal.RestAnnotationProcessor;
 import org.testng.annotations.Test;
 
 import com.abiquo.model.enumerator.ConversionState;
@@ -45,7 +45,8 @@ import com.abiquo.server.core.appslibrary.ConversionsDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplateDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplatePersistentDto;
 import com.abiquo.server.core.appslibrary.VirtualMachineTemplatesDto;
-import com.google.inject.TypeLiteral;
+import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Invokable;
 
 /**
  * Tests annotation parsing of {@code VirtualMachineTemplateAsyncApi}
@@ -58,9 +59,9 @@ public class VirtualMachineTemplateAsyncApiTest extends BaseAbiquoAsyncApiTest<V
    /*********************** Virtual Machine Template ***********************/
 
    public void testListVirtualMachineTemplates() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VirtualMachineTemplateAsyncApi.class.getMethod("listVirtualMachineTemplates", Integer.class,
-            Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, 1, 1);
+      Invokable<?, ?> method = method(VirtualMachineTemplateAsyncApi.class, "listVirtualMachineTemplates",
+            Integer.class, Integer.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(1, 1)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates HTTP/1.1");
@@ -69,17 +70,22 @@ public class VirtualMachineTemplateAsyncApiTest extends BaseAbiquoAsyncApiTest<V
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListVirtualMachineTemplatesWithOptions() throws SecurityException, NoSuchMethodException,
          IOException {
-      Method method = VirtualMachineTemplateAsyncApi.class.getMethod("listVirtualMachineTemplates", Integer.class,
-            Integer.class, VirtualMachineTemplateOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(method, 1, 1, VirtualMachineTemplateOptions.builder()
-            .hypervisorType(HypervisorType.XENSERVER).categoryName("Firewalls").osType(OSType.MACOS).build());
+      Invokable<?, ?> method = method(VirtualMachineTemplateAsyncApi.class, "listVirtualMachineTemplates",
+            Integer.class, Integer.class, VirtualMachineTemplateOptions.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(
+            method,
+            ImmutableList.<Object> of(
+                  1,
+                  1,
+                  VirtualMachineTemplateOptions.builder().hypervisorType(HypervisorType.XENSERVER)
+                        .categoryName("Firewalls").build())));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates"
@@ -89,15 +95,15 @@ public class VirtualMachineTemplateAsyncApiTest extends BaseAbiquoAsyncApiTest<V
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetVirtualMachineTemplate() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VirtualMachineTemplateAsyncApi.class.getMethod("getVirtualMachineTemplate", Integer.class,
+      Invokable<?, ?> method = method(VirtualMachineTemplateAsyncApi.class, "getVirtualMachineTemplate", Integer.class,
             Integer.class, Integer.class);
-      GeneratedHttpRequest request = processor.createRequest(method, 1, 1, 1);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(1, 1, 1)));
 
       assertRequestLineEquals(request,
             "GET http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates/1 HTTP/1.1");
@@ -106,51 +112,54 @@ public class VirtualMachineTemplateAsyncApiTest extends BaseAbiquoAsyncApiTest<V
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
    }
 
    public void testUpdateVirtualMachineTemplate() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VirtualMachineTemplateAsyncApi.class.getMethod("updateVirtualMachineTemplate",
+      Invokable<?, ?> method = method(VirtualMachineTemplateAsyncApi.class, "updateVirtualMachineTemplate",
             VirtualMachineTemplateDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, TemplateResources.virtualMachineTemplatePut());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(TemplateResources.virtualMachineTemplatePut())));
 
-      assertRequestLineEquals(request,
-            "PUT http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates/1 HTTP/1.1");
+      assertRequestLineEquals(request, "PUT http://localhost/api/admin/enterprises/1/datacenterrepositories/1/"
+            + "virtualmachinetemplates/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + VirtualMachineTemplateDto.BASE_MEDIA_TYPE + "\n");
       assertPayloadEquals(request, withHeader(TemplateResources.virtualMachineTemplatePutPayload()),
             VirtualMachineTemplateDto.class, VirtualMachineTemplateDto.BASE_MEDIA_TYPE, false);
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testDeleteVirtualMachineTemplate() throws SecurityException, NoSuchMethodException {
-      Method method = VirtualMachineTemplateAsyncApi.class.getMethod("deleteVirtualMachineTemplate",
+      Invokable<?, ?> method = method(VirtualMachineTemplateAsyncApi.class, "deleteVirtualMachineTemplate",
             VirtualMachineTemplateDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, TemplateResources.virtualMachineTemplatePut());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(TemplateResources.virtualMachineTemplatePut())));
 
-      assertRequestLineEquals(request,
-            "DELETE http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates/1 HTTP/1.1");
+      assertRequestLineEquals(request, "DELETE http://localhost/api/admin/enterprises/1/datacenterrepositories/1/"
+            + "virtualmachinetemplates/1 HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "");
       assertPayloadEquals(request, null, null, false);
 
       assertResponseParserClassEquals(method, request, ReleasePayloadAndReturn.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testCreatePersistentVirtualMachineTemplate() throws SecurityException, NoSuchMethodException,
          IOException {
-      Method method = VirtualMachineTemplateAsyncApi.class.getMethod("createPersistentVirtualMachineTemplate",
+      Invokable<?, ?> method = method(VirtualMachineTemplateAsyncApi.class, "createPersistentVirtualMachineTemplate",
             Integer.class, Integer.class, VirtualMachineTemplatePersistentDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, 1, 1, TemplateResources.persistentData());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(1, 1, TemplateResources.persistentData())));
 
       assertRequestLineEquals(request,
             "POST http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates HTTP/1.1");
@@ -160,7 +169,7 @@ public class VirtualMachineTemplateAsyncApiTest extends BaseAbiquoAsyncApiTest<V
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
@@ -168,15 +177,16 @@ public class VirtualMachineTemplateAsyncApiTest extends BaseAbiquoAsyncApiTest<V
    /*********************** Conversions ***********************/
 
    public void testRequestConversion() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VirtualMachineTemplateAsyncApi.class.getMethod("requestConversion",
+      Invokable<?, ?> method = method(VirtualMachineTemplateAsyncApi.class, "requestConversion",
             VirtualMachineTemplateDto.class, DiskFormatType.class, ConversionDto.class);
 
-      GeneratedHttpRequest request = processor.createRequest(method, TemplateResources.virtualMachineTemplatePut(),
-            DiskFormatType.VMDK_STREAM_OPTIMIZED, TemplateResources.conversionPut());
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method, ImmutableList.<Object> of(
+            TemplateResources.virtualMachineTemplatePut(), DiskFormatType.VMDK_STREAM_OPTIMIZED,
+            TemplateResources.conversionPut())));
 
-      assertRequestLineEquals(
-            request,
-            "PUT http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates/1/conversions/VMDK_STREAM_OPTIMIZED HTTP/1.1");
+      assertRequestLineEquals(request,
+            "PUT http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates/"
+                  + "1/conversions/VMDK_STREAM_OPTIMIZED HTTP/1.1");
 
       assertNonPayloadHeadersEqual(request, "Accept: " + AcceptedRequestDto.BASE_MEDIA_TYPE + "\n");
       assertPayloadEquals(request, withHeader(TemplateResources.conversionPutPlayload()),
@@ -184,72 +194,66 @@ public class VirtualMachineTemplateAsyncApiTest extends BaseAbiquoAsyncApiTest<V
 
       assertResponseParserClassEquals(method, request, ReturnTaskReferenceOrNull.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListConversions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VirtualMachineTemplateAsyncApi.class
-            .getMethod("listConversions", VirtualMachineTemplateDto.class);
-      GeneratedHttpRequest request = processor.createRequest(method, TemplateResources.virtualMachineTemplatePut());
+      Invokable<?, ?> method = method(VirtualMachineTemplateAsyncApi.class, "listConversions",
+            VirtualMachineTemplateDto.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(TemplateResources.virtualMachineTemplatePut())));
 
       assertRequestLineEquals(request,
-            "GET http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates/1/conversions HTTP/1.1");
+            "GET http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates/"
+                  + "1/conversions HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + ConversionsDto.BASE_MEDIA_TYPE + "\n");
       assertPayloadEquals(request, null, null, false);
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testListConversionsWithOptions() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VirtualMachineTemplateAsyncApi.class.getMethod("listConversions",
+      Invokable<?, ?> method = method(VirtualMachineTemplateAsyncApi.class, "listConversions",
             VirtualMachineTemplateDto.class, ConversionOptions.class);
-      GeneratedHttpRequest request = processor.createRequest(
+      GeneratedHttpRequest request = processor.apply(Invocation.create(
             method,
-            TemplateResources.virtualMachineTemplatePut(),
-            ConversionOptions.builder().hypervisorType(HypervisorType.XENSERVER)
-                  .conversionState(ConversionState.FINISHED).build());
+            ImmutableList.<Object> of(TemplateResources.virtualMachineTemplatePut(), ConversionOptions.builder()
+                  .hypervisorType(HypervisorType.XENSERVER).conversionState(ConversionState.FINISHED).build())));
 
       assertRequestLineEquals(request,
-            "GET http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates/1/conversions"
-                  + "?hypervisor=XENSERVER&state=FINISHED HTTP/1.1");
+            "GET http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates/"
+                  + "1/conversions" + "?hypervisor=XENSERVER&state=FINISHED HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + ConversionsDto.BASE_MEDIA_TYPE + "\n");
       assertPayloadEquals(request, null, null, false);
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, null);
+      assertFallbackClassEquals(method, null);
 
       checkFilters(request);
    }
 
    public void testGetConversion() throws SecurityException, NoSuchMethodException, IOException {
-      Method method = VirtualMachineTemplateAsyncApi.class.getMethod("getConversion", VirtualMachineTemplateDto.class,
-            DiskFormatType.class);
-      GeneratedHttpRequest request = processor.createRequest(method, TemplateResources.virtualMachineTemplatePut(),
-            DiskFormatType.RAW);
+      Invokable<?, ?> method = method(VirtualMachineTemplateAsyncApi.class, "getConversion",
+            VirtualMachineTemplateDto.class, DiskFormatType.class);
+      GeneratedHttpRequest request = processor.apply(Invocation.create(method,
+            ImmutableList.<Object> of(TemplateResources.virtualMachineTemplatePut(), DiskFormatType.RAW)));
 
-      assertRequestLineEquals(
-            request,
-            "GET http://localhost/api/admin/enterprises/1/datacenterrepositories/1/virtualmachinetemplates/1/conversions/RAW HTTP/1.1");
+      assertRequestLineEquals(request, "GET http://localhost/api/admin/enterprises/1/datacenterrepositories/1/"
+            + "virtualmachinetemplates/1/conversions/RAW HTTP/1.1");
       assertNonPayloadHeadersEqual(request, "Accept: " + ConversionDto.BASE_MEDIA_TYPE + "\n");
       assertPayloadEquals(request, null, null, false);
 
       assertResponseParserClassEquals(method, request, ParseXMLWithJAXB.class);
       assertSaxResponseParserClassEquals(method, null);
-      assertExceptionParserClassEquals(method, ReturnNullOnNotFoundOr404.class);
+      assertFallbackClassEquals(method, NullOnNotFoundOr404.class);
 
       checkFilters(request);
-   }
-
-   @Override
-   protected TypeLiteral<RestAnnotationProcessor<VirtualMachineTemplateAsyncApi>> createTypeLiteral() {
-      return new TypeLiteral<RestAnnotationProcessor<VirtualMachineTemplateAsyncApi>>() {
-      };
    }
 }

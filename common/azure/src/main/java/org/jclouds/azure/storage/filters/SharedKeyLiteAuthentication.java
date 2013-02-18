@@ -18,7 +18,11 @@
  */
 package org.jclouds.azure.storage.filters;
 
+import static com.google.common.io.BaseEncoding.base64;
+import static com.google.common.io.ByteStreams.readBytes;
+import static org.jclouds.crypto.Macs.asByteProcessor;
 import static org.jclouds.util.Patterns.NEWLINE_PATTERN;
+import static org.jclouds.util.Strings2.toInputStream;
 
 import java.util.Collection;
 import java.util.Set;
@@ -32,26 +36,25 @@ import javax.ws.rs.core.HttpHeaders;
 
 import org.jclouds.Constants;
 import org.jclouds.crypto.Crypto;
-import org.jclouds.crypto.CryptoStreams;
 import org.jclouds.date.TimeStamp;
+import org.jclouds.domain.Credentials;
 import org.jclouds.http.HttpException;
 import org.jclouds.http.HttpRequest;
 import org.jclouds.http.HttpRequestFilter;
 import org.jclouds.http.HttpUtils;
 import org.jclouds.http.internal.SignatureWire;
-import org.jclouds.io.InputSuppliers;
 import org.jclouds.logging.Logger;
-import org.jclouds.rest.annotations.Credential;
-import org.jclouds.rest.annotations.Identity;
 import org.jclouds.util.Strings2;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
+import com.google.common.io.ByteProcessor;
 
 /**
  * Signs the Azure Storage request.
@@ -65,8 +68,7 @@ public class SharedKeyLiteAuthentication implements HttpRequestFilter {
    private static final Collection<String> FIRST_HEADERS_TO_SIGN = ImmutableList.of(HttpHeaders.DATE);
 
    private final SignatureWire signatureWire;
-   private final String identity;
-   private final byte[] key;
+   private final Supplier<Credentials> creds;
    private final Provider<String> timeStampProvider;
    private final Crypto crypto;
    private final HttpUtils utils;
@@ -76,14 +78,13 @@ public class SharedKeyLiteAuthentication implements HttpRequestFilter {
    Logger signatureLog = Logger.NULL;
 
    @Inject
-   public SharedKeyLiteAuthentication(SignatureWire signatureWire, @Identity String identity,
-         @Credential String encodedKey, @TimeStamp Provider<String> timeStampProvider,
+   public SharedKeyLiteAuthentication(SignatureWire signatureWire,
+         @org.jclouds.location.Provider Supplier<Credentials> creds, @TimeStamp Provider<String> timeStampProvider,
          Crypto crypto, HttpUtils utils) {
       this.crypto = crypto;
       this.utils = utils;
       this.signatureWire = signatureWire;
-      this.identity = identity;
-      this.key = CryptoStreams.base64(encodedKey);
+      this.creds = creds;
       this.timeStampProvider = timeStampProvider;
    }
 
@@ -96,8 +97,9 @@ public class SharedKeyLiteAuthentication implements HttpRequestFilter {
    }
 
    HttpRequest replaceAuthorizationHeader(HttpRequest request, String signature) {
-      return request.toBuilder().replaceHeader(HttpHeaders.AUTHORIZATION, "SharedKeyLite " + identity + ":"
-            + signature).build();
+      return request.toBuilder()
+            .replaceHeader(HttpHeaders.AUTHORIZATION, "SharedKeyLite " + creds.get().identity + ":" + signature)
+            .build();
    }
 
    HttpRequest replaceDateHeader(HttpRequest request) {
@@ -139,13 +141,12 @@ public class SharedKeyLiteAuthentication implements HttpRequestFilter {
    }
 
    public String signString(String toSign) {
-      String signature;
       try {
-         signature = CryptoStreams.base64(CryptoStreams.mac(InputSuppliers.of(toSign), crypto.hmacSHA256(key)));
+         ByteProcessor<byte[]> hmacSHA256 = asByteProcessor(crypto.hmacSHA256(base64().decode(creds.get().credential)));
+         return base64().encode(readBytes(toInputStream(toSign), hmacSHA256));
       } catch (Exception e) {
          throw new HttpException("error signing request", e);
       }
-      return signature;
    }
 
    private void appendMethod(HttpRequest request, StringBuilder toSign) {
@@ -174,10 +175,9 @@ public class SharedKeyLiteAuthentication implements HttpRequestFilter {
 
    @VisibleForTesting
    void appendCanonicalizedResource(HttpRequest request, StringBuilder toSign) {
-
       // 1. Beginning with an empty string (""), append a forward slash (/), followed by the name of
       // the identity that owns the resource being accessed.
-      toSign.append("/").append(identity);
+      toSign.append("/").append(creds.get().identity);
       appendUriPath(request, toSign);
    }
 

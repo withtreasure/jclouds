@@ -22,13 +22,7 @@ import static com.google.common.base.Objects.equal;
 import static com.google.common.base.Objects.toStringHelper;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Map;
-import java.util.Set;
-
-import org.jclouds.util.Multimaps2;
-
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 
@@ -78,21 +72,13 @@ public class Auth implements Comparable<Auth> {
          return token(from.getToken()).serviceCatalog(from.getServiceCatalog());
       }
    }
-
-   protected Auth() {
-      // we want serializers like Gson to work w/o using sun.misc.Unsafe,
-      // prohibited in GAE. This also implies fields are not final.
-      // see http://code.google.com/p/jclouds/issues/detail?id=925
-   }
   
-   protected Token token;
-   // TODO: get gson multimap adapter!
-   protected Map<String, Set<Endpoint>> serviceCatalog = ImmutableMap.of();
+   protected final Token token;
+   protected final Multimap<String, Endpoint> serviceCatalog;
 
    public Auth(Token token, Multimap<String, Endpoint> serviceCatalog) {
       this.token = checkNotNull(token, "token");
-      this.serviceCatalog = Multimaps2.toOldSchool(ImmutableMultimap.copyOf(checkNotNull(serviceCatalog,
-            "serviceCatalog")));
+      this.serviceCatalog = ImmutableMultimap.copyOf(checkNotNull(serviceCatalog, "serviceCatalog"));
    }
 
    /**
@@ -106,7 +92,7 @@ public class Auth implements Comparable<Auth> {
     * TODO
     */
    public Multimap<String, Endpoint> getServiceCatalog() {
-      return Multimaps2.fromOldSchool(serviceCatalog);
+      return serviceCatalog;
    }
 
    @Override

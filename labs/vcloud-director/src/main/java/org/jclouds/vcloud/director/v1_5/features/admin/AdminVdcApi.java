@@ -19,16 +19,10 @@
 package org.jclouds.vcloud.director.v1_5.features.admin;
 
 import java.net.URI;
-import java.util.concurrent.TimeUnit;
 
-import org.jclouds.concurrent.Timeout;
-import org.jclouds.rest.annotations.Delegate;
-import org.jclouds.rest.annotations.EndpointParam;
 import org.jclouds.vcloud.director.v1_5.domain.AdminVdc;
 import org.jclouds.vcloud.director.v1_5.domain.Task;
-import org.jclouds.vcloud.director.v1_5.features.MetadataApi;
 import org.jclouds.vcloud.director.v1_5.features.VdcApi;
-import org.jclouds.vcloud.director.v1_5.functions.href.VdcURNToAdminHref;
 
 /**
  * Provides synchronous access to {@link AdminVdc}.
@@ -36,7 +30,6 @@ import org.jclouds.vcloud.director.v1_5.functions.href.VdcURNToAdminHref;
  * @see AdminVdcAsyncApi
  * @author danikov, Adrian Cole
  */
-@Timeout(duration = 180, timeUnit = TimeUnit.SECONDS)
 public interface AdminVdcApi extends VdcApi {
 
    /**
@@ -87,14 +80,4 @@ public interface AdminVdcApi extends VdcApi {
    void disable(String vdcUrn);
 
    void disable(URI vdcAdminHref);
-
-   /**
-    * @return synchronous access to {@link Writeable} features
-    */
-   @Delegate
-   MetadataApi.Writeable getMetadataApi(@EndpointParam(parser = VdcURNToAdminHref.class) String vdcUrn);
-
-   @Delegate
-   MetadataApi.Writeable getMetadataApi(@EndpointParam URI vdcAdminHref);
-
 }
