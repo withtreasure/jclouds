@@ -166,14 +166,11 @@ public interface EnterpriseApi {
     * 
     * @param enterprise
     *           The enterprise.
-    * @param datacenter
-    *           The datacenter to allow to the given enterprise.
     * @param limits
-    *           The usage limits for the enterprise in the given datacenter.
-    * @return The usage limits for the enterprise in the given datacenter.
+    *           The usage limits for the enterprise in a concrete datacenter.
+    * @return The usage limits for the enterprise in a concrete datacenter.
     */
-   DatacenterLimitsDto createLimits(final EnterpriseDto enterprise, final DatacenterDto datacenter,
-         final DatacenterLimitsDto limits);
+   DatacenterLimitsDto createLimits(final EnterpriseDto enterprise, final DatacenterLimitsDto limits);
 
    /**
     * Retrieves the limits for the given enterprise and datacenter.

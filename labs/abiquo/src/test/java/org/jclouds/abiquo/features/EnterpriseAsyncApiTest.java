@@ -255,16 +255,14 @@ public class EnterpriseAsyncApiTest extends BaseAbiquoAsyncApiTest<EnterpriseAsy
 
    public void testCreateLimits() throws SecurityException, NoSuchMethodException, IOException {
       EnterpriseDto enterprise = EnterpriseResources.enterprisePut();
-      DatacenterDto datacenter = InfrastructureResources.datacenterPut();
       DatacenterLimitsDto limits = EnterpriseResources.datacenterLimitsPost();
 
       Invokable<?, ?> method = method(EnterpriseAsyncApi.class, "createLimits", EnterpriseDto.class,
-            DatacenterDto.class, DatacenterLimitsDto.class);
+            DatacenterLimitsDto.class);
       GeneratedHttpRequest request = processor.apply(Invocation.create(method,
-            ImmutableList.<Object> of(enterprise, datacenter, limits)));
+            ImmutableList.<Object> of(enterprise, limits)));
 
-      String limitsUri = enterprise.searchLink("limits").getHref();
-      String requestURI = String.format("POST %s?datacenter=%d HTTP/1.1", limitsUri, datacenter.getId());
+      String requestURI = String.format("POST %s HTTP/1.1", enterprise.searchLink("limits").getHref());
 
       assertRequestLineEquals(request, requestURI);
       assertNonPayloadHeadersEqual(request, "Accept: " + DatacenterLimitsDto.BASE_MEDIA_TYPE + "\n");

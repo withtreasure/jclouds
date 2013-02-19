@@ -201,8 +201,7 @@ public interface EnterpriseAsyncApi {
    /*********************** Enterprise Limits ***********************/
 
    /**
-    * @see EnterpriseApi#createLimits(EnterpriseDto, DatacenterDto,
-    *      DatacenterLimitsDto)
+    * @see EnterpriseApi#createLimits(EnterpriseDto, DatacenterLimitsDto)
     */
    @Named("limit:create")
    @POST
@@ -211,7 +210,6 @@ public interface EnterpriseAsyncApi {
    @JAXBResponseParser
    ListenableFuture<DatacenterLimitsDto> createLimits(
          @EndpointLink("limits") @BinderParam(BindToPath.class) final EnterpriseDto enterprise,
-         @QueryParam("datacenter") @ParamParser(ParseDatacenterId.class) final DatacenterDto datacenter,
          @BinderParam(BindToXMLPayload.class) DatacenterLimitsDto limits);
 
    /**

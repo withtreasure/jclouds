@@ -124,8 +124,8 @@ public class Limits extends DomainWithLimitsWrapper<DatacenterLimitsDto> {
 
    // Builder
 
-   public static Builder builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context) {
-      return new Builder(context);
+   public static Builder builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context, Datacenter datacenter) {
+      return new Builder(context, datacenter);
    }
 
    public static class Builder extends LimitsBuilder<Builder> {
@@ -135,9 +135,12 @@ public class Limits extends DomainWithLimitsWrapper<DatacenterLimitsDto> {
 
       protected Long repositoryHard = Long.valueOf(DEFAULT_LIMITS);
 
-      public Builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context) {
+      protected Datacenter datacenter;
+
+      public Builder(final RestContext<AbiquoApi, AbiquoAsyncApi> context, Datacenter datacenter) {
          super();
          this.context = context;
+         this.datacenter = checkNotNull(datacenter, "datacenter");
       }
 
       public Builder repositoryLimits(final long soft, final long hard) {
@@ -157,13 +160,17 @@ public class Limits extends DomainWithLimitsWrapper<DatacenterLimitsDto> {
          dto.setRepositoryHardLimitsInMb(repositoryHard);
          dto.setRepositorySoftLimitsInMb(repositorySoft);
 
+         dto.addLink(new RESTLink(ParentLinkName.DATACENTER, checkNotNull(datacenter.unwrap().getEditLink(),
+               "missing edit link").getHref()));
+
          Limits limits = new Limits(context, dto);
 
          return limits;
       }
 
-      public static Builder fromEnterprise(final Limits in) {
-         return Limits.builder(in.context).ramLimits(in.getRamSoftLimitInMb(), in.getRamHardLimitInMb())
+      public static Builder fromLimits(final Limits in) {
+         return Limits.builder(in.context, in.getDatacenter())
+               .ramLimits(in.getRamSoftLimitInMb(), in.getRamHardLimitInMb())
                .cpuCountLimits(in.getCpuCountSoftLimit(), in.getCpuCountHardLimit())
                .hdLimitsInMb(in.getHdSoftLimitInMb(), in.getHdHardLimitInMb())
                .storageLimits(in.getStorageSoft(), in.getStorageHard())

@@ -715,10 +715,10 @@ public class Enterprise extends DomainWithLimitsWrapper<EnterpriseDto> {
 
       try {
          // Create new limits
-         Limits limits = Limits.builder(context).build();
+         Limits limits = Limits.builder(context, datacenter).build();
 
          // Save new limits
-         dto = context.getApi().getEnterpriseApi().createLimits(target, datacenter.unwrap(), limits.unwrap());
+         dto = context.getApi().getEnterpriseApi().createLimits(target, limits.unwrap());
       } catch (AbiquoException ex) {
          // Controlled error to allow duplicated authorizations
          if (ex.hasError("LIMIT-7")) {
