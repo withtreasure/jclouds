@@ -60,8 +60,7 @@ public class LayersLiveApiTest extends BaseAbiquoApiLiveApiTest {
       vmOther = VirtualMachine.Builder.fromVirtualMachine(env.virtualMachine).layer(layer1).build();
       vmOther.save();
 
-      // FIXME: enable the refresh
-      // layer1.refresh();
+      layer1.refresh();
    }
 
    @AfterClass
