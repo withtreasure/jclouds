@@ -45,6 +45,7 @@ import org.jclouds.rest.annotations.Fallback;
 import org.jclouds.rest.annotations.JAXBResponseParser;
 import org.jclouds.rest.annotations.ParamParser;
 import org.jclouds.rest.annotations.RequestFilters;
+import org.jclouds.rest.annotations.SinceApiVersion;
 import org.jclouds.rest.binders.BindToXMLPayload;
 
 import com.abiquo.am.model.TemplatesStateDto;
@@ -201,7 +202,11 @@ public interface EnterpriseAsyncApi {
    /**
     * @see EnterpriseApi#createLimits(EnterpriseDto, DatacenterDto,
     *      DatacenterLimitsDto)
+    * @deprecated This method will be removed in fufure versions. Use
+    *             {@link EnterpriseAsyncApi#createLimits(EnterpriseDto, DatacenterLimitsDto)}
+    *             instead.
     */
+   @Deprecated
    @Named("limit:create")
    @POST
    @Produces(DatacenterLimitsDto.BASE_MEDIA_TYPE)
@@ -210,6 +215,19 @@ public interface EnterpriseAsyncApi {
    ListenableFuture<DatacenterLimitsDto> createLimits(
          @EndpointLink("limits") @BinderParam(BindToPath.class) final EnterpriseDto enterprise,
          @QueryParam("datacenter") @ParamParser(ParseDatacenterId.class) final DatacenterDto datacenter,
+         @BinderParam(BindToXMLPayload.class) DatacenterLimitsDto limits);
+
+   /**
+    * @see EnterpriseApi#createLimits(EnterpriseDto, DatacenterLimitsDto)
+    */
+   @SinceApiVersion("2.4")
+   @Named("limit:create")
+   @POST
+   @Produces(DatacenterLimitsDto.BASE_MEDIA_TYPE)
+   @Consumes(DatacenterLimitsDto.BASE_MEDIA_TYPE)
+   @JAXBResponseParser
+   ListenableFuture<DatacenterLimitsDto> createLimits(
+         @EndpointLink("limits") @BinderParam(BindToPath.class) final EnterpriseDto enterprise,
          @BinderParam(BindToXMLPayload.class) DatacenterLimitsDto limits);
 
    /**

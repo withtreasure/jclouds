@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <limit>
-    <link rel="edit" href="http://localhost/api/admin/enterprises/1/limits/1"/>
-    <link rel="datacenter" href="http://localhost/api/admin/datacenters/1"/>
-    <link rel="enterprise" href="http://localhost/api/admin/enterprises/1"/>
-    <id>1</id>
+    <link href="http://localhost/api/admin/datacenters/1" type="application/vnd.abiquo.datacenter+xml" rel="datacenter"/>
     <cpuHard>0</cpuHard>
     <cpuSoft>0</cpuSoft>
     <hdHard>0</hdHard>

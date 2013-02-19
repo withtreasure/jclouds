@@ -34,6 +34,7 @@ import org.testng.annotations.Test;
 import com.abiquo.model.rest.RESTLink;
 import com.abiquo.server.core.enterprise.DatacenterLimitsDto;
 import com.abiquo.server.core.enterprise.EnterpriseDto;
+import com.abiquo.server.core.infrastructure.DatacenterDto;
 
 /**
  * Expect tests for the {@link EnterpriseApi} class.
@@ -88,5 +89,38 @@ public class EnterpriseApiExpectTest extends BaseAbiquoRestApiExpectTest<Enterpr
 
       DatacenterLimitsDto limit = api.getLimit(enterprise, 1);
       assertNull(limit);
+   }
+
+   public void testCreateLimitReturns2xx() throws SecurityException, NoSuchMethodException, IOException {
+      EnterpriseApi api = requestSendsResponse(
+            HttpRequest
+                  .builder()
+                  .method("POST")
+                  .endpoint(URI.create("http://localhost/api/admin/enterprises/1/limits"))
+                  .addHeader("Authorization", basicAuth)
+                  .addHeader("Accept", normalize(DatacenterLimitsDto.MEDIA_TYPE))
+                  .payload(
+                        payloadFromResourceWithContentType("/payloads/limit-create.xml",
+                              normalize(DatacenterLimitsDto.MEDIA_TYPE))).build(),
+            HttpResponse
+                  .builder()
+                  .statusCode(201)
+                  .payload(
+                        payloadFromResourceWithContentType("/payloads/limit.xml",
+                              normalize(DatacenterLimitsDto.MEDIA_TYPE))).build());
+
+      EnterpriseDto enterprise = new EnterpriseDto();
+      RESTLink link = new RESTLink("limits", "http://localhost/api/admin/enterprises/1/limits");
+      enterprise.addLink(link);
+
+      DatacenterLimitsDto limits = new DatacenterLimitsDto();
+      RESTLink datacenter = new RESTLink("datacenter", "http://localhost/api/admin/datacenters/1");
+      datacenter.setType(DatacenterDto.BASE_MEDIA_TYPE);
+      limits.addLink(datacenter);
+
+      DatacenterLimitsDto limit = api.createLimits(enterprise, limits);
+      assertNotNull(limit);
+      assertNotNull(limit.getEditLink());
+      assertEquals(limit.getId(), Integer.valueOf(1));
    }
 }

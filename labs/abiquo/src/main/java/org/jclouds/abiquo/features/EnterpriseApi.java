@@ -21,6 +21,7 @@ package org.jclouds.abiquo.features;
 
 import org.jclouds.abiquo.domain.enterprise.options.EnterpriseOptions;
 import org.jclouds.abiquo.reference.annotations.EnterpriseEdition;
+import org.jclouds.rest.annotations.SinceApiVersion;
 
 import com.abiquo.am.model.TemplatesStateDto;
 import com.abiquo.server.core.appslibrary.DatacenterRepositoryDto;
@@ -169,9 +170,26 @@ public interface EnterpriseApi {
     * @param limits
     *           The usage limits for the enterprise in the given datacenter.
     * @return The usage limits for the enterprise in the given datacenter.
+    * @deprecated This method will be removed in fufure versions. Use
+    *             {@link EnterpriseApi#createLimits(EnterpriseDto, DatacenterLimitsDto)}
+    *             instead.
     */
+   @Deprecated
    DatacenterLimitsDto createLimits(final EnterpriseDto enterprise, final DatacenterDto datacenter,
          final DatacenterLimitsDto limits);
+
+   /**
+    * Allows the given enterprise to use the given datacenter with the given
+    * limits.
+    * 
+    * @param enterprise
+    *           The enterprise.
+    * @param limits
+    *           The usage limits for the enterprise in a concrete datacenter.
+    * @return The usage limits for the enterprise in a concrete datacenter.
+    */
+   @SinceApiVersion("2.4")
+   DatacenterLimitsDto createLimits(final EnterpriseDto enterprise, final DatacenterLimitsDto limits);
 
    /**
     * Retrieves the limits for the given enterprise and datacenter.
