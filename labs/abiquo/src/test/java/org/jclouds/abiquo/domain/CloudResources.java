@@ -141,8 +141,8 @@ public class CloudResources {
       virtualMachine.addLink(new RESTLink("volumes",
             "http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/storage/volumes"));
       virtualMachine
-      .addLink(new RESTLink("configurations",
-            "http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/network/configurations"));
+            .addLink(new RESTLink("configurations",
+                  "http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/network/configurations"));
       virtualMachine.addLink(new RESTLink("instance",
             "http://localhost/api/cloud/virtualdatacenters/1/virtualappliances/1/virtualmachines/1/action/instance"));
       virtualMachine.setCpu(1);
@@ -210,7 +210,7 @@ public class CloudResources {
       template.setName("m0n0wall");
       template.setDiskFormatType(DiskFormatType.VMDK_FLAT.toString());
       template.setPath("1/abiquo-repository.abiquo.com/m0n0wall/m0n0wall-1.3b18-i386-flat.vmdk");
-      template.setDiskFileSize(27262976L);
+      template.setDiskFileSize(27262976);
       template.setCpuRequired(1);
       template.setRamRequired(128);
       template.setCpuRequired(27262976);

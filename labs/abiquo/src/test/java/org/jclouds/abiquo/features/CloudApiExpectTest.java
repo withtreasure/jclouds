@@ -37,9 +37,6 @@ import com.abiquo.server.core.cloud.LayersDto;
 import com.abiquo.server.core.cloud.VirtualApplianceDto;
 import com.abiquo.server.core.cloud.VirtualMachineDto;
 import com.abiquo.server.core.cloud.VirtualMachineInstanceDto;
-import com.abiquo.server.core.cloud.LayerDto;
-import com.abiquo.server.core.cloud.LayersDto;
-import com.abiquo.server.core.cloud.VirtualApplianceDto;
 import com.abiquo.server.core.cloud.VirtualMachinesWithNodeExtendedDto;
 
 /**
