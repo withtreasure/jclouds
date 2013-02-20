@@ -35,6 +35,7 @@ import org.jclouds.abiquo.domain.network.UnmanagedNetwork;
 import org.jclouds.abiquo.domain.task.AsyncTask;
 import org.jclouds.abiquo.domain.util.LinkUtils;
 import org.jclouds.abiquo.features.services.MonitoringService;
+import org.jclouds.abiquo.functions.cloud.DiskLinkToVirtualDisk;
 import org.jclouds.abiquo.monitor.VirtualMachineMonitor;
 import org.jclouds.abiquo.predicates.LinkPredicates;
 import org.jclouds.abiquo.reference.ValidationErrors;
@@ -271,6 +272,14 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
       return Iterables.getFirst(filter(listVirtualDisks(), filter), null);
    }
 
+   public VirtualDisk<?> getPrimaryDisk() {
+      RESTLink diskLink = checkNotNull(target.searchLink(DiskManagementDto.REL_PREFIX + "0"),
+            "missing primary disk link");
+      DiskLinkToVirtualDisk linkToVirtualDisk = context.getUtils().getInjector()
+            .getInstance(DiskLinkToVirtualDisk.class);
+      return linkToVirtualDisk.apply(diskLink);
+   }
+
    // Actions
 
    /**
@@ -435,13 +444,14 @@ public class VirtualMachine extends DomainWithTasksWrapper<VirtualMachineWithNod
    public AsyncTask setVirtualDisks(List<? extends VirtualDisk<?>> virtualDisks) {
       checkNotNull(virtualDisks, "virtualDisk list can not be null");
       // Remove current disk links
-      Iterables.removeIf(target.getLinks(), LinkPredicates.isDisk());
+      Iterables.removeIf(target.getLinks(), LinkPredicates.isExternalDisk());
 
       // Add the given virtual disks in the appropriate order
       for (int i = 0; i < virtualDisks.size(); i++) {
          VirtualDisk<?> virtualDisk = virtualDisks.get(i);
          RESTLink source = LinkUtils.getSelfLink(virtualDisk.unwrap());
-         RESTLink link = new RESTLink(DiskManagementDto.REL_PREFIX + i, source.getHref());
+         // Disk sequences start by 1. 0 is used by the system disk.
+         RESTLink link = new RESTLink(DiskManagementDto.REL_PREFIX + (i + 1), source.getHref());
          link.setType(virtualDisk.unwrap().getBaseMediaType());
          target.addLink(link);
       }
