@@ -25,13 +25,13 @@ import java.util.Arrays;
 
 import org.jclouds.abiquo.domain.task.AsyncTask;
 
-import com.abiquo.server.core.task.enums.TaskState;
-import com.abiquo.server.core.task.enums.TaskType;
+import com.abiquo.server.core.task.TaskState;
+import com.abiquo.server.core.task.TaskType;
 import com.google.common.base.Predicate;
 
 /**
  * Container for {@link AsyncTask} filters.
- * 
+ *
  * @author Ignasi Barrera
  */
 public class AsyncTaskPredicates {

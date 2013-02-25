@@ -38,13 +38,13 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.abiquo.model.enumerator.VMTemplateState;
-import com.abiquo.server.core.task.enums.TaskState;
+import com.abiquo.server.core.task.TaskState;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
 
 /**
  * Live integration tests for the {@link TemplateDefinitionList} domain class.
- * 
+ *
  * @author Francesc Montserrat
  */
 @Test(groups = "api", testName = "TemplateDefinitionListLiveApiTest")

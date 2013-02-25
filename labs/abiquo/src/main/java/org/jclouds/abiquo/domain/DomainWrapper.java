@@ -48,7 +48,7 @@ import com.abiquo.model.transport.AcceptedRequestDto;
 import com.abiquo.model.transport.SingleResourceTransportDto;
 import com.abiquo.model.transport.WrapperDto;
 import com.abiquo.server.core.task.TaskDto;
-import com.abiquo.server.core.task.enums.TaskType;
+import com.abiquo.server.core.task.TaskType;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -58,7 +58,7 @@ import com.google.inject.TypeLiteral;
 /**
  * This class is used to decorate transport objects with high level
  * functionality.
- * 
+ *
  * @author Francesc Montserrat
  * @author Ignasi Barrera
  */
@@ -77,7 +77,7 @@ public abstract class DomainWrapper<T extends SingleResourceTransportDto> {
 
    /**
     * Returns the URI that identifies the transport object
-    * 
+    *
     * @return The URI identifying the transport object
     */
    public URI getURI() {
@@ -110,7 +110,7 @@ public abstract class DomainWrapper<T extends SingleResourceTransportDto> {
 
    /**
     * Read the ID of the parent resource from the given link.
-    * 
+    *
     * @param parentLinkRel
     *           The link to the parent resource.
     * @return The ID of the parent resource.
@@ -204,7 +204,7 @@ public abstract class DomainWrapper<T extends SingleResourceTransportDto> {
    /**
     * Utility method to get an {@link AsyncTask} given an
     * {@link AcceptedRequestDto}.
-    * 
+    *
     * @param acceptedRequest
     *           The accepted request dto.
     * @return The async task.
@@ -221,7 +221,7 @@ public abstract class DomainWrapper<T extends SingleResourceTransportDto> {
    /**
     * Utility method to get all {@link AsyncTask} related to an
     * {@link AcceptedRequestDto}.
-    * 
+    *
     * @param acceptedRequest
     *           The accepted request dto.
     * @return The async task array.
@@ -244,7 +244,7 @@ public abstract class DomainWrapper<T extends SingleResourceTransportDto> {
    /**
     * Creates a new {@link AsyncTask} for the given {@link TaskDto} and the
     * given result class.
-    * 
+    *
     * @param context
     *           The API context.
     * @param dto
@@ -269,7 +269,7 @@ public abstract class DomainWrapper<T extends SingleResourceTransportDto> {
          case VIRTUAL_MACHINE:
             // A VirtualMachine task can generate a template (if task is an
             // instance)
-            taskClass = dto.getType() == TaskType.INSTANCE || dto.getType() == TaskType.INSTANCE_PERSISTENT ? VirtualMachineTemplateTask.class
+            taskClass = dto.getType() == TaskType.INSTANCE ? VirtualMachineTemplateTask.class
                   : VirtualMachineTask.class;
             break;
       }
