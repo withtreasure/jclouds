@@ -56,10 +56,6 @@
                     <groupId>javax.ws.rs</groupId>
                     <artifactId>jsr311-api</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>org.uncommons</groupId>
-                    <artifactId>reportng</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -70,10 +66,6 @@
                 <exclusion>
                     <groupId>javax.ws.rs</groupId>
                     <artifactId>jsr311-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.uncommons</groupId>
-                    <artifactId>reportng</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
