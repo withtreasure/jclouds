@@ -26,15 +26,6 @@
         <jclouds.osgi.import>org.jclouds*;version="${project.version}",*</jclouds.osgi.import>
     </properties>
     
-    <!-- To be removed when the Abiquo deps are in Maven Central -->
-    <repositories>
-        <repository>
-            <id>abiquo-repo</id>
-            <name>Abiquo Maven Repository</name>
-            <url>http://repo.community.abiquo.com/repo</url>
-        </repository>
-    </repositories>
-    
     <dependencies>
         <dependency>
             <groupId>org.jclouds</groupId>
@@ -60,7 +51,7 @@
         </dependency>
         <dependency>
             <groupId>com.abiquo</groupId>
-            <artifactId>am-model</artifactId>
+            <artifactId>am-model-transport</artifactId>
             <version>${abiquoam.version}</version>
             <exclusions>
                 <exclusion>
