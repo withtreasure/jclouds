@@ -7,13 +7,13 @@
         <version>1.6.0-SNAPSHOT</version>
         <relativePath>../../project/pom.xml</relativePath>
     </parent>
-    
+
     <groupId>org.jclouds.labs</groupId>
     <artifactId>abiquo</artifactId>
     <name>jclouds Abiquo api</name>
     <description>jclouds components to access an implementation of Abiquo</description>
     <packaging>bundle</packaging>
-    
+
     <properties>
         <abiquomodel.version>2.3.0-SNAPSHOT</abiquomodel.version>
         <abiquoam.version>2.2.0-SNAPSHOT</abiquoam.version>
@@ -25,7 +25,7 @@
         <jclouds.osgi.export>org.jclouds.abiquo*;version="${project.version}"</jclouds.osgi.export>
         <jclouds.osgi.import>org.jclouds*;version="${project.version}",*</jclouds.osgi.import>
     </properties>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.jclouds</groupId>
@@ -53,27 +53,16 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>com.abiquo</groupId>
-            <artifactId>am-model</artifactId>
-            <version>${abiquoam.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.ws.rs</groupId>
-                    <artifactId>jsr311-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.uncommons</groupId>
-                    <artifactId>reportng</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <!-- Required for class SyndLink (imported form RESTLink) : TODO remove this dependency -->
         <dependency>
             <groupId>org.apache.wink</groupId>
             <artifactId>wink-common</artifactId>
             <version>1.1-incubating</version>
             <exclusions>
+				<exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-jdk14</artifactId>
@@ -126,7 +115,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    
+
     <build>
         <testResources>
             <testResource>
@@ -149,7 +138,7 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <profiles>
         <profile>
             <id>live</id>
