@@ -30,9 +30,9 @@ import org.jclouds.abiquo.domain.cloud.TemplateDefinition;
 import org.jclouds.abiquo.domain.infrastructure.Datacenter;
 import org.jclouds.rest.RestContext;
 
-import com.abiquo.am.model.TemplatesStateDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionListDto;
 import com.abiquo.server.core.appslibrary.TemplateDefinitionsDto;
+import com.abiquo.server.core.appslibrary.TemplatesStateDto;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
